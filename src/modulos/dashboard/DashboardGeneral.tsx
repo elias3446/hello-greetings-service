@@ -1,22 +1,22 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   FileText, 
   Users, 
   List, 
-  Shield, 
-  Activity 
+  Shield
 } from 'lucide-react';
 import { getReports } from '@/controller/reportController';
 import { getUsers } from '@/controller/userController';
 import { getCategories } from '@/controller/categoryController';
 import { getRoles } from '@/controller/roleController';
 import { getEstados } from '@/controller/estadoController';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { EstadoReporte } from '@/types/tipos';
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+import EstadoTotalCard from '@/components/dashboard/EstadoTotalCard';
+import EstadosPieChart from '@/components/dashboard/EstadosPieChart';
+import EstadosTypeChart from '@/components/dashboard/EstadosTypeChart';
+import ActivitySummaryCard from '@/components/dashboard/ActivitySummaryCard';
+import StatCard from '@/components/dashboard/StatCard';
 
 const DashboardGeneral = () => {
   const [data, setData] = useState({
@@ -28,6 +28,7 @@ const DashboardGeneral = () => {
   });
 
   const [reportesPorEstado, setReportesPorEstado] = useState<any[]>([]);
+  const [reportesPorTipoEstado, setReportesPorTipoEstado] = useState<any[]>([]);
   const [estadisticasPorTipo, setEstadisticasPorTipo] = useState<Record<string, number>>({});
   const [reportesActivos, setReportesActivos] = useState<number>(0);
   
@@ -81,6 +82,22 @@ const DashboardGeneral = () => {
     });
     
     setEstadisticasPorTipo(reportesPorTipo);
+
+    // Generar datos para el gráfico de tipos de estado
+    const tipoEstadoData = Object.entries(reportesPorTipo)
+      .map(([tipo, cantidad]) => {
+        // Encontrar un estado con este tipo para obtener su color
+        const estadoConTipo = estados.find(e => e.tipo === tipo);
+        
+        return {
+          name: formatearTipoEstado(tipo),
+          value: cantidad,
+          color: estadoConTipo ? estadoConTipo.color : '#888888'
+        };
+      })
+      .filter(item => item.value > 0);
+
+    setReportesPorTipoEstado(tipoEstadoData);
   }, []);
 
   // Obtener todos los tipos únicos de estado
@@ -90,6 +107,15 @@ const DashboardGeneral = () => {
       tiposUnicos.add(estado.tipo);
     });
     return Array.from(tiposUnicos);
+  };
+
+  // Función para formatear el tipo de estado para su visualización
+  const formatearTipoEstado = (tipo: string): string => {
+    // Convertir de snake_case a formato legible
+    const palabras = tipo.split('_').map(palabra => 
+      palabra.charAt(0).toUpperCase() + palabra.slice(1)
+    );
+    return palabras.join(' ');
   };
 
   const cards = [
@@ -121,102 +147,35 @@ const DashboardGeneral = () => {
       color: '#6366f1',
       bgColor: 'rgba(99, 102, 241, 0.1)',
     },
-    {
-      title: 'Estados',
-      value: data.totalEstados,
-      icon: Activity,
-      color: '#ec4899',
-      bgColor: 'rgba(236, 72, 153, 0.1)',
-    },
   ];
-
-  // Función para formatear el tipo de estado para su visualización
-  const formatearTipoEstado = (tipo: string): string => {
-    // Convertir de snake_case a formato legible
-    const palabras = tipo.split('_').map(palabra => 
-      palabra.charAt(0).toUpperCase() + palabra.slice(1)
-    );
-    return palabras.join(' ');
-  };
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {cards.map((card) => (
-          <Card key={card.title} className="transition-shadow hover:shadow-md">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-md font-medium">{card.title}</CardTitle>
-              <div 
-                className="p-2 rounded-full" 
-                style={{ backgroundColor: card.bgColor }}
-              >
-                <card.icon className="h-5 w-5" style={{ color: card.color }} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{card.value}</div>
-            </CardContent>
-          </Card>
+          <StatCard 
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+            color={card.color}
+            bgColor={card.bgColor}
+          />
         ))}
+        <EstadoTotalCard totalEstados={data.totalEstados} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Reportes por Estado</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {reportesPorEstado.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={reportesPorEstado}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {reportesPorEstado.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value} reportes`, 'Cantidad']} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No hay datos disponibles</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <EstadosPieChart reportesPorEstado={reportesPorEstado} />
+        <ActivitySummaryCard 
+          reportesActivos={reportesActivos} 
+          estadisticasPorTipo={estadisticasPorTipo}
+          formatearTipoEstado={formatearTipoEstado}
+        />
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumen de Actividad</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <p>Reportes activos</p>
-                  <p className="font-medium">{reportesActivos}</p>
-                </div>
-                {/* Generar dinámicamente los elementos según los tipos de estado disponibles */}
-                {Object.entries(estadisticasPorTipo).map(([tipo, cantidad]) => (
-                  <div key={tipo} className="flex items-center justify-between text-sm">
-                    <p>Reportes {formatearTipoEstado(tipo)}</p>
-                    <p className="font-medium">{cantidad}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-6">
+        <EstadosTypeChart reportesPorTipoEstado={reportesPorTipoEstado} />
       </div>
     </div>
   );
