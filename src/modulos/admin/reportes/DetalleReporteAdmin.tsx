@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getReportById } from '@/controller/reportController';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { ArrowLeft } from 'lucide-react';
 import DetalleReporte from '@/modulos/reportes/DetalleReporte';
 
 const DetalleReporteAdmin = () => {
@@ -66,8 +65,8 @@ const DetalleReporteAdmin = () => {
   }
 
   return (
-    <Layout>
-      <DetalleReporte />
+    <Layout titulo="Detalle del Reporte">
+      <DetalleReporte reporteProp={reporte} noLayout={true} />
     </Layout>
   );
 };
