@@ -1,0 +1,127 @@
+
+// Datos de ejemplo para reportes
+import { Reporte, Ubicacion } from '../types/tipos';
+import { categorias, prioridades } from './categorias';
+import { estadosReporte } from './estadosReporte';
+import { usuarios } from './usuarios';
+
+export const reportes: Reporte[] = [
+  {
+    id: '1',
+    titulo: 'Bache en calle principal',
+    descripcion: 'Bache de aproximadamente 1m de diámetro frente al número 123',
+    ubicacion: {  
+      id: '1',
+      latitud: 4.6097102,
+      longitud: -74.081749,
+      direccion: 'Calle 123 #45-67',
+      referencia:'Calle 123 #45-67',
+      fechaCreacion: new Date('2025-04-25T08:30:00'),
+      activo: true,
+    },
+    categoria: categorias[0],
+    estado: estadosReporte[0],
+    prioridad: prioridades[0], // Alta prioridad
+    fechaCreacion: new Date('2023-03-15'),
+    fechaActualizacion: new Date('2023-03-15'),
+    usuarioCreador: usuarios[3],
+    imagenes: ['https://via.placeholder.com/300?text=Bache'],
+    activo: true,
+    fechaInicio: new Date('2023-03-15'),
+  },
+  {
+    id: '2',
+    titulo: 'Falla en alumbrado público',
+    descripcion: 'Falla en el alumbrado de toda la cuadra',
+    ubicacion: {
+      id: '2',
+      latitud: 4.6496282,
+      longitud: -74.060875,
+      direccion: 'Carrera 45 #67-89',
+      referencia:'Carrera 45 #67-89',
+      fechaCreacion: new Date('2025-04-25T08:30:00'),
+      activo: true,
+    },
+    categoria: categorias[1],
+    estado: estadosReporte[1],
+    prioridad: prioridades[1], // Media prioridad
+    fechaCreacion: new Date('2023-03-10'),
+    fechaActualizacion: new Date('2023-03-16'),
+    usuarioCreador: usuarios[4],
+    asignadoA: usuarios[2],
+    imagenes: ['https://via.placeholder.com/300?text=Alumbrado'],
+    activo: true,
+    fechaInicio: new Date('2023-03-10'),
+  },
+  {
+    id: '3',
+    titulo: 'Acumulación de basura',
+    descripcion: 'Acumulación de basura en parque central',
+    ubicacion: {
+      id: '3',
+      latitud: 4.630976,
+      longitud: -74.065406,
+      direccion: 'Parque Central',
+      referencia:'Parque Central',
+      fechaCreacion: new Date('2025-04-25T08:30:00'),
+      activo: true,
+    },
+    categoria: categorias[3],
+    estado: estadosReporte[2],
+    prioridad: prioridades[2], // Baja prioridad
+    fechaCreacion: new Date('2023-03-05'),
+    fechaActualizacion: new Date('2023-03-17'),
+    usuarioCreador: usuarios[3],
+    asignadoA: usuarios[2],
+    imagenes: ['https://via.placeholder.com/300?text=Basura'],
+    activo: true,
+    fechaInicio: new Date('2023-03-05'),
+  },
+  {
+    id: '4',
+    titulo: 'Poste a punto de caer',
+    descripcion: 'Poste de electricidad inclinado peligrosamente',
+    ubicacion: {
+      id: '4',
+      latitud: 4.624335,
+      longitud: -74.063644,
+      direccion: 'Av. Principal #234',
+      referencia:'Av. Principal #234',
+      fechaCreacion: new Date('2025-04-25T08:30:00'),
+      activo: true,
+    },
+    categoria: categorias[1],
+    estado: estadosReporte[3],
+    prioridad: prioridades[0], // Alta prioridad
+    fechaCreacion: new Date('2023-02-28'),
+    fechaActualizacion: new Date('2023-03-18'),
+    usuarioCreador: usuarios[4],
+    asignadoA: usuarios[1],
+    imagenes: ['https://via.placeholder.com/300?text=Poste'],
+    activo: true,
+    fechaInicio: new Date('2023-02-28'),
+  },
+  {
+    id: '5',
+    titulo: 'Vandalismo en muro',
+    descripcion: 'Pintadas en muro de colegio público',
+    ubicacion: {
+      id: '5',
+      latitud: 4.658383,
+      longitud: -74.058041,
+      direccion: 'Calle 89 #12-34',
+      referencia:'Calle 89 #12-34',
+      fechaCreacion: new Date('2025-04-25T08:30:00'),
+      activo: true,
+    },
+    categoria: categorias[2],
+    estado: estadosReporte[0],
+    prioridad: prioridades[1], // Media prioridad
+    fechaCreacion: new Date('2023-03-17'),
+    fechaActualizacion: new Date('2023-03-17'),
+    usuarioCreador: usuarios[4],
+    imagenes: ['https://via.placeholder.com/300?text=Vandalismo'],
+    activo: true,
+    fechaInicio: new Date('2023-03-17'),
+  },
+];
