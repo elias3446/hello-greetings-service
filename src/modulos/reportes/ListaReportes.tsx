@@ -1,122 +1,235 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { 
+  PlusIcon, 
+  FileText
+} from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Reporte } from '@/types/tipos';
+import { toast } from '@/components/ui/sonner';
 import { getReports, filterReports, sortReports } from '@/controller/reportController';
-import { Link } from 'react-router-dom';
-import { MapPin, Calendar, Search, Plus } from 'lucide-react';
-import { Reporte, SortOption } from '@/types/tipos';
-import SortOptions from '@/components/common/SortOptions';
+import SearchFilterBar from '@/components/layout/SearchFilterBar';
 
 const ListaReportes = () => {
-  // Estado para búsqueda
+  const navigate = useNavigate();
+  const [reportes, setReportes] = useState<Reporte[]>([]);
+  const [filteredReportes, setFilteredReportes] = useState<Reporte[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Estado para ordenamiento
-  const [sortBy, setSortBy] = useState<SortOption>({
-    id: 'fecha',
-    direction: 'desc',
-    label: 'Fecha (más reciente)'
-  });
-  
-  // Opciones de ordenamiento
-  const sortOptions: SortOption[] = [
-    { id: 'fecha', label: 'Fecha (más reciente)', direction: 'desc' },
-    { id: 'fecha', label: 'Fecha (más antigua)', direction: 'asc' },
-    { id: 'titulo', label: 'Título (A-Z)', direction: 'asc' },
-    { id: 'titulo', label: 'Título (Z-A)', direction: 'desc' },
-    { id: 'categoria', label: 'Categoría', direction: 'asc' },
-    { id: 'estado', label: 'Estado', direction: 'asc' }
+  const [estadoFilter, setEstadoFilter] = useState<string | null>(null);
+  const [categoriaFilter, setCategoriaFilter] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<string>('titulo');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentField, setCurrentField] = useState<string | undefined>();
+  const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
+  const itemsPerPage = 10;
+
+  const sortOptions = [
+    { value: 'titulo', label: 'Título' },
+    { value: 'ubicacion', label: 'Ubicación' },
+    { value: 'fechaCreacion', label: 'Fecha creación' },
+    { value: 'categoria', label: 'Categoría' },
+    { value: 'estado', label: 'Estado' }
   ];
 
-  // Obtener reportes
-  const reportes = getReports();
-  
-  // Filtrar reportes por término de búsqueda
-  const filteredReportes = searchTerm
-    ? filterReports({ search: searchTerm })
-    : reportes;
-  
-  // Ordenar reportes
-  const sortedReportes = sortReports(filteredReportes, sortBy.id, sortBy.direction);
+  const filterOptions = [
+    { value: 'estado', label: 'Estado' },
+    { value: 'categoria', label: 'Categoría' }
+  ];
 
-  // Manejar cambio de ordenamiento
-  const handleSortChange = (option: SortOption) => {
-    setSortBy(option);
+  useEffect(() => {
+    // Cargar reportes
+    setIsLoading(true);
+    try {
+      const data = getReports();
+      setReportes(data);
+      setFilteredReportes(data);
+      setIsLoading(false);
+    } catch (error) {
+      toast.error("Error al cargar reportes");
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Aplicar filtros, búsqueda y ordenamiento
+    let result = [...reportes];
+
+    // Aplicar filtro de búsqueda
+    if (searchTerm) {
+      result = filterReports({ search: searchTerm });
+    }
+
+    // Separar los valores de filtro por tipo
+    const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
+    const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
+    const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
+
+    // Aplicar filtro de valores (si hay valores seleccionados)
+    if (filterValues.length > 0) {
+      result = result.filter(reporte => 
+        filterValues.includes(getFieldValue(reporte, sortBy))
+      );
+    }
+
+    // Aplicar filtro de estados sobre el resultado anterior
+    if (filterStates.length > 0) {
+      result = result.filter(reporte => 
+        filterStates.includes(reporte.estado.nombre)
+      );
+    }
+
+    // Aplicar filtro de categorías sobre el resultado anterior
+    if (filterCategories.length > 0) {
+      result = result.filter(reporte => 
+        filterCategories.includes(reporte.categoria.nombre)
+      );
+    }
+
+    // Aplicar ordenamiento
+    result = sortReports(result, sortBy, sortDirection);
+
+    setFilteredReportes(result);
+    setCurrentPage(1);
+  }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);
+
+  // Función para obtener el valor del campo según el campo actual
+  const getFieldValue = (reporte: Reporte, field: string): string => {
+    switch (field) {
+      case 'titulo':
+        return reporte.titulo;
+      case 'ubicacion':
+        return reporte.ubicacion.direccion;
+      case 'asignadoA':
+        return reporte.asignadoA?.nombre || 'Sin asignar';
+      case 'fechaCreacion':
+        return new Date(reporte.fechaCreacion).toLocaleDateString('es-ES');
+      case 'estado':
+        return reporte.estado.nombre;
+      case 'categoria':
+        return reporte.categoria.nombre;
+      default:
+        return '';
+    }
   };
+
+  const handleToggleSortDirection = () => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
+  const handleFilterChange = (values: any[]) => {
+    setSelectedFilterValues(values);
+  };
+
+  // Resetear valores de filtro cuando cambia el campo de ordenamiento
+  useEffect(() => {
+    // Solo resetear los valores que no son filtros (estado o categoría)
+    setSelectedFilterValues(prev => 
+      prev.filter(value => value.startsWith('estado:') || value.startsWith('categoria:'))
+    );
+  }, [sortBy]);
+
+  const handleExportReportes = () => {
+    const data = filteredReportes.map(reporte => ({
+      titulo: reporte.titulo,
+      categoria: reporte.categoria.nombre,
+      estado: reporte.estado.nombre,
+      fechaCreacion: new Date(reporte.fechaCreacion).toLocaleDateString('es-ES'),
+      ubicacion: reporte.ubicacion.direccion
+    }));
+    
+    const csvContent = [
+      Object.keys(data[0]).join(','),
+      ...data.map(row => Object.values(row).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'reportes.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentReportes = filteredReportes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredReportes.length / itemsPerPage);
 
   return (
     <Layout titulo="Reportes">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div className="relative flex-1 w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <Input
-            type="text"
-            placeholder="Buscar reportes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <SortOptions 
-            options={sortOptions}
-            currentOptionId={`${sortBy.id}-${sortBy.direction}`}
-            onSortChange={handleSortChange}
-          />
-          
-          <Button asChild>
-            <Link to="/reportes/nuevo" className="flex items-center gap-2">
-              <Plus size={16} />
-              Nuevo reporte
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <div className="space-y-4">
+        <SearchFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={estadoFilter}
+          onStatusFilterChange={setEstadoFilter}
+          roleFilter={categoriaFilter}
+          onRoleFilterChange={setCategoriaFilter}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortDirection={sortDirection}
+          onSortDirectionChange={handleToggleSortDirection}
+          currentField={currentField}
+          onCurrentFieldChange={setCurrentField}
+          onFilterChange={handleFilterChange}
+          onExport={handleExportReportes}
+          onNewItem={() => navigate('/reportes/nuevo')}
+          items={reportes}
+          getFieldValue={getFieldValue}
+          showNewButton={true}
+          newButtonLabel="Nuevo Reporte"
+          showExportButton={true}
+          sortOptions={sortOptions}
+          filteredCount={filteredReportes.length}
+          totalCount={reportes.length}
+          itemLabel="reportes"
+          filterOptions={filterOptions}
+        />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Listado de Reportes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            {sortedReportes.length > 0 ? (
-              sortedReportes.map((reporte) => (
-                <Link
-                  key={reporte.id}
-                  to={`/reportes/${reporte.id}`}
-                  className="block border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-medium">{reporte.titulo}</h3>
-                      
-                      <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin size={14} />
-                          <span>{reporte.ubicacion.direccion}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar size={14} />
-                          <span>
-                            {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES', {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                      </div>
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Título</TableHead>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Ubicación</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    <div className="flex justify-center items-center h-32">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
                     </div>
-                    
-                    <div className="flex flex-wrap items-center gap-2">
+                  </TableCell>
+                </TableRow>
+              ) : currentReportes.length > 0 ? (
+                currentReportes.map((reporte) => (
+                  <TableRow key={reporte.id}>
+                    <TableCell>
+                      <Link to={`/reportes/${reporte.id}`} className="text-blue-600 hover:underline">
+                        {reporte.titulo}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
                       <Badge variant="outline" className="bg-gray-100">
                         {reporte.categoria.nombre}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
                       <Badge
                         style={{
                           backgroundColor: reporte.estado.color,
@@ -125,18 +238,67 @@ const ListaReportes = () => {
                       >
                         {reporte.estado.nombre}
                       </Badge>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                No se encontraron reportes
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </TableCell>
+                    <TableCell>{reporte.ubicacion.direccion}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/reportes/${reporte.id}`}
+                          className="inline-flex h-10 w-10 items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    No se encontraron reportes
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {totalPages > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+      </div>
     </Layout>
   );
 };
