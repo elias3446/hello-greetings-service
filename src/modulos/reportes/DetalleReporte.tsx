@@ -84,13 +84,13 @@ const DetalleReporte = () => {
   };
 
   return (
-    <>
+    <Layout titulo="Detalle del Reporte">
       <div className="space-y-6">
         {/* Encabezado con breadcrumbs y botón de regreso */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground flex items-center">
-              <Link to="/admin/reportes" className="hover:underline flex items-center">
+              <Link to="/reportes" className="hover:underline flex items-center">
                 <ArrowLeft className="h-3.5 w-3.5 mr-1" />
                 Reportes
               </Link>
@@ -360,7 +360,7 @@ const DetalleReporte = () => {
           </div>
         </div>
       </div>
-    </>
+    </Layout>
   );
 };
 
