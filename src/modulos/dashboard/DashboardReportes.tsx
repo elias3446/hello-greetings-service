@@ -1,309 +1,46 @@
 
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getReports } from '@/controller/reportController';
-import { getEstados } from '@/controller/estadoController';
-import { Reporte, EstadoReporte } from '@/types/tipos';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
-import { AlertTriangle, CheckCircle, Clock, icons } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
-// Mapeo de tipos de estado a iconos predeterminados (como fallback)
-const DEFAULT_ICONS_MAP: Record<string, React.ElementType> = {
-  pendiente: AlertTriangle,
-  en_progreso: Clock,
-  completado: CheckCircle
-};
-
-// Mapeo de tipos de estado a colores predeterminados (como fallback)
-const DEFAULT_COLORS_MAP: Record<string, string> = {
-  pendiente: '#FFD166',
-  en_progreso: '#06D6A0',
-  completado: '#118AB2',
-  cancelado: '#EF476F'
-};
+import React from 'react';
+import { useReportDashboard } from '@/hooks/useReportDashboard';
+import ReportTypeCard from '@/components/dashboard/ReportTypeCard';
+import CategoryPieChart from '@/components/dashboard/CategoryPieChart';
+import PriorityBarChart from '@/components/dashboard/PriorityBarChart';
+import RecentReportsTable from '@/components/dashboard/RecentReportsTable';
 
 const DashboardReportes = () => {
-  const [reportes, setReportes] = useState<Reporte[]>([]);
-  const [reportesPorCategoria, setReportesPorCategoria] = useState<any[]>([]);
-  const [reportesPorPrioridad, setReportesPorPrioridad] = useState<any[]>([]);
-  const [reportesRecientes, setReportesRecientes] = useState<Reporte[]>([]);
-  const [contadores, setContadores] = useState<Record<string, number>>({});
-  const [tiposEstado, setTiposEstado] = useState<Record<string, EstadoReporte[]>>({});
-  const [estadosMapeados, setEstadosMapeados] = useState<Record<string, EstadoReporte>>({});
-  const [iconosPorTipo, setIconosPorTipo] = useState<Record<string, React.ElementType>>({});
-  const [coloresPorTipo, setColoresPorTipo] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const reportesData = getReports();
-    const estadosData = getEstados();
-    setReportes(reportesData);
-
-    // Reportes por categoría
-    const categorias = reportesData.reduce((acc: { [key: string]: { name: string, value: number, color: string } }, reporte) => {
-      const categoriaId = reporte.categoria.id;
-      if (!acc[categoriaId]) {
-        acc[categoriaId] = { 
-          name: reporte.categoria.nombre, 
-          value: 0,
-          color: reporte.categoria.color 
-        };
-      }
-      acc[categoriaId].value += 1;
-      return acc;
-    }, {});
-
-    setReportesPorCategoria(Object.values(categorias));
-
-    // Reportes por prioridad
-    const prioridades = reportesData.reduce((acc: { [key: string]: { name: string, value: number, color: string } }, reporte) => {
-      if (reporte.prioridad) {
-        const prioridadId = reporte.prioridad.id;
-        if (!acc[prioridadId]) {
-          acc[prioridadId] = { 
-            name: reporte.prioridad.nombre, 
-            value: 0,
-            color: reporte.prioridad.color 
-          };
-        }
-        acc[prioridadId].value += 1;
-      }
-      return acc;
-    }, {});
-
-    setReportesPorPrioridad(Object.values(prioridades));
-
-    // Reportes recientes (últimos 5)
-    const recientes = [...reportesData]
-      .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
-      .slice(0, 5);
-    setReportesRecientes(recientes);
-
-    // Agrupar estados por tipo
-    const estadosPorTipo: Record<string, EstadoReporte[]> = {};
-    const estadosPorId: Record<string, EstadoReporte> = {};
-    const iconosEstados: Record<string, React.ElementType> = {};
-    const coloresEstados: Record<string, string> = {};
-    
-    // Extraer colores e iconos de los estados
-    estadosData.forEach(estado => {
-      if (!estadosPorTipo[estado.tipo]) {
-        estadosPorTipo[estado.tipo] = [];
-        
-        // Configurar color por tipo de estado
-        coloresEstados[estado.tipo] = estado.color || DEFAULT_COLORS_MAP[estado.tipo] || '#9b87f5'; // Color púrpura por defecto
-        
-        // Intentar asignar un icono basado en el nombre del tipo o usar uno predeterminado
-        let iconoNombre = estado.icono;
-        if (!iconoNombre && DEFAULT_ICONS_MAP[estado.tipo]) {
-          iconosEstados[estado.tipo] = DEFAULT_ICONS_MAP[estado.tipo];
-        } else {
-          // Intentar convertir el nombre de icono a componente Lucide
-          const nombreCamellizado = iconoNombre ? 
-            iconoNombre.split('-').map((part, i) => 
-              i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
-            ).join('') : 
-            null;
-          
-          const LucideIcon = nombreCamellizado && (icons as any)[nombreCamellizado] ? 
-            (icons as any)[nombreCamellizado] : 
-            DEFAULT_ICONS_MAP[estado.tipo] || AlertTriangle;
-          
-          iconosEstados[estado.tipo] = LucideIcon;
-        }
-      }
-      
-      estadosPorTipo[estado.tipo].push(estado);
-      estadosPorId[estado.id] = estado;
-    });
-    
-    setTiposEstado(estadosPorTipo);
-    setEstadosMapeados(estadosPorId);
-    setIconosPorTipo(iconosEstados);
-    setColoresPorTipo(coloresEstados);
-
-    // Contadores por tipo de estado
-    const contadoresPorTipo: Record<string, number> = {};
-    
-    Object.keys(estadosPorTipo).forEach(tipo => {
-      contadoresPorTipo[tipo] = reportesData.filter(r => {
-        return estadosPorTipo[tipo].some(estado => estado.id === r.estado.id);
-      }).length;
-    });
-    
-    setContadores(contadoresPorTipo);
-  }, []);
-
-  // Función para formatear el tipo de estado para su visualización
-  const formatearTipoEstado = (tipo: string): string => {
-    // Convertir de snake_case a formato legible
-    const palabras = tipo.split('_').map(palabra => 
-      palabra.charAt(0).toUpperCase() + palabra.slice(1)
-    );
-    return palabras.join(' ');
-  };
-  
-  // Función para obtener un ícono según el tipo de estado (ahora utiliza la data dinámica)
-  const getIconForEstadoTipo = (tipo: string) => {
-    const IconComponent = iconosPorTipo[tipo] || AlertTriangle;
-    const color = coloresPorTipo[tipo] || '#9b87f5';
-    
-    return <IconComponent className="h-8 w-8" style={{ color }} />;
-  };
-  
-  // Función para obtener un color según el tipo de estado (ahora utiliza la data dinámica)
-  const getColorForEstadoTipo = (tipo: string): string => {
-    return coloresPorTipo[tipo] || '#9b87f5'; // Color púrpura por defecto
-  };
+  const {
+    reportesPorCategoria,
+    reportesPorPrioridad,
+    reportesRecientes,
+    contadores,
+    formatearTipoEstado,
+    getIconForEstadoTipo,
+    getColorForEstadoTipo
+  } = useReportDashboard();
 
   return (
     <div className="space-y-6">
       {/* Tarjetas de contadores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {Object.keys(contadores).map((tipo) => (
-          <Card key={tipo} className="border-l-4" style={{ borderLeftColor: getColorForEstadoTipo(tipo) }}>
-            <CardContent className="flex justify-between items-center py-6">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {formatearTipoEstado(tipo)}
-                </p>
-                <p className="text-3xl font-bold">{contadores[tipo]}</p>
-              </div>
-              {getIconForEstadoTipo(tipo)}
-            </CardContent>
-          </Card>
+          <ReportTypeCard
+            key={tipo}
+            tipo={tipo}
+            cantidad={contadores[tipo]}
+            formatearTipoEstado={formatearTipoEstado}
+            getIconForEstadoTipo={getIconForEstadoTipo}
+            getColorForEstadoTipo={getColorForEstadoTipo}
+          />
         ))}
       </div>
 
       {/* Gráficos de reportes por categoría y por prioridad */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Reportes por Categoría</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {reportesPorCategoria.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={reportesPorCategoria}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {reportesPorCategoria.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value} reportes`, 'Cantidad']} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No hay datos disponibles</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Reportes por Prioridad</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {reportesPorPrioridad.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={reportesPorPrioridad}
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip formatter={(value) => [`${value} reportes`, 'Cantidad']} />
-                  <Legend />
-                  <Bar dataKey="value" name="Reportes">
-                    {reportesPorPrioridad.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No hay datos disponibles</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <CategoryPieChart reportesPorCategoria={reportesPorCategoria} />
+        <PriorityBarChart reportesPorPrioridad={reportesPorPrioridad} />
       </div>
 
       {/* Reportes recientes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Reportes Recientes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left px-4 py-3">Título</th>
-                  <th className="text-left px-4 py-3">Categoría</th>
-                  <th className="text-left px-4 py-3">Estado</th>
-                  <th className="text-left px-4 py-3">Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reportesRecientes.map((reporte) => (
-                  <tr key={reporte.id} className="border-b hover:bg-muted/50">
-                    <td className="px-4 py-3 font-medium">{reporte.titulo}</td>
-                    <td className="px-4 py-3">{reporte.categoria.nombre}</td>
-                    <td className="px-4 py-3">
-                      <span 
-                        className="inline-block px-2 py-1 rounded-full text-xs" 
-                        style={{ 
-                          backgroundColor: `${reporte.estado.color}20`, 
-                          color: reporte.estado.color
-                        }}
-                      >
-                        {reporte.estado.nombre}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <RecentReportsTable reportesRecientes={reportesRecientes} />
     </div>
   );
 };
