@@ -379,10 +379,13 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             onClick={() => {
               // Limpiar todos los filtros
               setSelectedValues(prev => 
-                prev.filter(v => !v.includes(':') && handleValueChange('Todos', true)),
-                
+                  prev.filter(v => !v.includes(':')),
+                  
               );
-            }}
+              handleValueChange('Todos', true);
+              onSearchChange('')
+            }
+          }
           >
             Limpiar filtros
           </Button>
