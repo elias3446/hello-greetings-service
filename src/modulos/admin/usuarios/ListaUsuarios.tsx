@@ -348,7 +348,6 @@ const ListaUsuarios: React.FC = () => {
           totalCount={usuarios.length}
           itemLabel="usuarios"
           filterOptions={filterOptions}
-          searchPlaceholder="Buscar por nombre, email, rol, fecha o estado..."
         />
 
         {/* Tabla de usuarios */}
