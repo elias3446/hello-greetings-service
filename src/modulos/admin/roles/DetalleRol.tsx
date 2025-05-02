@@ -10,8 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/components/ui/sonner';
 import { permisosDisponibles } from '@/data/permisos';
-import { getRoleById, updateRole } from '@/controller/roleController';
-import { getUsers } from '@/controller/userController';
+import { getRoleById, updateRole } from '@/controller/CRUD/roleController';
+import { getUsers } from '@/controller/CRUD/userController';
 import { 
   ArrowLeft, 
   Edit, 

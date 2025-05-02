@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getUsers } from '@/controller/userController';
+import { getUsers } from '@/controller/CRUD/userController';
 import { Usuario } from '@/types/tipos';
 import { 
   BarChart, 

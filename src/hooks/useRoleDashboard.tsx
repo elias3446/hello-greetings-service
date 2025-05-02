@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getRoles } from '@/controller/roleController';
+import { getRoles } from '@/controller/CRUD/roleController';
 import { getUsers } from '@/controller/userController';
 import { Rol } from '@/types/tipos';
 

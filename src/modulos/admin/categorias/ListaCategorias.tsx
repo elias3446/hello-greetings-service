@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { filterCategories, getCategories, getReportesPorCategoria, sortCategories, updateCategory } from '@/controller/categoryController';
+import { filterCategories, getCategories, getReportesPorCategoria, sortCategories, updateCategory } from '@/controller/CRUD/categoryController';
 import { toast } from 'sonner';
 import FilterByValues from '@/components/common/FilterByValues';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';

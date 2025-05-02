@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { getUserById, updateUser, deleteUser } from '@/controller/userController';
+import { getUserById, updateUser, deleteUser } from '@/controller/CRUD/userController';
 import { roles } from '@/data/roles';
 import { actividadesUsuario } from '@/data/actividades';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,10 @@ import { ArrowLeft, PencilLine, Mail, Shield, Calendar, CheckCircle, AlertTriang
 import ActividadItem from '@/components/layout/ActividadItem';
 import Layout from '@/components/layout/Layout';
 import { toast } from '@/components/ui/sonner';
-import { filterReports } from '@/controller/reportController';
+import { filterReports } from '@/controller/CRUD/reportController';
 import { Reporte, Usuario, Rol } from '@/types/tipos';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { getRoles } from '@/controller/roleController';
+import { getRoles } from '@/controller/CRUD/roleController';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 
 const DetalleUsuario = () => {

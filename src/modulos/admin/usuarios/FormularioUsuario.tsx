@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/sonner';
-import { createUser, updateUser, getUserById } from '@/controller/userController';
+import { createUser, updateUser, getUserById } from '@/controller/CRUD/userController';
 import { roles } from '@/data/roles';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 

@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getRoles } from '@/controller/roleController';
-import { getUsers } from '@/controller/userController';
+import { getRoles } from '@/controller/CRUD/roleController';
+import { getUsers } from '@/controller/CRUD/userController';
 import { Rol } from '@/types/tipos';
 import { 
   BarChart, 

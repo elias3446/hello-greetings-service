@@ -1,7 +1,7 @@
 
-import { Categoria } from '../types/tipos';
-import { categorias } from '../data/categorias';
-import { reportes } from '../data/reportes';
+import { Categoria } from '../../types/tipos';
+import { categorias } from '../../data/categorias';
+import { reportes } from '../../data/reportes';
 
 // Obtener todas las categorías
 export const getCategories = (): Categoria[] => {

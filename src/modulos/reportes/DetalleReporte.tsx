@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft } from 'lucide-react';
-import { getReportById } from '@/controller/reportController';
+import { getReportById } from '@/controller/CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 import type { Reporte } from '@/types/tipos';
 import MapaBase from '@/components/layout/MapaBase';

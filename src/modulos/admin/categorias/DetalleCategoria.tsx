@@ -9,12 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Edit, ArrowLeft, FileText, CheckCircle, AlertTriangle, User, MapPin, Info, History } from 'lucide-react';
-import { getCategoryById, getReportesPorCategoria } from '@/controller/categoryController';
+import { getCategoryById, getReportesPorCategoria } from '@/controller/CRUD/categoryController';
 import { toast } from '@/components/ui/sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
-import { filterReports } from '@/controller/reportController';
+import { filterReports } from '@/controller/CRUD/reportController';
 import { actividadesCategoria } from '@/data/actividades';
-import { getEstados } from '@/controller/estadoController';
+import { getEstados } from '@/controller/CRUD/estadoController';
 import ActividadItem from '@/components/layout/ActividadItem';
 
 const DetalleCategoria = () => {

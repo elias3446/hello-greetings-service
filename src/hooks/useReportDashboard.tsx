@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { getReports } from '@/controller/reportController';
-import { getEstados } from '@/controller/estadoController';
+import { getReports } from '@/controller/CRUD/reportController';
+import { getEstados } from '@/controller/CRUD/estadoController';
 import { Reporte, EstadoReporte } from '@/types/tipos';
 import { AlertTriangle, CheckCircle, Clock, icons } from 'lucide-react';
 

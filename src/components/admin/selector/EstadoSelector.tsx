@@ -7,8 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getEstados } from '@/controller/estadoController';
-import { updateReport } from '@/controller/reportController';
+import { getEstados } from '@/controller/CRUD/estadoController';
+import { updateReport } from '@/controller/CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 import { EstadoReporte } from '@/types/tipos';
 

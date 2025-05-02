@@ -6,8 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getUsers } from '@/controller/userController';
-import { updateReport } from '@/controller/reportController';
+import { getUsers } from '@/controller/CRUD/userController';
+import { updateReport } from '@/controller/CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 import {  Usuario} from '@/types/tipos';
 import { Badge } from "@/components/ui/badge";

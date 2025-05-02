@@ -1,4 +1,4 @@
-import { HistorialAsignacion, Reporte, Usuario } from '../types/tipos';
+import { HistorialAsignacion, Reporte, Usuario } from '../../types/tipos';
 
 export const agregarAsignacion = (reporte: Reporte, usuario: Usuario | null | undefined): HistorialAsignacion[] => {
   const historialActual = reporte.historialAsignaciones || [];

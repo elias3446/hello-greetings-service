@@ -28,7 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Usuario } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getUsers, updateUser, deleteUser } from '@/controller/userController';
+import { getUsers, updateUser, deleteUser } from '@/controller/CRUD/userController'; 
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { sortUsers } from '@/utils/userUtils';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';

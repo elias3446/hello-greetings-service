@@ -14,7 +14,7 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, filterReports, sortReports } from '@/controller/reportController';
+import { getReports, filterReports, sortReports } from '@/controller/CRUD/reportController';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import CategoriaSelector from '@/components/admin/selector/CategoriaSelector';
 import EstadoSelector from '@/components/admin/selector/EstadoSelector';

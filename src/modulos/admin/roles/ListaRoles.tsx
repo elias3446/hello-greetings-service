@@ -21,7 +21,7 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
-import { getRoles } from '@/controller/roleController';
+import { getRoles } from '@/controller/CRUD/roleController';
 import type { Rol } from '@/types/tipos';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 

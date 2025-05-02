@@ -8,11 +8,11 @@ import {
   Shield, 
   Activity 
 } from 'lucide-react';
-import { getReports } from '@/controller/reportController';
-import { getUsers } from '@/controller/userController';
-import { getCategories } from '@/controller/categoryController';
-import { getRoles } from '@/controller/roleController';
-import { getEstados } from '@/controller/estadoController';
+import { getReports } from '@/controller/CRUD/reportController';
+import { getUsers } from '@/controller/CRUD/userController';
+import { getCategories } from '@/controller/CRUD/categoryController';
+import { getRoles } from '@/controller/CRUD/roleController';
+import { getEstados } from '@/controller/CRUD/estadoController';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { EstadoReporte } from '@/types/tipos';
 

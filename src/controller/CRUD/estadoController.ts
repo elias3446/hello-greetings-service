@@ -1,6 +1,6 @@
 
-import { EstadoReporte } from '../types/tipos';
-import { estadosReporte } from '../data/estadosReporte';
+import { EstadoReporte } from '../../types/tipos';
+import { estadosReporte } from '../../data/estadosReporte';
 
 // Obtener todos los estados
 export const getEstados = (): EstadoReporte[] => {

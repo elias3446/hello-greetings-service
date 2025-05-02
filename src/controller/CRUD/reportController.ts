@@ -1,5 +1,5 @@
-import { Reporte } from '../types/tipos';
-import { reportes } from '../data/reportes';
+import { Reporte } from '../../types/tipos';
+import { reportes } from '../../data/reportes';
 import { agregarAsignacion } from './historialAsignacionController';
 
 // Obtener todos los reportes

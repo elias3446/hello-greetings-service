@@ -14,7 +14,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } fr
 import { useForm } from 'react-hook-form';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { createEstado, getEstadoById, updateEstado } from '@/controller/estadoController';
+import { createEstado, getEstadoById, updateEstado } from '@/controller/CRUD/estadoController';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
 import IconSelector from '@/components/admin/estados/IconSelector';
 import Layout from '@/components/layout/Layout';

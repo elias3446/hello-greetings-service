@@ -26,10 +26,10 @@ import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getReportById, createReport, updateReport } from '@/controller/reportController';
-import { getCategories } from '@/controller/categoryController';
-import { getEstados } from '@/controller/estadoController';
-import { getUsers } from '@/controller/userController';
+import { getReportById, createReport, updateReport } from '@/controller/CRUD/reportController';
+import { getCategories } from '@/controller/CRUD/categoryController';
+import { getEstados } from '@/controller/CRUD/estadoController';
+import { getUsers } from '@/controller/CRUD/userController';
 import { prioridades } from '@/data/categorias';
 import MapaSeleccionUbicacion from '@/components/reportes/MapaSeleccionUbicacion';
 import type { Reporte, Ubicacion } from '@/types/tipos';
@@ -190,6 +190,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
         usuarioCreador: { id: '1', nombre: 'Admin', apellido: 'Sistema', email: 'admin@sistema.com' } as any,
         imagenes: [],
         activo: values.activo,
+        historialAsignaciones: [],
       };
 
       if (modo === 'crear') {

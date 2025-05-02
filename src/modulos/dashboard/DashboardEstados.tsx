@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getEstados } from '@/controller/estadoController';
-import { getReports } from '@/controller/reportController';
+import { getEstados } from '@/controller/CRUD/estadoController';
+import { getReports } from '@/controller/CRUD/reportController';
 import { EstadoReporte } from '@/types/tipos';
 import { 
   BarChart, 

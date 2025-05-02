@@ -1,6 +1,6 @@
-import { Usuario } from '../types/tipos';
-import { usuarios } from '../data/usuarios';
-import { filterReports, updateReport } from '@/controller/reportController';
+import { Usuario } from '../../types/tipos';
+import { usuarios } from '../../data/usuarios';
+import { filterReports, updateReport } from '@/controller/CRUD/reportController';
 
 // Obtener todos los usuarios
 export const getUsers = (): Usuario[] => {

@@ -15,7 +15,7 @@ import { toast } from '@/components/ui/sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { createCategory, updateCategory, getCategoryById } from '@/controller/categoryController';
+import { createCategory, updateCategory, getCategoryById } from '@/controller/CRUD/categoryController';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
 
