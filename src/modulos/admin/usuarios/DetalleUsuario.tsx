@@ -87,7 +87,7 @@ const DetalleUsuario = () => {
   };
 
   return (
-    <Layout>
+    <div>
       <div className="space-y-6">
         {/* Encabezado con breadcrumbs y botón de regreso */}
         <div className="flex items-center justify-between">
@@ -386,7 +386,7 @@ const DetalleUsuario = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

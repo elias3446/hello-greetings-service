@@ -123,7 +123,7 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
   };
 
   return (
-    <Layout>
+    <div>
       <div className="space-y-6">
         {/* Encabezado con breadcrumbs y botón de regreso */}
         <div className="flex items-center justify-between">
@@ -438,7 +438,7 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
         confirmText="Sí, salir"
         cancelText="No, seguir editando"
       />
-    </Layout>
+    </div>
   );
 };
 

@@ -1,14 +1,20 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  FileText, 
+  Users, 
+  FolderTree, 
+  Shield, 
+  Activity 
+} from 'lucide-react';
 import DashboardGeneral from './DashboardGeneral';
 import DashboardReportes from './DashboardReportes';
 import DashboardUsuarios from './DashboardUsuarios';
 import DashboardCategorias from './DashboardCategorias';
 import DashboardRoles from './DashboardRoles';
 import DashboardEstados from './DashboardEstados';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const Dashboard = () => {
   const [searchParams] = useSearchParams();
@@ -21,48 +27,49 @@ const Dashboard = () => {
     navigate(`/dashboard?tab=${value}`);
   };
 
+  const navItems = [
+    { value: 'general', label: 'General', icon: LayoutDashboard },
+    { value: 'reportes', label: 'Reportes', icon: FileText },
+    { value: 'usuarios', label: 'Usuarios', icon: Users },
+    { value: 'categorias', label: 'Categorías', icon: FolderTree },
+    { value: 'roles', label: 'Roles', icon: Shield },
+    { value: 'estados', label: 'Estados', icon: Activity }
+  ];
+
   return (
-    <Layout titulo="Panel de Control">
-      <div className="space-y-8">
-        <div className="p-1 bg-muted/40 rounded-lg">
-          <Tabs
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
-            <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="reportes">Reportes</TabsTrigger>
-              <TabsTrigger value="usuarios">Usuarios</TabsTrigger>
-              <TabsTrigger value="categorias">Categorías</TabsTrigger>
-              <TabsTrigger value="roles">Roles</TabsTrigger>
-              <TabsTrigger value="estados">Estados</TabsTrigger>
-            </TabsList>
+    <Layout>
+      <div >
+        <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-[100] w-full">
+          <div className="w-full">
+            <div className="flex h-16">
+              <div className="flex w-full">
+                <div className="flex w-full justify-center space-x-4">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.value}
+                        onClick={() => handleTabChange(item.value)}
+                        className={`nav-link ${activeTab === item.value ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
 
-            <TabsContent value="general" className="mt-6">
-              <DashboardGeneral />
-            </TabsContent>
-
-            <TabsContent value="reportes" className="mt-6">
-              <DashboardReportes />
-            </TabsContent>
-
-            <TabsContent value="usuarios" className="mt-6">
-              <DashboardUsuarios />
-            </TabsContent>
-
-            <TabsContent value="categorias" className="mt-6">
-              <DashboardCategorias />
-            </TabsContent>
-
-            <TabsContent value="roles" className="mt-6">
-              <DashboardRoles />
-            </TabsContent>
-
-            <TabsContent value="estados" className="mt-6">
-              <DashboardEstados />
-            </TabsContent>
-          </Tabs>
+        <div className="mt-5">
+          {activeTab === 'general' && <DashboardGeneral />}
+          {activeTab === 'reportes' && <DashboardReportes />}
+          {activeTab === 'usuarios' && <DashboardUsuarios />}
+          {activeTab === 'categorias' && <DashboardCategorias />}
+          {activeTab === 'roles' && <DashboardRoles />}
+          {activeTab === 'estados' && <DashboardEstados />}
         </div>
       </div>
     </Layout>

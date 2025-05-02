@@ -271,7 +271,6 @@ const ListaEstados: React.FC = () => {
   }, [sortBy]);
 
   return (
-    <Layout titulo="Gestión de Estados">
       <div className="space-y-4">
         {/* Barra de búsqueda y acciones */}
         <SearchFilterBar
@@ -458,7 +457,6 @@ const ListaEstados: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

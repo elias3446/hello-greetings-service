@@ -66,9 +66,9 @@ const DetalleReporteAdmin = () => {
   }
 
   return (
-    <Layout>
+    <div>
       <DetalleReporte />
-    </Layout>
+    </div>
   );
 };
 

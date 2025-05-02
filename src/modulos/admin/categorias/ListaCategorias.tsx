@@ -231,7 +231,6 @@ const ListaCategorias: React.FC = () => {
   const totalCount = categorias.length;
 
   return (
-    <Layout titulo="Gestión de Categorías">
       <div className="space-y-4">
         {/* Barra de búsqueda y acciones */}
         <SearchFilterBar
@@ -415,7 +414,6 @@ const ListaCategorias: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

@@ -224,7 +224,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
   };
 
   return (
-    <Layout>
+    <div>
       <div className="space-y-6">
         {/* Encabezado con breadcrumbs y botón de regreso */}
         <div className="flex items-center justify-between">
@@ -593,7 +593,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
         confirmText="Sí, salir"
         cancelText="No, seguir editando"
       />
-    </Layout>
+    </div>
   );
 };
 

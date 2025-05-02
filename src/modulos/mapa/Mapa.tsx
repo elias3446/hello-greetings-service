@@ -18,7 +18,7 @@ const Mapa = () => {
   };
 
   return (
-    <Layout titulo="Mapa de Reportes">
+    <Layout>
       <div className="grid md:grid-cols-3 gap-4 relative">
         <div className="md:col-span-2">
           <MapaBase 

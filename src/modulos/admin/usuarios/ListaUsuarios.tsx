@@ -244,7 +244,7 @@ const ListaUsuarios: React.FC = () => {
   };
 
   return (
-    <Layout titulo="Gestión de Usuarios">
+    
       <div className="space-y-4">
         {/* Barra de búsqueda y acciones */}
         <SearchFilterBar
@@ -425,7 +425,6 @@ const ListaUsuarios: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

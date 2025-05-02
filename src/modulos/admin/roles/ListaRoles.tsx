@@ -231,7 +231,6 @@ const ListaRoles = () => {
   };
 
   return (
-    <Layout titulo="Gestión de Roles">
       <div className="space-y-4">
         <SearchFilterBar
           searchTerm={searchTerm}
@@ -303,11 +302,7 @@ const ListaRoles = () => {
                         className="cursor-pointer"
                         onClick={() => handleEstadoChange(rol.id)}
                       >
-                        {rol.activo ? (
-                          <><Check className="h-3.5 w-3.5 mr-1" /> Activo</>
-                        ) : (
-                          <><X className="h-3.5 w-3.5 mr-1" /> Inactivo</>
-                        )}
+                        {rol.activo ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
@@ -401,7 +396,6 @@ const ListaRoles = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

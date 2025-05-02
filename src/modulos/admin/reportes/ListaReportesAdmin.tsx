@@ -171,7 +171,6 @@ const ListaReportesAdmin: React.FC = () => {
   const totalPages = Math.ceil(filteredReportes.length / itemsPerPage);
 
   return (
-    <Layout titulo="Gestión de Reportes">
       <div className="space-y-4">
         <SearchFilterBar
           searchTerm={searchTerm}
@@ -267,11 +266,12 @@ const ListaReportesAdmin: React.FC = () => {
                           size="icon"
                           onClick={() => navigate(`/admin/reportes/${reporte.id}`)}
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          <PencilIcon className="h-4 w-4 text-gray-500" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="text-red-500 hover:text-red-600"
                           onClick={() => {
                             // Implementar lógica de eliminación
                             toast.success('Reporte eliminado correctamente');
@@ -323,7 +323,6 @@ const ListaReportesAdmin: React.FC = () => {
           </Pagination>
         )}
       </div>
-    </Layout>
   );
 };
 
