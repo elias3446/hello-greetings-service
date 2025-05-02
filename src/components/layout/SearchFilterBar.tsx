@@ -376,7 +376,13 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
           <Button 
             variant="link" 
             className="p-0 h-auto text-sm ml-2" 
-            onClick={clearFilters}
+            onClick={() => {
+              // Limpiar todos los filtros
+              setSelectedValues(prev => 
+                prev.filter(v => !v.includes(':') && handleValueChange('Todos', true)),
+                
+              );
+            }}
           >
             Limpiar filtros
           </Button>

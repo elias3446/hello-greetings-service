@@ -72,7 +72,11 @@ const ListaRoles = () => {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         rol => rol.nombre.toLowerCase().includes(term) ||
-               (rol.descripcion && rol.descripcion.toLowerCase().includes(term))
+              rol.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term) ||  
+              (rol.descripcion && rol.descripcion.toLowerCase().includes(term)) ||
+              rol.activo.toString().toLowerCase().includes(term) ||
+              rol.permisos.some(permiso => permiso.nombre.toLowerCase().includes(term)) ||
+              rol.id.toString().toLowerCase().includes(term)
       );
     }
 
@@ -152,14 +156,6 @@ const ListaRoles = () => {
   const handleFilterChange = (values: any[]) => {
     setSelectedFilterValues(values);
   };
-
-  // Resetear valores de filtro cuando cambia el campo de ordenamiento
-  useEffect(() => {
-    // Solo resetear los valores que no son filtros (estado)
-    setSelectedFilterValues(prev => 
-      prev.filter(value => value.startsWith('estado:'))
-    );
-  }, [sortBy]);
 
   const handleExportRoles = () => {
     // Implementación para exportar roles

@@ -67,7 +67,16 @@ const ListaReportesAdmin: React.FC = () => {
 
     // Aplicar filtro de búsqueda
     if (searchTerm) {
-      result = filterReports({ search: searchTerm });
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        reporte => reporte.titulo.toLowerCase().includes(term) ||
+                reporte.ubicacion.direccion.toLowerCase().includes(term) ||
+                reporte.asignadoA?.nombre.toLowerCase().includes(term) ||
+                reporte.estado.nombre.toLowerCase().includes(term) ||
+                reporte.estado.id.toString().toLowerCase().includes(term) ||
+                reporte.categoria.nombre.toLowerCase().includes(term) ||
+                reporte.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term)
+      );
     }
 
     // Separar los valores de filtro por tipo
@@ -130,14 +139,6 @@ const ListaReportesAdmin: React.FC = () => {
   const handleFilterChange = (values: any[]) => {
     setSelectedFilterValues(values);
   };
-
-  // Resetear valores de filtro cuando cambia el campo de ordenamiento
-  useEffect(() => {
-    // Solo resetear los valores que no son filtros (estado o categoría)
-    setSelectedFilterValues(prev => 
-      prev.filter(value => value.startsWith('estado:') || value.startsWith('categoria:'))
-    );
-  }, [sortBy]);
 
   const handleExportReportes = () => {
     const data = filteredReportes.map(reporte => ({

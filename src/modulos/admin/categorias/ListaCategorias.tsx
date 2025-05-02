@@ -77,8 +77,14 @@ const ListaCategorias: React.FC = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
-        cat => cat.nombre.toLowerCase().includes(term) ||
-               (cat.descripcion && cat.descripcion.toLowerCase().includes(term))
+        cat =>
+              cat.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term) ||
+              (cat.descripcion && cat.descripcion.toLowerCase().includes(term)) ||
+              cat.activo.toString().toLowerCase().includes(term) ||
+              getReportesPorCategoria(cat.id).toString().toLowerCase().includes(term) ||
+              cat.color.toLowerCase().includes(term) ||
+              cat.id.toString().toLowerCase().includes(term) ||
+              cat.nombre.toLowerCase().includes(term)
       );
     }
 
@@ -138,14 +144,6 @@ const ListaCategorias: React.FC = () => {
   const handleFilterChange = (values: any[]) => {
     setSelectedFilterValues(values);
   };
-
-  // Resetear valores de filtro cuando cambia el campo de ordenamiento
-  useEffect(() => {
-    // Solo resetear los valores que no son filtros (estado)
-    setSelectedFilterValues(prev => 
-      prev.filter(value => value.startsWith('estado:'))
-    );
-  }, [sortBy]);
 
   const handleExport = () => {
     // Implementación de exportación

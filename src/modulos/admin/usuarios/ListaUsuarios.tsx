@@ -88,6 +88,8 @@ const ListaUsuarios: React.FC = () => {
         usuario => usuario.nombre.toLowerCase().includes(term) ||
                 usuario.apellido.toLowerCase().includes(term) ||
                 usuario.email.toLowerCase().includes(term) ||
+                usuario.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term) ||
+                usuario.estado.toLowerCase().includes(term) ||
                 (usuario.roles && usuario.roles.some(rol => rol.nombre.toLowerCase().includes(term)))
       );
     }
@@ -157,14 +159,6 @@ const ListaUsuarios: React.FC = () => {
   const handleFilterChange = (values: any[]) => {
     setSelectedFilterValues(values);
   };
-
-  // Resetear valores de filtro cuando cambia el campo de ordenamiento
-  useEffect(() => {
-    // Solo resetear los valores que no son filtros (estado o rol)
-    setSelectedFilterValues(prev => 
-      prev.filter(value => value.startsWith('estado:') || value.startsWith('rol:'))
-    );
-  }, [sortBy]);
 
   const handleExportUsuarios = () => {
     // Implementación para exportar usuarios

@@ -80,6 +80,9 @@ const ListaEstados: React.FC = () => {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         estado => estado.nombre.toLowerCase().includes(term) ||
+                estado.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term) ||
+                estado.activo.toString().toLowerCase().includes(term) ||
+                estado.id.toString().toLowerCase().includes(term) ||
                 (estado.descripcion && estado.descripcion.toLowerCase().includes(term)) ||
                 estado.color.toLowerCase().includes(term)
       );
@@ -253,14 +256,6 @@ const ListaEstados: React.FC = () => {
   const handleNuevoEstado = () => {
     navigate('/admin/estados/nuevo');
   };
-
-  // Resetear valores de filtro cuando cambia el campo de ordenamiento
-  useEffect(() => {
-    // Solo resetear los valores que no son filtros (estado)
-    setSelectedFilterValues(prev => 
-      prev.filter(value => value.startsWith('estado:'))
-    );
-  }, [sortBy]);
 
   return (
     <div>
