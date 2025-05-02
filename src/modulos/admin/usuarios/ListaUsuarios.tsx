@@ -244,7 +244,7 @@ const ListaUsuarios: React.FC = () => {
   };
 
   return (
-    
+    <div>
       <div className="space-y-4">
         {/* Barra de búsqueda y acciones */}
         <SearchFilterBar
@@ -425,6 +425,7 @@ const ListaUsuarios: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
   );
 };
 

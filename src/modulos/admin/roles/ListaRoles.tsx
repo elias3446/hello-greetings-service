@@ -231,6 +231,7 @@ const ListaRoles = () => {
   };
 
   return (
+    <div>
       <div className="space-y-4">
         <SearchFilterBar
           searchTerm={searchTerm}
@@ -302,7 +303,11 @@ const ListaRoles = () => {
                         className="cursor-pointer"
                         onClick={() => handleEstadoChange(rol.id)}
                       >
-                        {rol.activo ? 'Activo' : 'Inactivo'}
+                        {rol.activo ? (
+                          <><Check className="h-3.5 w-3.5 mr-1" /> Activo</>
+                        ) : (
+                          <><X className="h-3.5 w-3.5 mr-1" /> Inactivo</>
+                        )}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
@@ -396,6 +401,7 @@ const ListaRoles = () => {
           </div>
         )}
       </div>
+    </div>
   );
 };
 

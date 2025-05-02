@@ -557,7 +557,7 @@ const DetalleRol = () => {
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   );
 };
 
