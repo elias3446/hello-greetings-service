@@ -49,7 +49,6 @@ const ListaEstados: React.FC = () => {
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
     { value: 'descripcion', label: 'Descripción' },
-    { value: 'tipo', label: 'Tipo' },
     { value: 'color', label: 'Color' },
     { value: 'fechaCreacion', label: 'Fecha creación' }
   ];
@@ -82,7 +81,6 @@ const ListaEstados: React.FC = () => {
       result = result.filter(
         estado => estado.nombre.toLowerCase().includes(term) ||
                 (estado.descripcion && estado.descripcion.toLowerCase().includes(term)) ||
-                estado.tipo.toLowerCase().includes(term) ||
                 estado.color.toLowerCase().includes(term)
       );
     }
@@ -116,9 +114,6 @@ const ListaEstados: React.FC = () => {
         case 'descripcion':
           comparison = (a.descripcion || '').localeCompare(b.descripcion || '');
           break;
-        case 'tipo':
-          comparison = a.tipo.localeCompare(b.tipo);
-          break;
         case 'color':
           comparison = a.color.localeCompare(b.color);
           break;
@@ -145,8 +140,6 @@ const ListaEstados: React.FC = () => {
         return estado.nombre;
       case 'descripcion':
         return estado.descripcion || 'Sin descripción';
-      case 'tipo':
-        return estado.tipo;
       case 'color':
         return estado.color;
       case 'fechaCreacion':
@@ -213,7 +206,6 @@ const ListaEstados: React.FC = () => {
     const data = filteredEstados.map(estado => ({
       nombre: estado.nombre,
       descripcion: estado.descripcion || '',
-      tipo: estado.tipo,
       color: estado.color,
       fechaCreacion: new Date(estado.fechaCreacion).toLocaleDateString('es-ES'),
       estado: estado.activo ? 'Activo' : 'Inactivo'
@@ -310,7 +302,6 @@ const ListaEstados: React.FC = () => {
                 <TableHead className="font-semibold text-gray-600">Nombre</TableHead>
                 <TableHead className="font-semibold text-gray-600">Descripción</TableHead>
                 <TableHead className="font-semibold text-gray-600">Color</TableHead>
-                <TableHead className="font-semibold text-gray-600">Tipo</TableHead>
                 <TableHead className="font-semibold text-gray-600">Fecha Creación</TableHead>
                 <TableHead className="font-semibold text-gray-600 text-center">Estado</TableHead>
                 <TableHead className="font-semibold text-gray-600 text-right">Acciones</TableHead>
@@ -343,7 +334,6 @@ const ListaEstados: React.FC = () => {
                         <span>{estado.color}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{estado.tipo}</TableCell>
                     <TableCell>
                       {new Date(estado.fechaCreacion).toLocaleDateString('es-ES', {
                         day: 'numeric',

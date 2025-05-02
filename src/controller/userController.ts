@@ -1,6 +1,6 @@
-
 import { Usuario } from '../types/tipos';
 import { usuarios } from '../data/usuarios';
+import { filterReports, updateReport } from '@/controller/reportController';
 
 // Obtener todos los usuarios
 export const getUsers = (): Usuario[] => {
@@ -27,8 +27,18 @@ export const createUser = (userData: Omit<Usuario, 'id'>): Usuario => {
 export const updateUser = (id: string, userData: Partial<Usuario>): Usuario | undefined => {
   const index = usuarios.findIndex((user) => user.id === id);
   if (index !== -1) {
-    usuarios[index] = { ...usuarios[index], ...userData };
-    return usuarios[index];
+    const updatedUser = { ...usuarios[index], ...userData };
+    usuarios[index] = updatedUser;
+
+    // Si el estado del usuario cambia a 'bloqueado' o 'inactivo', desasignar sus reportes
+    if (userData.estado && (userData.estado === 'bloqueado' || userData.estado === 'inactivo')) {
+      const reportesAsignados = filterReports({ userId: id });
+      reportesAsignados.forEach(reporte => {
+        updateReport(reporte.id, { asignadoA: undefined });
+      });
+    }
+
+    return updatedUser;
   }
   return undefined;
 };
@@ -37,6 +47,12 @@ export const updateUser = (id: string, userData: Partial<Usuario>): Usuario | un
 export const deleteUser = (id: string): boolean => {
   const index = usuarios.findIndex((user) => user.id === id);
   if (index !== -1) {
+    // Desasignar todos los reportes del usuario antes de eliminarlo
+    const reportesAsignados = filterReports({ userId: id });
+    reportesAsignados.forEach(reporte => {
+      updateReport(reporte.id, { asignadoA: undefined });
+    });
+
     usuarios.splice(index, 1);
     return true;
   }

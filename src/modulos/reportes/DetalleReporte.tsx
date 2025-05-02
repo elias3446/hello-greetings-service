@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -211,7 +210,7 @@ const DetalleReporte = () => {
                     <h4 className="text-sm font-medium text-muted-foreground mb-3">Reportado por</h4>
                     <div className="flex items-center gap-4 p-4 rounded-md border">
                       <Avatar>
-                        <AvatarImage src="https://via.placeholder.com/40" alt="Avatar" />
+                        <AvatarImage src={`https://ui-avatars.com/api/?name=${reporte.usuarioCreador.nombre}+${reporte.usuarioCreador.apellido}&background=random`} alt="Avatar" />
                         <AvatarFallback>{reporte.usuarioCreador.nombre.charAt(0)}{reporte.usuarioCreador.apellido.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -223,24 +222,90 @@ const DetalleReporte = () => {
 
                   {/* Información del asignado */}
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Asignado a</h4>
-                    {reporte.asignadoA ? (
-                      <div className="flex items-center gap-4 p-4 rounded-md border">
-                        <Avatar>
-                          <AvatarImage src="https://via.placeholder.com/40" alt="Avatar" />
-                          <AvatarFallback>{reporte.asignadoA.nombre.charAt(0)}{reporte.asignadoA.apellido.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{reporte.asignadoA.nombre} {reporte.asignadoA.apellido}</div>
-                          <div className="text-sm text-muted-foreground">{reporte.asignadoA.email}</div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Historial de asignaciones</h4>
+                    <div className="space-y-4">
+                      {reporte.historialAsignaciones && reporte.historialAsignaciones.length > 0 ? (
+                        <div className="space-y-4">
+                          {reporte.historialAsignaciones.map((asignacion) => (
+                            <div key={asignacion.id} className={`flex items-start gap-4 p-4 rounded-md border ${
+                              asignacion.esActual ? 'bg-primary/5 border-primary' : ''
+                            }`}>
+                              <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
+                                <div className={`absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full ${
+                                  asignacion.esActual ? 'bg-primary' : 'bg-muted-foreground'
+                                }`}></div>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3">
+                                  {asignacion.usuario ? (
+                                    <>
+                                      <Avatar>
+                                        <AvatarImage src={`https://ui-avatars.com/api/?name=${asignacion.usuario.nombre}+${asignacion.usuario.apellido}&background=random`} alt="Avatar" />
+                                        <AvatarFallback>{asignacion.usuario.nombre.charAt(0)}{asignacion.usuario.apellido.charAt(0)}</AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <div className="font-medium flex items-center gap-2">
+                                          {asignacion.usuario.nombre} {asignacion.usuario.apellido}
+                                          {asignacion.esActual && <Badge variant="default">Actual</Badge>}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                          {asignacion.usuario.email}
+                                        </div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Avatar>
+                                        <AvatarFallback className="bg-muted">NA</AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <div className="font-medium flex items-center gap-2">
+                                          Sin responsable
+                                          {asignacion.esActual && <Badge variant="default">Actual</Badge>}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                          {asignacion.usuario === null ? 'Usuario eliminado' : 'Desasignado manualmente'}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                                <div className="mt-2 space-y-1">
+                                  <div className="flex flex-wrap gap-2">
+                                    {asignacion.usuario?.estado === 'bloqueado' && (
+                                      <Badge variant="destructive">Usuario bloqueado</Badge>
+                                    )}
+                                    {asignacion.usuario?.estado === 'inactivo' && (
+                                      <Badge variant="secondary">Usuario inactivo</Badge>
+                                    )}
+                                    {asignacion.usuario === null && (
+                                      <Badge variant="destructive">Usuario eliminado</Badge>
+                                    )}
+                                    {asignacion.usuario === undefined && (
+                                      <Badge variant="secondary">Desasignado manualmente</Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {asignacion.usuario ? 'Asignado' : 'Desasignado'} el {asignacion.fechaAsignacion.toLocaleDateString('es-ES', {
+                                      day: 'numeric',
+                                      month: 'long',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-center p-4 border rounded-md bg-muted/50">
-                        <User className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">No hay usuario asignado</p>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="text-center p-4 border rounded-md bg-muted/50">
+                          <User className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground">No hay historial de asignaciones</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Imágenes adjuntas */}

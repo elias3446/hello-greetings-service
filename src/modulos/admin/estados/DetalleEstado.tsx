@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -141,10 +140,8 @@ const DetalleEstado = () => {
               <div className="bg-muted p-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <Avatar className="h-20 w-20 border-4 border-background">
-                    <AvatarImage src={`https://via.placeholder.com/100?text=${estado.nombre.charAt(0)}`} alt="Avatar" />
-                    <AvatarFallback style={{ backgroundColor: estado.color }}>
-                      {estado.nombre.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarImage src={`https://ui-avatars.com/api/?name=${estado.nombre}&background=random&size=100`} alt="Avatar" />
+                    <AvatarFallback>{estado.nombre.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">

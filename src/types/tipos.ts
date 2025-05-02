@@ -45,11 +45,20 @@ export interface Reporte {
   fechaActualizacion?: Date;
   usuarioCreador: Usuario;
   asignadoA?: Usuario;
+  historialAsignaciones: HistorialAsignacion[];
   fechaInicio: Date;
   fechaFinalizacion?: Date;
   comentarios?: Comentario[];
   imagenes?: string[];
   activo: boolean;
+}
+
+export interface HistorialAsignacion {
+  id: string;
+  usuario: Usuario;
+  fechaAsignacion: Date;
+  fechaCreacion: Date;
+  esActual: boolean;
 }
 
 export interface Ubicacion {

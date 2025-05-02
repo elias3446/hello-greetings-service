@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Select,
@@ -8,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getRoles } from '@/controller/roleController';
-import { updateUser } from '@/controller/userController';
+import { updateUser, getUserById } from '@/controller/userController';
 import { toast } from '@/components/ui/sonner';
 import { Rol } from '@/types/tipos';
 
@@ -27,10 +26,18 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
   const [selectedRoleId, setSelectedRoleId] = useState(currentRoleId);
   const availableRoles = getRoles();
   const currentRole = availableRoles.find(role => role.id === selectedRoleId);
+  const usuario = getUserById(userId);
+  const isUsuarioBloqueado = usuario?.estado === 'bloqueado';
 
   const handleRoleChange = async (selectedRoleId: string) => {
     try {
       setIsLoading(true);
+      
+      // Verificar si el usuario está bloqueado
+      if (isUsuarioBloqueado) {
+        toast.error('No se puede cambiar el rol de un usuario bloqueado');
+        return;
+      }
       
       // Find the selected role object
       const selectedRole = availableRoles.find(role => role.id === selectedRoleId);
@@ -41,7 +48,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
       
       // Update the user with the new role
       const updatedUser = updateUser(userId, {
-        roles: [selectedRole] // Changed from 'rol' to 'roles' which is an array in the Usuario type
+        roles: [selectedRole]
       });
       
       if (!updatedUser) {
@@ -69,7 +76,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     <Select
       value={selectedRoleId}
       onValueChange={handleRoleChange}
-      disabled={isLoading}
+      disabled={isLoading || isUsuarioBloqueado}
     >
       <SelectTrigger className="w-[180px] h-9">
         <SelectValue placeholder="Seleccionar rol">

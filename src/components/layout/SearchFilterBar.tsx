@@ -55,6 +55,7 @@ interface SearchFilterBarProps {
     value: string;
     label: string;
   }[];
+  searchPlaceholder?: string;
 }
 
 const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
@@ -83,7 +84,8 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   filteredCount = items.length,
   totalCount = items.length,
   itemLabel = 'elementos',
-  filterOptions
+  filterOptions,
+  searchPlaceholder = "Buscar..."
 }) => {
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(true);
@@ -178,9 +180,12 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Input
-            placeholder="Buscar..."
+            placeholder={searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e) => {
+              console.log('Input Search Value:', e.target.value);
+              onSearchChange(e.target.value);
+            }}
             className="pl-10"
           />
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

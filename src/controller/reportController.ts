@@ -1,6 +1,6 @@
-
 import { Reporte } from '../types/tipos';
 import { reportes } from '../data/reportes';
+import { agregarAsignacion } from './historialAsignacionController';
 
 // Obtener todos los reportes
 export const getReports = (): Reporte[] => {
@@ -26,8 +26,17 @@ export const createReport = (reportData: Omit<Reporte, 'id'>): Reporte => {
 export const updateReport = (id: string, reportData: Partial<Reporte>): Reporte | undefined => {
   const index = reportes.findIndex((report) => report.id === id);
   if (index !== -1) {
-    reportes[index] = { ...reportes[index], ...reportData };
-    return reportes[index];
+    const reporte = reportes[index];
+    
+    // Si se está actualizando el usuario asignado, actualizar el historial
+    if ('asignadoA' in reportData) {
+      const historialActualizado = agregarAsignacion(reporte, reportData.asignadoA);
+      reportData.historialAsignaciones = historialActualizado;
+    }
+    
+    const updatedReport = { ...reporte, ...reportData };
+    reportes[index] = updatedReport;
+    return updatedReport;
   }
   return undefined;
 };

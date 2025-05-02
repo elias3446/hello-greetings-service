@@ -42,7 +42,6 @@ const ListaRoles = () => {
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
     { value: 'descripcion', label: 'Descripción' },
-    { value: 'tipo', label: 'Tipo' },
     { value: 'fechaCreacion', label: 'Fecha creación' }
   ];
 
@@ -106,9 +105,6 @@ const ListaRoles = () => {
         case 'descripcion':
           comparison = (a.descripcion || '').localeCompare(b.descripcion || '');
           break;
-        case 'tipo':
-          comparison = (a.tipo || '').localeCompare(b.tipo || '');
-          break;
         case 'fechaCreacion':
           const fechaA = a.fechaCreacion instanceof Date ? a.fechaCreacion : new Date(a.fechaCreacion);
           const fechaB = b.fechaCreacion instanceof Date ? b.fechaCreacion : new Date(b.fechaCreacion);
@@ -138,8 +134,6 @@ const ListaRoles = () => {
         return rol.nombre;
       case 'descripcion':
         return rol.descripcion || 'Sin descripción';
-      case 'tipo':
-        return rol.tipo || 'General';
       case 'fechaCreacion':
         return rol.fechaCreacion instanceof Date ? 
           rol.fechaCreacion.toLocaleDateString('es-ES') : 
@@ -172,7 +166,6 @@ const ListaRoles = () => {
     const data = filteredRoles.map(rol => ({
       nombre: rol.nombre,
       descripcion: rol.descripcion || '',
-      tipo: rol.tipo || '',
       fechaCreacion: rol.fechaCreacion instanceof Date ? 
         rol.fechaCreacion.toLocaleDateString('es-ES') : 
         new Date(rol.fechaCreacion).toLocaleDateString('es-ES'),
@@ -268,7 +261,7 @@ const ListaRoles = () => {
               <TableRow className="bg-gray-50">
                 <TableHead className="font-semibold text-gray-600">Nombre</TableHead>
                 <TableHead className="font-semibold text-gray-600">Descripción</TableHead>
-                <TableHead className="font-semibold text-gray-600">Tipo</TableHead>
+                <TableHead className="font-semibold text-gray-600">Permisos</TableHead>
                 <TableHead className="font-semibold text-gray-600 text-center">Estado</TableHead>
                 <TableHead className="font-semibold text-gray-600 text-center">Fecha creación</TableHead>
                 <TableHead className="font-semibold text-gray-600 text-right">Acciones</TableHead>
@@ -293,9 +286,18 @@ const ListaRoles = () => {
                     </TableCell>
                     <TableCell>{rol.descripcion}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {rol.tipo || 'General'}
-                      </Badge>
+                      <div className="flex flex-wrap gap-1">
+                        {rol.permisos && rol.permisos.slice(0, 3).map((permiso, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {typeof permiso === 'string' ? permiso : permiso.nombre}
+                          </Badge>
+                        ))}
+                        {rol.permisos && rol.permisos.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{rol.permisos.length - 3} más
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge 
@@ -303,11 +305,7 @@ const ListaRoles = () => {
                         className="cursor-pointer"
                         onClick={() => handleEstadoChange(rol.id)}
                       >
-                        {rol.activo ? (
-                          <><Check className="h-3.5 w-3.5 mr-1" /> Activo</>
-                        ) : (
-                          <><X className="h-3.5 w-3.5 mr-1" /> Inactivo</>
-                        )}
+                        {rol.activo ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">

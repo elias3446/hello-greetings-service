@@ -28,10 +28,11 @@ import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Usuario } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getUsers, updateUser } from '@/controller/userController';
+import { getUsers, updateUser, deleteUser } from '@/controller/userController';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { sortUsers } from '@/utils/userUtils';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const ListaUsuarios: React.FC = () => {
   const navigate = useNavigate();
@@ -46,7 +47,10 @@ const ListaUsuarios: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentField, setCurrentField] = useState<string | undefined>();
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [usuarioAEliminar, setUsuarioAEliminar] = useState<{ id: string; nombre: string } | null>(null);
   const itemsPerPage = 10;
+  const [searchField, setSearchField] = useState<string>('nombre');
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -212,14 +216,44 @@ const ListaUsuarios: React.FC = () => {
 
   // Función para manejar la eliminación de usuarios
   const handleDeleteUser = (usuarioId: string, nombreUsuario: string) => {
-    // For now, just show a toast message (implementation pending)
-    toast.error(`Función de eliminar usuario ${nombreUsuario} en desarrollo`);
+    setUsuarioAEliminar({ id: usuarioId, nombre: nombreUsuario });
+    setShowDeleteDialog(true);
+  };
+
+  const confirmarEliminacion = () => {
+    try {
+      if (!usuarioAEliminar) return;
+      
+      const eliminado = deleteUser(usuarioAEliminar.id);
+      
+      if (eliminado) {
+        // Actualizar el estado local
+        setUsuarios(prevUsuarios => prevUsuarios.filter(user => user.id !== usuarioAEliminar.id));
+        setFilteredUsuarios(prevUsuarios => prevUsuarios.filter(user => user.id !== usuarioAEliminar.id));
+        
+        toast.success(`Usuario ${usuarioAEliminar.nombre} eliminado correctamente`);
+      } else {
+        toast.error('Error al eliminar el usuario');
+      }
+    } catch (error) {
+      console.error('Error al eliminar el usuario:', error);
+      toast.error('Error al eliminar el usuario');
+    } finally {
+      setShowDeleteDialog(false);
+      setUsuarioAEliminar(null);
+    }
   };
 
   // Función para cambiar el estado del usuario (activo/inactivo)
   const handleEstadoChange = (usuarioId: string) => {
     const usuario = usuarios.find(user => user.id === usuarioId);
     if (usuario) {
+      // Solo permitir cambiar entre activo e inactivo si no está bloqueado
+      if (usuario.estado === 'bloqueado') {
+        toast.error('No se puede cambiar el estado de un usuario bloqueado directamente');
+        return;
+      }
+      
       // Determine the new state based on current state
       const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
       
@@ -243,13 +277,55 @@ const ListaUsuarios: React.FC = () => {
     }
   };
 
+  const normalizeText = (text: string) => {
+    return text
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Elimina tildes
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Elimina caracteres especiales
+      .replace(/\s+/g, ' ') // Espacios múltiples a uno solo
+      .trim();
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    if (!term) {
+      setFilteredUsuarios(usuarios);
+      return;
+    }
+
+    const searchTerm = normalizeText(term);
+    const filtered = usuarios.filter(usuario => {
+      const nombreCompleto = normalizeText(`${usuario.nombre} ${usuario.apellido}`);
+      const email = normalizeText(usuario.email);
+      const roles = normalizeText(usuario.roles.map(rol => rol.nombre).join(', '));
+      const fechaFormateada = normalizeText(new Date(usuario.fechaCreacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }));
+      const estado = normalizeText(usuario.estado);
+
+      // console.log({ nombreCompleto, email, roles, fechaFormateada, estado, searchTerm });
+
+      if (nombreCompleto.includes(searchTerm)) return true;
+      if (email.includes(searchTerm)) return true;
+      if (roles.includes(searchTerm)) return true;
+      if (fechaFormateada.includes(searchTerm)) return true;
+      if (estado.includes(searchTerm)) return true;
+      return false;
+    });
+
+    setFilteredUsuarios(filtered);
+  };
+
+  console.log('filteredUsuarios', filteredUsuarios);
+  console.log('currentUsuarios', currentUsuarios);
+
   return (
     <div>
       <div className="space-y-4">
         {/* Barra de búsqueda y acciones */}
         <SearchFilterBar
           searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          onSearchChange={handleSearch}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           roleFilter={roleFilter}
@@ -272,6 +348,7 @@ const ListaUsuarios: React.FC = () => {
           totalCount={usuarios.length}
           itemLabel="usuarios"
           filterOptions={filterOptions}
+          searchPlaceholder="Buscar por nombre, email, rol, fecha o estado..."
         />
 
         {/* Tabla de usuarios */}
@@ -320,11 +397,19 @@ const ListaUsuarios: React.FC = () => {
                       })}</TableCell>
                     <TableCell className="text-center">
                       <Badge 
-                        variant={usuario.estado === 'activo' ? 'success' : 'inactive'}
-                        className="cursor-pointer"
-                        onClick={() => handleEstadoChange(usuario.id)}
+                        variant={
+                          usuario.estado === 'activo' ? 'success' : 
+                          usuario.estado === 'inactivo' ? 'inactive' : 
+                          'destructive'
+                        }
+                        className={`cursor-pointer ${
+                          usuario.estado === 'bloqueado' ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        onClick={() => usuario.estado !== 'bloqueado' && handleEstadoChange(usuario.id)}
                       >
-                        {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                        {usuario.estado === 'activo' ? 'Activo' : 
+                         usuario.estado === 'inactivo' ? 'Inactivo' : 
+                         'Bloqueado'}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -425,6 +510,28 @@ const ListaUsuarios: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Diálogo de confirmación para eliminar usuario */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el usuario{' '}
+              <span className="font-semibold">{usuarioAEliminar?.nombre}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmarEliminacion}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

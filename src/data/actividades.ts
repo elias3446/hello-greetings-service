@@ -1,5 +1,4 @@
-
-import { ActividadUsuario, ActividadReporte, ActividadCategoria } from '@/types/tipos';
+import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion } from '@/types/tipos';
 import { usuarios } from './usuarios';
 import { reportes } from './reportes';
 import { categorias } from './categorias';
@@ -116,5 +115,15 @@ export const actividadesCategoria: ActividadCategoria[] = [
     fecha: new Date('2025-04-24T09:15:00'),
     usuarioId: '1',
     categoriaId: '1'
+  }
+];
+
+export const historialAsignaciones: HistorialAsignacion[] = [
+  {
+    id: '1',
+    usuario: usuarios[0],
+    fechaAsignacion: new Date('2025-04-25T10:30:00'),
+    fechaCreacion: new Date('2025-04-25T10:30:00'),
+    esActual: true
   }
 ];

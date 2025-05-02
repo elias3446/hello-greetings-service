@@ -267,11 +267,12 @@ const ListaReportesAdmin: React.FC = () => {
                           size="icon"
                           onClick={() => navigate(`/admin/reportes/${reporte.id}`)}
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          <PencilIcon className="h-4 w-4 text-gray-500" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="text-red-500 hover:text-red-600"
                           onClick={() => {
                             // Implementar lógica de eliminación
                             toast.success('Reporte eliminado correctamente');
