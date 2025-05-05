@@ -52,46 +52,9 @@ const DetalleUsuario = () => {
         
         setUsuario(userData);
 
-        // Verificar si existe un registro de creación en el historial
-        const historial = obtenerHistorialUsuario(id);
-        const tieneRegistroCreacion = historial.some(
-          registro => registro.tipoAccion === 'creacion'
-        );
-
-        // Si no existe un registro de creación, lo creamos
-        if (!tieneRegistroCreacion) {
-          registrarCambioEstado(
-            userData,
-            'no_existe',
-            'activo',
-            {
-              id: '0',
-              nombre: 'Sistema',
-              apellido: '',
-              email: 'sistema@example.com',
-              estado: 'activo',
-              tipo: 'usuario',
-              intentosFallidos: 0,
-              password: 'hashed_password',
-              roles: [{
-                id: '1',
-                nombre: 'Administrador',
-                descripcion: 'Rol con acceso total al sistema',
-                color: '#FF0000',
-                tipo: 'admin',
-                fechaCreacion: new Date('2023-01-01'),
-                activo: true
-              }],
-              fechaCreacion: new Date('2023-01-01'),
-            },
-            'Usuario creado en el sistema',
-            'creacion'
-          );
-        }
-
         // Actualizar el historial mostrado
-        const historialActualizado = obtenerHistorialUsuario(id);
-        setHistorialEstados(historialActualizado);
+        const historial = obtenerHistorialUsuario(id);
+        setHistorialEstados(historial);
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
         toast.error('Error al cargar el usuario');
@@ -585,7 +548,7 @@ const DetalleUsuario = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link to={`/admin/usuarios/${id}/editar`} onClick={() => handleEditarUsuario({})}>
+                  <Link to={`/admin/usuarios/${id}/editar`}>
                     <Edit className="mr-2 h-4 w-4" />
                     Editar usuario
                   </Link>

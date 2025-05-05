@@ -11,6 +11,7 @@ import { updateReport } from '@/controller/CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 import {  Usuario} from '@/types/tipos';
 import { Badge } from "@/components/ui/badge";
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
 interface UsuarioSelectorProps {
   ReporteId: string;
@@ -41,6 +42,37 @@ const UsuarioSelector: React.FC<UsuarioSelectorProps> = ({
         if (!updatedReport) {
           throw new Error('Error al actualizar el reporte');
         }
+
+        // Registrar el cambio en el historial del usuario anterior
+        if (currentUsuario) {
+          registrarCambioEstado(
+            currentUsuario,
+            `Reporte ${ReporteId} asignado`,
+            'Sin reporte asignado',
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            },
+            `Desasignación de reporte ${ReporteId}`,
+            'asignacion_reporte'
+          );
+        }
         
         setSelectedUsuarioId(selectedUsuarioId);
         toast.success('Reporte desasignado correctamente');
@@ -68,6 +100,66 @@ const UsuarioSelector: React.FC<UsuarioSelectorProps> = ({
       if (!updatedReport) {
         throw new Error('Error al actualizar el reporte');
       }
+
+      // Si hay un usuario actual (se está reasignando), registrar el cambio en su historial
+      if (currentUsuario && currentUsuario.id !== selectedUsuario.id) {
+        registrarCambioEstado(
+          currentUsuario,
+          `Reporte ${ReporteId} asignado`,
+          'Sin reporte asignado',
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          },
+          `Reasignación de reporte ${ReporteId} a otro usuario`,
+          'asignacion_reporte'
+        );
+      }
+
+      // Registrar el cambio en el historial del nuevo usuario
+      registrarCambioEstado(
+        selectedUsuario,
+        'Sin reporte asignado',
+        `Reporte ${ReporteId} asignado`,
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        },
+        `Asignación de reporte ${ReporteId}`,
+        'asignacion_reporte'
+      );
       
       // Update local state to reflect the change immediately
       setSelectedUsuarioId(selectedUsuarioId);

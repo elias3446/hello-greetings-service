@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, Link } from 'react-router-dom';
@@ -18,6 +17,7 @@ import { toast } from '@/components/ui/sonner';
 import { createUser, updateUser, getUserById } from '@/controller/CRUD/userController';
 import { roles } from '@/data/roles';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
 interface FormularioUsuarioProps {
   modo: 'crear' | 'editar';
@@ -76,18 +76,93 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
       };
 
       if (modo === 'editar' && id) {
+        const usuarioAnterior = getUserById(id);
+        
+        // Verificar si hay cambios reales
+        const hayCambios = 
+          usuarioAnterior?.nombre !== data.nombre ||
+          usuarioAnterior?.apellido !== data.apellido ||
+          usuarioAnterior?.email !== data.email ||
+          usuarioAnterior?.estado !== data.estado ||
+          usuarioAnterior?.tipo !== data.tipo ||
+          JSON.stringify(usuarioAnterior?.roles.map(r => r.id)) !== JSON.stringify(data.roles);
+
+        if (!hayCambios) {
+          toast.info("No hay cambios para guardar");
+          navigate('/admin/usuarios');
+          return;
+        }
+
         const usuarioActualizado = updateUser(id, userData);
 
         if (usuarioActualizado) {
+          // Registrar el cambio en el historial
+          registrarCambioEstado(
+            usuarioActualizado,
+            usuarioAnterior?.estado || 'activo',
+            usuarioActualizado.estado,
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            },
+            'Usuario actualizado en el sistema',
+            'actualizacion'
+          );
+
           toast.success("Usuario actualizado exitosamente");
         } else {
           throw new Error("No se pudo actualizar el usuario");
         }
       } else {
-        createUser({
+        const nuevoUsuario = createUser({
           ...userData,
           fechaCreacion: new Date()
         });
+
+        // Registrar el cambio de estado inicial
+        registrarCambioEstado(
+          nuevoUsuario,
+          'no_existe',
+          nuevoUsuario.estado,
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          },
+          'Usuario creado en el sistema',
+          'creacion'
+        );
 
         toast.success("Usuario creado exitosamente");
       }
@@ -136,9 +211,6 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
               <span className="mx-2">/</span>
               <span>{modo === 'crear' ? 'Crear' : 'Editar'}</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">
-              {modo === 'crear' ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
-            </h2>
           </div>
           <div>
             <Button 
