@@ -1,4 +1,4 @@
-import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario } from '@/types/tipos';
+import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte } from '@/types/tipos';
 import { usuarios } from './usuarios';
 import { reportes } from './reportes';
 import { categorias } from './categorias';
@@ -272,5 +272,180 @@ export const historialEstadosEjemplo: HistorialEstadoUsuario[] = [
     },
     motivoCambio: 'Cambio de responsabilidades',
     tipoAccion: 'cambio_rol',
+  },
+];
+
+// Datos de ejemplo para el historial de estados de usuario
+export const historialEstadosReporte: HistorialEstadoReporte[] = [
+  {
+    id: '1',
+    idReporte: {
+      id: '1',
+      titulo: 'Reporte de prueba',
+      descripcion: 'Descripción del reporte',
+      ubicacion: {
+        id: '1',
+        latitud: 12.345678, 
+        longitud: 12.345678,
+        direccion: 'Calle Falsa 123',
+        referencia: 'A 50 metros de la estación de tren',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      },  
+      categoria: {
+        id: '1',
+        nombre: 'Incendio',
+        descripcion: 'Incendio en la calle Falsa 123',
+        color: '#FF0000',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true,
+        icono: 'fas fa-fire'
+      },    
+      estado: {
+        id: '1',
+        nombre: 'Pendiente',
+        descripcion: 'Reporte pendiente de atención',
+        color: '#FF0000',
+        tipo: 'pendiente',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true,
+        icono: 'fas fa-exclamation-triangle'
+      },  
+      fechaInicio: new Date('2023-01-01'),
+      fechaFinalizacion: new Date('2023-01-01'),
+      usuarioCreador: {
+        id: '1',
+        nombre: 'Juan',
+        apellido: 'Pérez',  
+        email: 'juan.perez@example.com',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000', 
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+      },  
+      historialAsignaciones: [],
+      fechaCreacion: new Date('2023-01-01'),
+      activo: true
+    },
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T10:00:00'),
+    realizadoPor: {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    tipoAccion: 'creacion',
+  },
+  {
+    id: '2',
+    idReporte: {
+      id: '1',
+      titulo: 'Reporte de prueba',
+      descripcion: 'Descripción del reporte',
+      ubicacion: {
+        id: '1',
+        latitud: 12.345678,
+        longitud: 12.345678,
+        direccion: 'Calle Falsa 123',
+        referencia: 'A 50 metros de la estación de tren',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      },
+      categoria: {
+        id: '1',
+        nombre: 'Incendio',
+        descripcion: 'Incendio en la calle Falsa 123',
+        color: '#FF0000',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true,
+        icono: 'fas fa-fire'
+      },
+      estado: {
+        id: '1',
+        nombre: 'Pendiente',
+        descripcion: 'Reporte pendiente de atención',
+        color: '#FF0000',
+        tipo: 'pendiente',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true,
+        icono: 'fas fa-exclamation-triangle'
+      },
+      fechaInicio: new Date('2023-01-01'),
+      fechaFinalizacion: new Date('2023-01-01'),
+      usuarioCreador: {
+        id: '1',
+        nombre: 'Juan',
+        apellido: 'Pérez',
+        email: 'juan.perez@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      },
+      historialAsignaciones: [],
+      fechaCreacion: new Date('2023-01-01'),
+      activo: true
+    },
+    estadoAnterior: 'activo',
+    estadoNuevo: 'inactivo',
+    fechaHoraCambio: new Date('2023-02-15T15:30:00'),
+    realizadoPor: {
+      id: '2',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    motivoCambio: 'Usuario en vacaciones',
+    tipoAccion: 'cambio_estado',
   },
 ];

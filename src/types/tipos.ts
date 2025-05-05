@@ -177,3 +177,18 @@ export interface HistorialEstadoUsuario {
   motivoCambio?: string;
   tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'asignacion_reporte' | 'cambio_rol' | 'otro';
 }
+
+/**
+ * Interfaz que representa un registro en el historial de cambios de estado de un usuario
+ */
+export interface HistorialEstadoReporte {
+  id: string | number;
+  idReporte: Reporte;
+  estadoAnterior: string;
+  estadoNuevo: string;
+  fechaHoraCambio: Date;
+  realizadoPor: Usuario;
+  motivoCambio?: string;
+  tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'asignacion_reporte' | 'cambio_rol' | 'otro';
+}
+
