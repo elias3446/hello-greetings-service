@@ -1,4 +1,4 @@
-import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion } from '@/types/tipos';
+import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario } from '@/types/tipos';
 import { usuarios } from './usuarios';
 import { reportes } from './reportes';
 import { categorias } from './categorias';
@@ -126,4 +126,151 @@ export const historialAsignaciones: HistorialAsignacion[] = [
     fechaCreacion: new Date('2025-04-25T10:30:00'),
     esActual: true
   }
+];
+
+// Datos de ejemplo para el historial de estados de usuario
+export const historialEstadosEjemplo: HistorialEstadoUsuario[] = [
+  {
+    id: '1',
+    idUsuario: {
+      id: '1',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: 'juan.perez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T10:00:00'),
+    realizadoPor: {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    tipoAccion: 'creacion',
+  },
+  {
+    id: '2',
+    idUsuario: {
+      id: '1',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: 'juan.perez@example.com',
+      estado: 'inactivo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    estadoAnterior: 'activo',
+    estadoNuevo: 'inactivo',
+    fechaHoraCambio: new Date('2023-02-15T15:30:00'),
+    realizadoPor: {
+      id: '2',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    motivoCambio: 'Usuario en vacaciones',
+    tipoAccion: 'cambio_estado',
+  },
+  {
+    id: '3',
+    idUsuario: {
+      id: '1',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: 'juan.perez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '2',
+        nombre: 'Editor',
+        descripcion: 'Rol con permisos de edición',
+        color: '#00FF00',
+        tipo: 'usuario',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    estadoAnterior: 'Administrador',
+    estadoNuevo: 'Editor',
+    fechaHoraCambio: new Date('2023-03-01T09:15:00'),
+    realizadoPor: {
+      id: '2',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    motivoCambio: 'Cambio de responsabilidades',
+    tipoAccion: 'cambio_rol',
+  },
 ];

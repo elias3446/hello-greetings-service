@@ -17,6 +17,9 @@ import { Reporte, Usuario, Rol } from '@/types/tipos';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { getRoles } from '@/controller/CRUD/roleController';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
+import { obtenerHistorialUsuario, registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { HistorialEstadoUsuario } from '@/types/tipos';
+import { Clock } from 'lucide-react';
 
 const DetalleUsuario = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +31,7 @@ const DetalleUsuario = () => {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Rol | null>(null);
   const availableRoles = getRoles();
+  const [historialEstados, setHistorialEstados] = useState<HistorialEstadoUsuario[]>([]);
   
   useEffect(() => {
     const cargarUsuario = () => {
@@ -47,6 +51,47 @@ const DetalleUsuario = () => {
         }
         
         setUsuario(userData);
+
+        // Verificar si existe un registro de creación en el historial
+        const historial = obtenerHistorialUsuario(id);
+        const tieneRegistroCreacion = historial.some(
+          registro => registro.tipoAccion === 'creacion'
+        );
+
+        // Si no existe un registro de creación, lo creamos
+        if (!tieneRegistroCreacion) {
+          registrarCambioEstado(
+            userData,
+            'no_existe',
+            'activo',
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            },
+            'Usuario creado en el sistema',
+            'creacion'
+          );
+        }
+
+        // Actualizar el historial mostrado
+        const historialActualizado = obtenerHistorialUsuario(id);
+        setHistorialEstados(historialActualizado);
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
         toast.error('Error al cargar el usuario');
@@ -62,6 +107,13 @@ const DetalleUsuario = () => {
     if (id) {
       const reportes = filterReports({ userId: id });
       setReportesAsignados(reportes);
+    }
+  }, [id]);
+  
+  useEffect(() => {
+    if (id) {
+      const historial = obtenerHistorialUsuario(id);
+      setHistorialEstados(historial);
     }
   }, [id]);
   
@@ -102,16 +154,32 @@ const DetalleUsuario = () => {
     try {
       if (!usuario) return;
 
-      const updatedUser = updateUser(usuario.id, {
+      const estadoAnterior = usuario.roles[0]?.nombre || 'Sin rol';
+      const usuarioActualizado = updateUser(usuario.id, {
         roles: [newRole]
       });
 
-      if (!updatedUser) {
+      if (!usuarioActualizado) {
         throw new Error('Error al actualizar el rol del usuario');
       }
 
-      setUsuario(updatedUser);
+      setUsuario(usuarioActualizado);
       setShowRoleDialog(false);
+      
+      // Registrar el cambio en el historial
+      registrarCambioEstado(
+        usuario,
+        estadoAnterior,
+        newRole.nombre,
+        usuarioActualizado, // En un caso real, esto debería ser el usuario que está realizando la acción
+        'Cambio de rol manual',
+        'cambio_rol'
+      );
+      
+      // Actualizar el historial mostrado
+      const historial = obtenerHistorialUsuario(usuario.id);
+      setHistorialEstados(historial);
+      
       toast.success('Rol asignado correctamente');
     } catch (error) {
       console.error('Error al asignar el rol:', error);
@@ -121,7 +189,7 @@ const DetalleUsuario = () => {
 
   const handleCambiarEstado = () => {
     try {
-      if (!id) return;
+      if (!id || !usuario) return;
       
       // Solo permitir cambiar entre activo e inactivo si no está bloqueado
       if (usuario.estado === 'bloqueado') {
@@ -129,11 +197,27 @@ const DetalleUsuario = () => {
         return;
       }
       
+      const estadoAnterior = usuario.estado;
       const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
       const usuarioActualizado = updateUser(id, { estado: nuevoEstado });
       
       if (usuarioActualizado) {
         setUsuario(usuarioActualizado);
+        
+        // Registrar el cambio en el historial
+        registrarCambioEstado(
+          usuario,
+          estadoAnterior,
+          nuevoEstado,
+          usuarioActualizado, // En un caso real, esto debería ser el usuario que está realizando la acción
+          'Cambio de estado manual',
+          'cambio_estado'
+        );
+        
+        // Actualizar el historial mostrado
+        const historial = obtenerHistorialUsuario(id);
+        setHistorialEstados(historial);
+        
         toast.success(`Usuario ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'} correctamente`);
       } else {
         toast.error('Error al actualizar el estado del usuario');
@@ -146,11 +230,21 @@ const DetalleUsuario = () => {
 
   const handleEliminarUsuario = () => {
     try {
-      if (!id) return;
+      if (!id || !usuario) return;
       
       const eliminado = deleteUser(id);
       
       if (eliminado) {
+        // Registrar el cambio en el historial
+        registrarCambioEstado(
+          usuario,
+          usuario.estado,
+          'eliminado',
+          usuario, // En un caso real, esto debería ser el usuario que está realizando la acción
+          'Usuario eliminado del sistema',
+          'otro'
+        );
+        
         toast.success('Usuario eliminado correctamente');
         navigate('/admin/usuarios');
       } else {
@@ -159,6 +253,105 @@ const DetalleUsuario = () => {
     } catch (error) {
       console.error('Error al eliminar el usuario:', error);
       toast.error('Error al eliminar el usuario');
+    }
+  };
+
+  // Función para registrar la asignación de un reporte
+  const handleAsignarReporte = (reporteId: string) => {
+    try {
+      if (!usuario) return;
+
+      // Aquí iría la lógica para asignar el reporte al usuario
+      // Por ejemplo: asignarReporte(reporteId, usuario.id);
+
+      // Registrar el cambio en el historial
+      registrarCambioEstado(
+        usuario,
+        'Sin reporte asignado',
+        `Reporte ${reporteId} asignado`,
+        usuario, // En un caso real, esto debería ser el usuario que está realizando la acción
+        `Asignación de reporte ${reporteId}`,
+        'asignacion_reporte'
+      );
+
+      // Actualizar el historial mostrado
+      const historial = obtenerHistorialUsuario(usuario.id);
+      setHistorialEstados(historial);
+
+      toast.success('Reporte asignado correctamente');
+    } catch (error) {
+      console.error('Error al asignar el reporte:', error);
+      toast.error('Error al asignar el reporte');
+    }
+  };
+
+  // Función para registrar la edición de información del usuario
+  const handleEditarUsuario = (datosActualizados: Partial<Usuario>) => {
+    try {
+      if (!usuario || !id) return;
+
+      const usuarioActualizado = updateUser(id, datosActualizados);
+
+      if (!usuarioActualizado) {
+        throw new Error('Error al actualizar el usuario');
+      }
+
+      setUsuario(usuarioActualizado);
+
+      // Registrar el cambio en el historial
+      registrarCambioEstado(
+        usuario,
+        'Información anterior',
+        'Información actualizada',
+        usuarioActualizado, // En un caso real, esto debería ser el usuario que está realizando la acción
+        'Edición de información del usuario',
+        'actualizacion'
+      );
+
+      // Actualizar el historial mostrado
+      const historial = obtenerHistorialUsuario(id);
+      setHistorialEstados(historial);
+
+      toast.success('Usuario actualizado correctamente');
+    } catch (error) {
+      console.error('Error al actualizar el usuario:', error);
+      toast.error('Error al actualizar el usuario');
+    }
+  };
+
+  // Función para obtener el ícono según el tipo de acción
+  const getIconForAction = (tipoAccion: string) => {
+    switch (tipoAccion) {
+      case 'creacion':
+        return <User className="h-4 w-4" />;
+      case 'cambio_estado':
+        return <Shield className="h-4 w-4" />;
+      case 'cambio_rol':
+        return <Shield className="h-4 w-4" />;
+      case 'asignacion_reporte':
+        return <FileText className="h-4 w-4" />;
+      case 'actualizacion':
+        return <Edit className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  // Función para obtener el texto descriptivo de la acción
+  const getActionDescription = (registro: HistorialEstadoUsuario) => {
+    switch (registro.tipoAccion) {
+      case 'creacion':
+        return 'Usuario creado';
+      case 'cambio_estado':
+        return `Estado cambiado de "${registro.estadoAnterior}" a "${registro.estadoNuevo}"`;
+      case 'cambio_rol':
+        return `Rol cambiado de "${registro.estadoAnterior}" a "${registro.estadoNuevo}"`;
+      case 'asignacion_reporte':
+        return 'Reporte asignado';
+      case 'actualizacion':
+        return 'Información actualizada';
+      default:
+        return 'Acción realizada';
     }
   };
 
@@ -325,6 +518,13 @@ const DetalleUsuario = () => {
                                     </span>
                                   </div>
                                 </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleAsignarReporte(reporte.id)}
+                                >
+                                  Asignar
+                                </Button>
                               </div>
                             ))}
                           </div>
@@ -385,7 +585,7 @@ const DetalleUsuario = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link to={`/admin/usuarios/${id}/editar`}>
+                  <Link to={`/admin/usuarios/${id}/editar`} onClick={() => handleEditarUsuario({})}>
                     <Edit className="mr-2 h-4 w-4" />
                     Editar usuario
                   </Link>
@@ -460,33 +660,45 @@ const DetalleUsuario = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
-                      <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
+                  {historialEstados.length > 0 ? (
+                    historialEstados.map((registro) => (
+                      <div key={registro.id} className="flex items-start gap-3">
+                        <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
+                          <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {getIconForAction(registro.tipoAccion)}
+                            <Badge variant="outline" className="capitalize">
+                              {registro.tipoAccion.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-medium">{getActionDescription(registro)}</p>
+                          {registro.motivoCambio && (
+                            <p className="text-sm text-muted-foreground">Motivo: {registro.motivoCambio}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              {registro.fechaHoraCambio.toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            <span>•</span>
+                            <span>Por: {registro.realizadoPor.nombre} {registro.realizadoPor.apellido}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No hay registros en el historial
                     </div>
-                    <div className="space-y-1">
-                      <Badge>Creado</Badge>
-                      <p className="text-sm">{new Date(usuario.fechaCreacion).toLocaleDateString('es-ES')}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
-                      <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
-                    </div>
-                    <div className="space-y-1">
-                      <Badge className={
-                        usuario.estado === 'activo' ? 'bg-green-500' : 
-                        usuario.estado === 'inactivo' ? 'bg-gray-500' : 
-                        'bg-red-500'
-                      }>
-                        {usuario.estado === 'activo' ? 'Activo' : 
-                         usuario.estado === 'inactivo' ? 'Inactivo' : 
-                         'Bloqueado'}
-                      </Badge>
-                      <p className="text-sm">{new Date().toLocaleDateString('es-ES')}</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
