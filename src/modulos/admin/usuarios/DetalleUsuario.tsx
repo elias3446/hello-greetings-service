@@ -176,7 +176,6 @@ const DetalleUsuario = () => {
               <span className="mx-2">/</span>
               <span>Detalle</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">{usuario.nombre} {usuario.apellido}</h2>
           </div>
         </div>
 

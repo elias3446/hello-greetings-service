@@ -266,7 +266,7 @@ const ListaReportesAdmin: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => navigate(`/admin/reportes/${reporte.id}`)}
+                          onClick={() => navigate(`/admin/reportes/${reporte.id}/editar`)}
                         >
                           <PencilIcon className="h-4 w-4 text-gray-500" />
                         </Button>

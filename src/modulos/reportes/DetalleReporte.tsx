@@ -96,13 +96,7 @@ const DetalleReporte = () => {
               <span className="mx-2">/</span>
               <span>Detalle</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">{reporte.titulo}</h2>
           </div>
-          <ReporteAcciones 
-            reporteId={reporte.id} 
-            onMarkInProgress={handleMarkInProgress} 
-            onMarkResolved={handleMarkResolved} 
-          />
         </div>
 
         {/* Contenido principal */}
@@ -343,7 +337,8 @@ const DetalleReporte = () => {
                 <CardDescription>Opciones para gestionar este reporte</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start"
+                onClick={() => navigate(`/admin/reportes/${reporte.id}/editar`)}>
                   <Edit className="mr-2 h-4 w-4" />
                   Editar reporte
                 </Button>
