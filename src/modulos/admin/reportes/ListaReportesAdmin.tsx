@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -23,45 +23,322 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
+// Types
+interface SortOption {
+  value: string;
+  label: string;
+}
+
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+// Custom hook for state management
+const useReportesState = () => {
+  const [reportes, setReportes] = React.useState<Reporte[]>([]);
+  const [filteredReportes, setFilteredReportes] = React.useState<Reporte[]>([]);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [estadoFilter, setEstadoFilter] = React.useState<string | null>(null);
+  const [categoriaFilter, setCategoriaFilter] = React.useState<string | null>(null);
+  const [sortBy, setSortBy] = React.useState<string>('titulo');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [reporteAEliminar, setReporteAEliminar] = React.useState<Reporte | null>(null);
+  const [currentField, setCurrentField] = React.useState<string | undefined>();
+  const [selectedFilterValues, setSelectedFilterValues] = React.useState<any[]>([]);
+
+  return {
+    reportes,
+    setReportes,
+    filteredReportes,
+    setFilteredReportes,
+    searchTerm,
+    setSearchTerm,
+    estadoFilter,
+    setEstadoFilter,
+    categoriaFilter,
+    setCategoriaFilter,
+    sortBy,
+    setSortBy,
+    sortDirection,
+    setSortDirection,
+    currentPage,
+    setCurrentPage,
+    isLoading,
+    setIsLoading,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    reporteAEliminar,
+    setReporteAEliminar,
+    currentField,
+    setCurrentField,
+    selectedFilterValues,
+    setSelectedFilterValues,
+  };
+};
+
+// Delete confirmation dialog component
+const DeleteConfirmationDialog: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  reporte: Reporte | null;
+}> = ({ isOpen, onClose, onConfirm, reporte }) => (
+  <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
+          <span className="font-semibold">{reporte?.titulo}</span>.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+        <AlertDialogAction 
+          onClick={onConfirm}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          Eliminar
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+// Utility functions
+const getFieldValue = (reporte: Reporte, field: string): string => {
+  switch (field) {
+    case 'titulo':
+      return reporte.titulo;
+    case 'ubicacion':
+      return reporte.ubicacion.direccion;
+    case 'asignadoA':
+      return reporte.asignadoA?.nombre || 'Sin asignar';
+    case 'fechaCreacion':
+      return new Date(reporte.fechaCreacion).toLocaleDateString('es-ES');
+    case 'estado':
+      return reporte.estado.nombre;
+    case 'categoria':
+      return reporte.categoria.nombre;
+    default:
+      return '';
+  }
+};
+
+const exportToCSV = (reportes: Reporte[]) => {
+  const data = reportes.map(reporte => ({
+    titulo: reporte.titulo,
+    categoria: reporte.categoria.nombre,
+    estado: reporte.estado.nombre,
+    fechaCreacion: new Date(reporte.fechaCreacion).toLocaleDateString('es-ES'),
+    ubicacion: reporte.ubicacion.direccion,
+    asignadoA: reporte.asignadoA?.nombre || 'Sin asignar'
+  }));
+  
+  const csvContent = [
+    Object.keys(data[0]).join(','),
+    ...data.map(row => Object.values(row).join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'reportes.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+// Table component for displaying reports
+const ReportesTable: React.FC<{
+  reportes: Reporte[];
+  isLoading: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (reporte: Reporte) => void;
+}> = ({ reportes, isLoading, onEdit, onDelete }) => {
+  if (isLoading) {
+    return (
+      <TableRow>
+        <TableCell colSpan={7} className="text-center">
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  if (reportes.length === 0) {
+    return (
+      <TableRow>
+        <TableCell colSpan={7} className="text-center">
+          No se encontraron reportes
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  return (
+    <>
+      {reportes.map((reporte) => (
+        <TableRow key={reporte.id}>
+          <TableCell>
+            <Link to={`/admin/reportes/${reporte.id}`} className="text-blue-600 hover:underline">
+              {reporte.titulo}
+            </Link>
+          </TableCell>
+          <TableCell>
+            {reporte.categoria.nombre && (
+              <CategoriaSelector
+                ReporteId={reporte.id}
+                currentCategoriaId={reporte.categoria.id}
+              />
+            )}
+          </TableCell>
+          <TableCell>
+            {reporte.estado.nombre && (
+              <EstadoSelector
+                ReporteId={reporte.id}
+                currentEstadoId={reporte.estado.id}
+              />
+            )}
+          </TableCell>
+          <TableCell>
+            {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric'
+            })}
+          </TableCell>
+          <TableCell>{reporte.ubicacion.direccion}</TableCell>
+          <TableCell>
+            <UsuarioSelector
+              ReporteId={reporte.id}
+              currentUsuarioId={reporte.asignadoA?.id}
+            />
+          </TableCell>
+          <TableCell className="text-right">
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onEdit(reporte.id)}
+              >
+                <PencilIcon className="h-4 w-4 text-gray-500" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-red-500 hover:text-red-600"
+                onClick={() => onDelete(reporte)}
+              >
+                <Trash2Icon className="h-4 w-4" />
+              </Button>
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+};
+
+// Pagination component
+const ReportesPagination: React.FC<{
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalPages, onPageChange }) => {
+  if (totalPages <= 1) return null;
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+          />
+        </PaginationItem>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <PaginationItem key={page}>
+            <PaginationLink
+              onClick={() => onPageChange(page)}
+              isActive={currentPage === page}
+            >
+              {page}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
+        <PaginationItem>
+          <PaginationNext
+            onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+};
+
 const ListaReportesAdmin: React.FC = () => {
   const navigate = useNavigate();
-  const [reportes, setReportes] = useState<Reporte[]>([]);
-  const [filteredReportes, setFilteredReportes] = useState<Reporte[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [estadoFilter, setEstadoFilter] = useState<string | null>(null);
-  const [categoriaFilter, setCategoriaFilter] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<string>('titulo');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [reporteAEliminar, setReporteAEliminar] = useState<Reporte | null>(null);
-  const [currentField, setCurrentField] = useState<string | undefined>();
-  const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
+  const {
+    reportes,
+    setReportes,
+    filteredReportes,
+    setFilteredReportes,
+    searchTerm,
+    setSearchTerm,
+    estadoFilter,
+    setEstadoFilter,
+    categoriaFilter,
+    setCategoriaFilter,
+    sortBy,
+    setSortBy,
+    sortDirection,
+    setSortDirection,
+    currentPage,
+    setCurrentPage,
+    isLoading,
+    setIsLoading,
+    showDeleteDialog,
+    setShowDeleteDialog,
+    reporteAEliminar,
+    setReporteAEliminar,
+    currentField,
+    setCurrentField,
+    selectedFilterValues,
+    setSelectedFilterValues,
+  } = useReportesState();
+
   const itemsPerPage = 10;
 
-  const sortOptions = [
+  const sortOptions: SortOption[] = [
     { value: 'titulo', label: 'Título' },
     { value: 'ubicacion', label: 'Ubicación' },
     { value: 'asignadoA', label: 'Asignado a' },
     { value: 'fechaCreacion', label: 'Fecha creación' }
   ];
 
-  const filterOptions = [
+  const filterOptions: FilterOption[] = [
     { value: 'estado', label: 'Estado' },
     { value: 'categoria', label: 'Categoría' }
   ];
 
-  useEffect(() => {
-    // Cargar reportes
+  React.useEffect(() => {
     setIsLoading(true);
     try {
       const data = getReports();
       setReportes(data);
       setFilteredReportes(data);
-      setIsLoading(false);
     } catch (error) {
       toast.error("Error al cargar reportes");
+    } finally {
       setIsLoading(false);
     }
   }, []);
@@ -70,12 +347,10 @@ const ListaReportesAdmin: React.FC = () => {
     try {
       if (!reporteAEliminar) return;
       
-      // Obtener todos los reportes asignados al usuario
       const reportesAsignados = getReports().filter(reporte => 
         reporte.asignadoA && reporte.asignadoA.id === reporteAEliminar.id
       );
 
-      // Registrar el cambio en el historial del usuario
       await registrarCambioEstado(
         reporteAEliminar.asignadoA,
         reporteAEliminar.estado.nombre,
@@ -85,7 +360,6 @@ const ListaReportesAdmin: React.FC = () => {
         'otro'
       );
 
-      // Registrar el cambio en el historial de cada reporte asignado
       for (const reporte of reportesAsignados) {
         await registrarCambioEstadoReporte(
           reporte,
@@ -97,14 +371,11 @@ const ListaReportesAdmin: React.FC = () => {
         );
       }
 
-      // Eliminar el usuario
       const success = deleteReport(reporteAEliminar.id);
       
       if (success) {
-        // Actualizar el estado local
         setReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
         setFilteredReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
-        
         toast.success(`Reporte ${reporteAEliminar.titulo} eliminado correctamente`);
       } else {
         throw new Error('Error al eliminar el reporte');
@@ -118,11 +389,9 @@ const ListaReportesAdmin: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    // Aplicar filtros, búsqueda y ordenamiento
+  React.useEffect(() => {
     let result = [...reportes];
 
-    // Aplicar filtro de búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -136,58 +405,33 @@ const ListaReportesAdmin: React.FC = () => {
       );
     }
 
-    // Separar los valores de filtro por tipo
     const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
     const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
     const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
 
-    // Aplicar filtro de valores (si hay valores seleccionados)
     if (filterValues.length > 0) {
       result = result.filter(reporte => 
         filterValues.includes(getFieldValue(reporte, sortBy))
       );
     }
 
-    // Aplicar filtro de estados sobre el resultado anterior
     if (filterStates.length > 0) {
       result = result.filter(reporte => 
         filterStates.includes(reporte.estado.nombre)
       );
     }
 
-    // Aplicar filtro de categorías sobre el resultado anterior
     if (filterCategories.length > 0) {
       result = result.filter(reporte => 
         filterCategories.includes(reporte.categoria.nombre)
       );
     }
 
-    // Aplicar ordenamiento
     result = sortReports(result, sortBy, sortDirection);
 
     setFilteredReportes(result);
     setCurrentPage(1);
   }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);
-
-  // Función para obtener el valor del campo según el campo actual
-  const getFieldValue = (reporte: Reporte, field: string): string => {
-    switch (field) {
-      case 'titulo':
-        return reporte.titulo;
-      case 'ubicacion':
-        return reporte.ubicacion.direccion;
-      case 'asignadoA':
-        return reporte.asignadoA?.nombre || 'Sin asignar';
-      case 'fechaCreacion':
-        return new Date(reporte.fechaCreacion).toLocaleDateString('es-ES');
-      case 'estado':
-        return reporte.estado.nombre;
-      case 'categoria':
-        return reporte.categoria.nombre;
-      default:
-        return '';
-    }
-  };
 
   const handleToggleSortDirection = () => {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -203,28 +447,11 @@ const ListaReportesAdmin: React.FC = () => {
   };
 
   const handleExportReportes = () => {
-    const data = filteredReportes.map(reporte => ({
-      titulo: reporte.titulo,
-      categoria: reporte.categoria.nombre,
-      estado: reporte.estado.nombre,
-      fechaCreacion: new Date(reporte.fechaCreacion).toLocaleDateString('es-ES'),
-      ubicacion: reporte.ubicacion.direccion,
-      asignadoA: reporte.asignadoA?.nombre || 'Sin asignar'
-    }));
-    
-    const csvContent = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'reportes.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportToCSV(filteredReportes);
+  };
+
+  const handleEditReporte = (id: string) => {
+    navigate(`/admin/reportes/${id}/editar`);
   };
 
   // Paginación
@@ -278,133 +505,29 @@ const ListaReportesAdmin: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center">
-                    <div className="flex justify-center items-center h-32">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : currentReportes.length > 0 ? (
-                currentReportes.map((reporte) => (
-                  <TableRow key={reporte.id}>
-                    <TableCell>
-                      <Link to={`/admin/reportes/${reporte.id}`} className="text-blue-600 hover:underline">
-                        {reporte.titulo}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{reporte.categoria.nombre && (
-                        <CategoriaSelector
-                        ReporteId={reporte.id}
-                        currentCategoriaId={reporte.categoria.id}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                        {reporte.estado.nombre && (
-                        <EstadoSelector
-                        ReporteId={reporte.id}
-                        currentEstadoId={reporte.estado.id}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </TableCell>
-                    <TableCell>{reporte.ubicacion.direccion}</TableCell>
-                    <TableCell>
-                      <UsuarioSelector
-                        ReporteId={reporte.id}
-                        currentUsuarioId={reporte.asignadoA?.id}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => navigate(`/admin/reportes/${reporte.id}/editar`)}
-                        >
-                          <PencilIcon className="h-4 w-4 text-gray-500" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-600"
-                          onClick={() => handleDeleteReporte(reporte)}
-                        >
-                          <Trash2Icon className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center">
-                    No se encontraron reportes
-                  </TableCell>
-                </TableRow>
-              )}
+              <ReportesTable
+                reportes={currentReportes}
+                isLoading={isLoading}
+                onEdit={handleEditReporte}
+                onDelete={handleDeleteReporte}
+              />
             </TableBody>
           </Table>
         </div>
 
-        {totalPages > 1 && (
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    onClick={() => setCurrentPage(page)}
-                    isActive={currentPage === page}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
+        <ReportesPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
-      {/* Diálogo de confirmación para eliminar usuario */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
-              <span className="font-semibold">{reporteAEliminar?.titulo}</span>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmarEliminacion}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      <DeleteConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmarEliminacion}
+        reporte={reporteAEliminar}
+      />
     </div>
   );
 };
