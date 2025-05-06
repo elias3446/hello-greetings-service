@@ -8,9 +8,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getEstados } from '@/controller/CRUD/estadoController';
-import { updateReport } from '@/controller/CRUD/reportController';
+import { getReportById, updateReport } from '@/controller/CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 import { EstadoReporte } from '@/types/tipos';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 
 interface EstadoSelectorProps {
   ReporteId: string;
@@ -48,6 +49,37 @@ const EstadoSelector: React.FC<EstadoSelectorProps> = ({
         throw new Error('Error al actualizar el rol del usuario');
       }
       
+      // Registrar el cambio en el historial del reporte
+      const reporte = getReportById(ReporteId);
+      if (reporte) {
+        registrarCambioEstadoReporte(
+          reporte,
+          currentEstado ? `${currentEstado.nombre}` : 'Sin asignar',
+          'Sin asignar',
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          },
+          `Desasignación de reporte`,
+          'asignacion_reporte'
+        );
+      }
       // Actualizar el estado local para reflejar el cambio inmediatamente
       setSelectedEstadoId(selectedEstadoId);
       
