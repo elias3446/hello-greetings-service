@@ -7,14 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft, FileText, Clock } from 'lucide-react';
-import { getReportById, updateReport } from '@/controller/CRUD/reportController';
+import { deleteReport, getReportById, updateReport } from '@/controller/CRUD/reportController';
 import { obtenerHistorialReporte, registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 import type { Reporte, HistorialEstadoReporte, Rol, Usuario } from '@/types/tipos';
 import MapaBase from '@/components/layout/MapaBase';
 import { ReporteAcciones } from '@/components/reportes/ReporteAcciones';
 import ReporteActividad from '@/components/reportes/ReporteActividad';
-import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogHeader } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogHeader, AlertDialogAction } from '@/components/ui/alert-dialog';
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
 import { updateUser } from '@/controller/CRUD/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
@@ -26,6 +26,8 @@ const DetalleReporte = () => {
   const navigate = useNavigate();
   const [historialEstados, setHistorialEstados] = useState<HistorialEstadoReporte[]>([]);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   useEffect(() => {
     const cargarReporte = () => {
       try {
@@ -415,9 +417,12 @@ const DetalleReporte = () => {
                   <User className="mr-2 h-4 w-4" />
                   Reasignar
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
-                  <AlertTriangle className="mr-2 h-4 w-4" />
-                  Marcar como spam
+                <Button 
+                 variant="outline" 
+                 className="w-full justify-start text-destructive hover:text-destructive"
+                 onClick={() => setShowDeleteDialog(true)}
+        >       <AlertTriangle className="mr-2 h-4 w-4" />
+                Eliminar reporte
                 </Button>
               </CardContent>
             </Card>
@@ -524,6 +529,29 @@ const DetalleReporte = () => {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
+              <span className="font-semibold">{reporte.titulo}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                deleteReport(reporte.id);
+                navigate('/admin/reportes');
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

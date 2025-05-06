@@ -1,6 +1,7 @@
 import { Reporte } from '../../types/tipos';
 import { reportes } from '../../data/reportes';
 import { agregarAsignacion } from './historialAsignacionController';
+import { registrarCambioEstado } from './historialEstadosUsuario';
 
 // Obtener todos los reportes
 export const getReports = (): Reporte[] => {
@@ -56,9 +57,17 @@ export const updateReport = (id: string, reportData: Partial<Reporte>): Reporte 
 };
 
 // Eliminar un reporte
-export const deleteReport = (id: string): boolean => {
+export const deleteReport = async (id: string): Promise<boolean> => {
   const index = reportes.findIndex((report) => report.id === id);
   if (index !== -1) {
+    await registrarCambioEstado(
+      reportes[index].asignadoA,
+      reportes[index].estado.nombre,
+      'eliminado',
+      reportes[index].asignadoA,
+      'Reporte eliminado del sistema',
+      'otro'
+    );
     reportes.splice(index, 1);
     return true;
   }
