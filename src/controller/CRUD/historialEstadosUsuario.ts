@@ -32,14 +32,15 @@ export const obtenerHistorialUsuario = (idUsuario: string | number): HistorialEs
   const historialFiltrado = historialEstados
     .filter(registro => {
       const idUsuarioRegistro = registro.idUsuario.id;
+      const sonIguales = String(idUsuario) === String(idUsuarioRegistro);
       console.log('Comparando IDs:', {
         idUsuario,
         idUsuarioRegistro,
         tipoIdUsuario: typeof idUsuario,
         tipoIdUsuarioRegistro: typeof idUsuarioRegistro,
-        iguales: String(idUsuario) === String(idUsuarioRegistro)
+        iguales: sonIguales
       });
-      return String(idUsuario) === String(idUsuarioRegistro);
+      return sonIguales;
     })
     .sort((a, b) => b.fechaHoraCambio.getTime() - a.fechaHoraCambio.getTime());
   
@@ -106,7 +107,16 @@ export const registrarCambioEstado = (
   motivoCambio?: string,
   tipoAccion: HistorialEstadoUsuario['tipoAccion'] = 'cambio_estado'
 ): void => {
-  crearRegistroHistorial({
+  console.log('Registrando cambio de estado de usuario:', {
+    idUsuario: idUsuario.id,
+    estadoAnterior,
+    estadoNuevo,
+    realizadoPorId: realizadoPor.id,
+    motivoCambio,
+    tipoAccion
+  });
+
+  const nuevoRegistro = crearRegistroHistorial({
     idUsuario,
     estadoAnterior,
     estadoNuevo,
@@ -115,4 +125,7 @@ export const registrarCambioEstado = (
     motivoCambio,
     tipoAccion,
   });
+
+  console.log('Nuevo registro creado:', nuevoRegistro);
+  console.log('Historial actualizado:', historialEstados);
 }; 

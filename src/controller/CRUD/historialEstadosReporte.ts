@@ -107,10 +107,10 @@ export const registrarCambioEstadoReporte = (
   tipoAccion: HistorialEstadoReporte['tipoAccion'] = 'cambio_estado'
 ): void => {
   console.log('Registrando cambio de estado en reporte:', {
-    reporte,
+    reporteId: reporte.id,
     estadoAnterior,
     estadoNuevo,
-    realizadoPor,
+    realizadoPorId: realizadoPor.id,
     motivoCambio,
     tipoAccion
   });
@@ -126,4 +126,5 @@ export const registrarCambioEstadoReporte = (
   });
 
   console.log('Nuevo registro creado:', nuevoRegistro);
+  console.log('Historial actualizado:', historialEstados);
 }; 

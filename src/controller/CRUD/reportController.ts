@@ -80,7 +80,14 @@ export const filterReports = (criteria: {
   }
   
   if (criteria.userId) {
-    filteredReports = filteredReports.filter(report => report.asignadoA?.id === criteria.userId);
+    filteredReports = filteredReports.filter(report => {
+      console.log('Comparando IDs de usuario:', {
+        userId: criteria.userId,
+        asignadoAId: report.asignadoA?.id,
+        iguales: String(criteria.userId) === String(report.asignadoA?.id)
+      });
+      return String(criteria.userId) === String(report.asignadoA?.id);
+    });
   }
   
   return filteredReports;

@@ -18,6 +18,8 @@ import { createUser, updateUser, getUserById } from '@/controller/CRUD/userContr
 import { roles } from '@/data/roles';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { getReportById, getReports } from '@/controller/CRUD/reportController';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 
 interface FormularioUsuarioProps {
   modo: 'crear' | 'editar';
@@ -62,8 +64,9 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
     }
   }, [modo, id, form]);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     try {
+      
       const rolesSeleccionados = roles.filter(rol => 
         data.roles.includes(rol.id)
       );
@@ -78,6 +81,7 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
       if (modo === 'editar' && id) {
         const usuarioAnterior = getUserById(id);
         
+
         // Verificar si hay cambios reales
         const hayCambios = 
           usuarioAnterior?.nombre !== data.nombre ||
@@ -92,38 +96,39 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
           navigate('/admin/usuarios');
           return;
         }
+                // Registrar el cambio en el historial de los reportes asignados
+                const reportesAsignados = getReports().filter(reporte => 
+                  reporte.asignadoA && reporte.asignadoA.id === usuarioAnterior.id
+                );
 
         const usuarioActualizado = updateUser(id, userData);
 
         if (usuarioActualizado) {
-          // Registrar el cambio en el historial
+          // Registrar el cambio en el historial del usuario
           registrarCambioEstado(
             usuarioActualizado,
             usuarioAnterior?.estado || 'activo',
             usuarioActualizado.estado,
-            {
-              id: '0',
-              nombre: 'Sistema',
-              apellido: '',
-              email: 'sistema@example.com',
-              estado: 'activo',
-              tipo: 'usuario',
-              intentosFallidos: 0,
-              password: 'hashed_password',
-              roles: [{
-                id: '1',
-                nombre: 'Administrador',
-                descripcion: 'Rol con acceso total al sistema',
-                color: '#FF0000',
-                tipo: 'admin',
-                fechaCreacion: new Date('2023-01-01'),
-                activo: true
-              }],
-              fechaCreacion: new Date('2023-01-01'),
-            },
-            'Usuario actualizado en el sistema',
-            'actualizacion'
+            usuarioActualizado,
+            `Usuario ${usuarioActualizado.estado === 'activo' ? 'activado' : 'desactivado'} por ${usuarioActualizado.nombre} ${usuarioActualizado.apellido}`,
+            'cambio_estado'
           );
+
+          
+          
+          console.log('Reportes asignados:', reportesAsignados);
+          
+          reportesAsignados.forEach(reporte => {
+            console.log('Registrando cambio para reporte:', reporte.id);
+            registrarCambioEstadoReporte(
+              reporte,
+              `Usuario ${usuarioAnterior?.estado || 'activo'}`,
+              `Usuario ${usuarioActualizado.estado}`,
+              usuarioActualizado,
+              `Usuario ${usuarioActualizado.estado === 'activo' ? 'activado' : 'desactivado'} por ${usuarioActualizado.nombre} ${usuarioActualizado.apellido}`,
+              'cambio_estado'
+            );
+          });
 
           toast.success("Usuario actualizado exitosamente");
         } else {
@@ -136,7 +141,7 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
         });
 
         // Registrar el cambio de estado inicial
-        registrarCambioEstado(
+        await registrarCambioEstado(
           nuevoUsuario,
           'no_existe',
           nuevoUsuario.estado,

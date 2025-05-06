@@ -180,6 +180,53 @@ export const historialEstadosEjemplo: HistorialEstadoUsuario[] = [
   {
     id: '2',
     idUsuario: {
+      id: '2',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T10:00:00'),
+    realizadoPor: {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    tipoAccion: 'creacion',
+  },
+  {
+    id: '3',
+    idUsuario: {
       id: '1',
       nombre: 'Juan',
       apellido: 'Pérez',
@@ -226,7 +273,7 @@ export const historialEstadosEjemplo: HistorialEstadoUsuario[] = [
     tipoAccion: 'cambio_estado',
   },
   {
-    id: '3',
+    id: '4',
     idUsuario: {
       id: '1',
       nombre: 'Juan',

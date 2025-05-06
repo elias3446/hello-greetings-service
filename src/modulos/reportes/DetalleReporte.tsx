@@ -144,7 +144,7 @@ const DetalleReporte = () => {
               <div className="bg-muted p-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <Avatar className="h-20 w-20 border-4 border-background">
-                    <AvatarImage src="https://via.placeholder.com/100" alt="Avatar" />
+                    <AvatarImage src="https://placehold.co/100" alt="Avatar" />
                     <AvatarFallback>{reporte.categoria.nombre.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">
