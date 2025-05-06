@@ -51,10 +51,6 @@ const DetalleUsuario = () => {
         }
         
         setUsuario(userData);
-
-        // Actualizar el historial mostrado
-        const historial = obtenerHistorialUsuario(id);
-        setHistorialEstados(historial);
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
         toast.error('Error al cargar el usuario');
@@ -73,12 +69,15 @@ const DetalleUsuario = () => {
     }
   }, [id]);
   
+  // Actualizar el historial cuando cambie el usuario o el id
   useEffect(() => {
     if (id) {
+      console.log('Actualizando historial para usuario:', id);
       const historial = obtenerHistorialUsuario(id);
+      console.log('Historial obtenido:', historial);
       setHistorialEstados(historial);
     }
-  }, [id]);
+  }, [id, usuario]); // Agregamos usuario como dependencia
   
   const rol = roles.find(r => usuario?.roles.some(userRole => userRole.id === r.id));
   
@@ -207,6 +206,10 @@ const DetalleUsuario = () => {
           'Usuario eliminado del sistema',
           'otro'
         );
+        
+        // Actualizar el historial mostrado antes de navegar
+        const historial = obtenerHistorialUsuario(id);
+        setHistorialEstados(historial);
         
         toast.success('Usuario eliminado correctamente');
         navigate('/admin/usuarios');
@@ -623,7 +626,7 @@ const DetalleUsuario = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {historialEstados.length > 0 ? (
+                  {historialEstados && historialEstados.length > 0 ? (
                     historialEstados.map((registro) => (
                       <div key={registro.id} className="flex items-start gap-3">
                         <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">

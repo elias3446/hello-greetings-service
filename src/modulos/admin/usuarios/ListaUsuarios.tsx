@@ -33,6 +33,7 @@ import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { sortUsers } from '@/utils/userUtils';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
 const ListaUsuarios: React.FC = () => {
   const navigate = useNavigate();
@@ -258,6 +259,35 @@ const ListaUsuarios: React.FC = () => {
         toast.error('Error al actualizar el estado del usuario');
         return;
       }
+
+      // Registrar el cambio en el historial
+      registrarCambioEstado(
+        usuario,
+        usuario.estado,
+        nuevoEstado,
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        },
+        `Cambio de estado de usuario ${usuario.nombre} ${usuario.apellido}`,
+        'cambio_estado'
+      );
       
       // Update both usuarios and filteredUsuarios arrays to reflect the change immediately
       setUsuarios(prevUsuarios => prevUsuarios.map(user => {

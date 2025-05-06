@@ -7,9 +7,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getRoles } from '@/controller/CRUD/roleController';
-import { updateUser, getUserById } from '@/controller/CRUD/userController';
+import { updateUser } from '@/controller/CRUD/userController';
 import { toast } from '@/components/ui/sonner';
-import { Rol } from '@/types/tipos';
+import { Usuario, Rol } from '@/types/tipos';
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
 interface RoleSelectorProps {
   userId: string;
@@ -26,18 +27,10 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
   const [selectedRoleId, setSelectedRoleId] = useState(currentRoleId);
   const availableRoles = getRoles();
   const currentRole = availableRoles.find(role => role.id === selectedRoleId);
-  const usuario = getUserById(userId);
-  const isUsuarioBloqueado = usuario?.estado === 'bloqueado';
 
   const handleRoleChange = async (selectedRoleId: string) => {
     try {
       setIsLoading(true);
-      
-      // Verificar si el usuario está bloqueado
-      if (isUsuarioBloqueado) {
-        toast.error('No se puede cambiar el rol de un usuario bloqueado');
-        return;
-      }
       
       // Find the selected role object
       const selectedRole = availableRoles.find(role => role.id === selectedRoleId);
@@ -45,7 +38,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
       if (!selectedRole) {
         throw new Error('Rol no encontrado');
       }
-      
+
       // Update the user with the new role
       const updatedUser = updateUser(userId, {
         roles: [selectedRole]
@@ -54,8 +47,37 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
       if (!updatedUser) {
         throw new Error('Error al actualizar el rol del usuario');
       }
+
+      // Registrar el cambio en el historial
+      registrarCambioEstado(
+        updatedUser,
+        currentRole?.nombre || 'Sin rol',
+        selectedRole.nombre,
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        },
+        `Cambio de rol de usuario ${updatedUser.nombre} ${updatedUser.apellido}`,
+        'cambio_rol'
+      );
       
-      // Actualizar el estado local para reflejar el cambio inmediatamente
+      // Update local state to reflect the change immediately
       setSelectedRoleId(selectedRoleId);
       
       // Call the onRoleChange callback if provided
@@ -76,11 +98,11 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
     <Select
       value={selectedRoleId}
       onValueChange={handleRoleChange}
-      disabled={isLoading || isUsuarioBloqueado}
+      disabled={isLoading}
     >
-      <SelectTrigger className="w-[180px] h-9">
+      <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Seleccionar rol">
-          {currentRole?.nombre || "Seleccionar rol"}
+          {currentRole ? currentRole.nombre : "Seleccionar rol"}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>

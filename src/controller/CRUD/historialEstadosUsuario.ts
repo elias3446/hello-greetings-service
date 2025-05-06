@@ -25,9 +25,26 @@ export const crearRegistroHistorial = (registro: Omit<HistorialEstadoUsuario, 'i
  * @returns Array de registros ordenados cronológicamente
  */
 export const obtenerHistorialUsuario = (idUsuario: string | number): HistorialEstadoUsuario[] => {
-  return historialEstados
-    .filter(registro => registro.idUsuario.id === idUsuario)
+  console.log('Buscando historial para usuario:', idUsuario);
+  console.log('Tipo de idUsuario:', typeof idUsuario);
+  console.log('Historial actual:', historialEstados);
+  
+  const historialFiltrado = historialEstados
+    .filter(registro => {
+      const idUsuarioRegistro = registro.idUsuario.id;
+      console.log('Comparando IDs:', {
+        idUsuario,
+        idUsuarioRegistro,
+        tipoIdUsuario: typeof idUsuario,
+        tipoIdUsuarioRegistro: typeof idUsuarioRegistro,
+        iguales: String(idUsuario) === String(idUsuarioRegistro)
+      });
+      return String(idUsuario) === String(idUsuarioRegistro);
+    })
     .sort((a, b) => b.fechaHoraCambio.getTime() - a.fechaHoraCambio.getTime());
+  
+  console.log('Historial filtrado:', historialFiltrado);
+  return historialFiltrado;
 };
 
 /**

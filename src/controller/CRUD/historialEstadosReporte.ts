@@ -74,28 +74,37 @@ export const eliminarRegistroHistorial = (id: string | number): boolean => {
 
 /**
  * Registra automáticamente un cambio de estado de usuario
- * @param idUsuario - ID del usuario afectado
- * @param estadoAnterior - Estado previo del usuario
- * @param estadoNuevo - Nuevo estado del usuario
+ * @param entidad - Entidad afectada (Reporte o Usuario)
+ * @param estadoAnterior - Estado previo de la entidad
+ * @param estadoNuevo - Nuevo estado de la entidad
  * @param realizadoPor - Usuario que realizó el cambio
  * @param motivoCambio - Motivo opcional del cambio
  * @param tipoAccion - Tipo de acción realizada
  */
 export const registrarCambioEstado = (
-  idReporte: Reporte,
+  entidad: Reporte | Usuario,
   estadoAnterior: string,
   estadoNuevo: string,
   realizadoPor: Usuario,
   motivoCambio?: string,
   tipoAccion: HistorialEstadoReporte['tipoAccion'] = 'cambio_estado'
 ): void => {
-  crearRegistroHistorial({
-    idReporte,
+  const registro: Omit<HistorialEstadoReporte, 'id'> = {
     estadoAnterior,
     estadoNuevo,
     fechaHoraCambio: new Date(),
     realizadoPor,
     motivoCambio,
     tipoAccion,
-  });
+  };
+
+  if ('titulo' in entidad) {
+    // Es un Reporte
+    registro.idReporte = entidad;
+  } else {
+    // Es un Usuario
+    registro.idUsuario = entidad;
+  }
+
+  crearRegistroHistorial(registro);
 }; 

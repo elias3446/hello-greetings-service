@@ -182,8 +182,9 @@ export interface HistorialEstadoUsuario {
  * Interfaz que representa un registro en el historial de cambios de estado de un usuario
  */
 export interface HistorialEstadoReporte {
-  id: string | number;
-  idReporte: Reporte;
+  id: number | string;
+  idReporte?: Reporte;
+  idUsuario?: Usuario;
   estadoAnterior: string;
   estadoNuevo: string;
   fechaHoraCambio: Date;
