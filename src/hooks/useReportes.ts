@@ -1,7 +1,7 @@
 import React from 'react';
 import { Reporte } from '@/types/tipos';
 import { sortReports } from '@/controller/CRUD/reportController';
-import { getFieldValue } from '@/utils/reportes';
+import { getFieldValue, formatDate, getFullName } from '@/utils/reportes';
 
 export const useReportesState = () => {
   const [reportes, setReportes] = React.useState<Reporte[]>([]);
@@ -63,11 +63,11 @@ export const useReportesData = (
       result = result.filter(
         reporte => reporte.titulo.toLowerCase().includes(term) ||
                 reporte.ubicacion.direccion.toLowerCase().includes(term) ||
-                getFieldValue(reporte, 'asignadoA').toLowerCase().includes(term) ||
+                getFullName(reporte).toLowerCase().includes(term) ||
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
                 reporte.categoria.nombre.toLowerCase().includes(term) ||
-                getFieldValue(reporte, 'fechaCreacion').toLowerCase().includes(term)
+                formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
       );
     }
 
