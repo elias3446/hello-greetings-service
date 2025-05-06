@@ -1,58 +1,12 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  PlusIcon, 
-  PencilIcon, 
-  Trash2Icon, 
-  SearchIcon, 
-  FilterIcon, 
-  ArrowDownIcon, 
-  ArrowUpIcon, 
-  DownloadIcon,
-  CheckIcon,
-  UserPlus
-} from 'lucide-react';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Usuario } from '@/types/tipos';
-import { toast } from '@/components/ui/sonner';
-import { getUsers, updateUser, deleteUser } from '@/controller/CRUD/userController'; 
-import RoleSelector from '@/components/admin/selector/RoleSelector';
-import { sortUsers } from '@/utils/userUtils';
+import { Table, TableBody } from '@/components/ui/table';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
-import { getReports } from '@/controller/CRUD/reportController';
 import { useUsuarioState, useUsuarioData, useUsuarioFilters, useUsuarioHandlers } from '@/hooks/useUsuario';
 import { UsuarioTableHeader, LoadingRow, EmptyStateRow, UsuarioRow, PaginationComponent } from '@/components/admin/usuarios/UsuarioComponents';
 import { getFieldValue } from '@/utils/usuarioUtils';
-import { UsuarioState, UsuarioActions } from '@/types/usuario';
-
-// Constants
-const ITEMS_PER_PAGE = 10;
-const SORT_OPTIONS = [
-  { value: 'nombre', label: 'Nombre' },
-  { value: 'email', label: 'Email' },
-  { value: 'fecha', label: 'Fecha creación' },
-];
-
-const FILTER_OPTIONS = [
-  { value: 'estado', label: 'Estado' },
-  { value: 'rol', label: 'Rol' },
-];
+import { SORT_OPTIONS, FILTER_OPTIONS, ITEMS_PER_PAGE } from '@/utils/userListConstants';
+import { calculatePagination, getUniqueRoles } from '@/utils/userListUtils';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
@@ -61,18 +15,8 @@ const ListaUsuarios: React.FC = () => {
   useUsuarioFilters(state, actions);
   const handlers = useUsuarioHandlers(state, actions);
 
-  // Pagination calculations
-  const indexOfLastItem = state.currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentUsuarios = state.filteredUsuarios.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(state.filteredUsuarios.length / ITEMS_PER_PAGE);
-
-  // Get unique roles for filter
-  const rolesUnicos = [...new Set(
-    state.usuarios.flatMap(usuario => 
-      usuario.roles?.map(rol => rol.nombre) || []
-    )
-  )];
+  const { currentUsuarios, totalPages } = calculatePagination(state.filteredUsuarios, state.currentPage);
+  const rolesUnicos = getUniqueRoles(state.usuarios);
 
   // Count results
   const filteredCount = state.filteredUsuarios.length;

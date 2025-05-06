@@ -1,270 +1,40 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, Shield, Edit, X, Mail, User, Users } from 'lucide-react';
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { toast } from '@/components/ui/sonner';
-import { createUser, updateUser, getUserById } from '@/controller/CRUD/userController';
-import { roles } from '@/data/roles';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { getReportById, getReports } from '@/controller/CRUD/reportController';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/reportController';
-
-interface FormularioUsuarioProps {
-  modo: 'crear' | 'editar';
-}
+import { FormularioUsuarioProps } from '@/types/user';
+import { useUserForm } from '@/hooks/useUserForm';
+import { FormHeader, UserProfile } from '@/components/forms/UserFormHeader';
+import { GeneralInfoTab, AccountInfoTab } from '@/components/forms/UserFormTabs';
+import { InfoCard, TipsCard } from '@/components/forms/UserFormCards';
 
 const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const [showCancelDialog, setShowCancelDialog] = React.useState(false);
-  const usuarioExistente = id ? getUserById(id) : undefined;
-  
-  const form = useForm({
-    defaultValues: {
-      nombre: usuarioExistente?.nombre || '',
-      apellido: usuarioExistente?.apellido || '',
-      email: usuarioExistente?.email || '',
-      password: usuarioExistente?.password || '',
-      roles: usuarioExistente?.roles?.map(rol => rol.id) || [],
-      estado: usuarioExistente?.estado || 'activo',
-      tipo: usuarioExistente?.tipo || 'usuario'
-    },
-  });
-
-  // Load existing user data when in edit mode
-  useEffect(() => {
-    if (modo === 'editar' && id) {
-      const usuarioExistente = getUserById(id);
-      if (usuarioExistente) {
-        // Map roles to their IDs for the form
-        const rolesIds = usuarioExistente.roles?.map(r => r.id) || [];
-        
-        form.reset({
-          nombre: usuarioExistente.nombre,
-          apellido: usuarioExistente.apellido,
-          email: usuarioExistente.email,
-          password: usuarioExistente.password,
-          roles: rolesIds,
-          estado: usuarioExistente.estado,
-          tipo: usuarioExistente.tipo
-        });
-      }
-    }
-  }, [modo, id, form]);
-
-  const onSubmit = async (data: any) => {
-    try {
-      
-      const rolesSeleccionados = roles.filter(rol => 
-        data.roles.includes(rol.id)
-      );
-      
-      const userData = {
-        ...data,
-        roles: rolesSeleccionados,
-        permisos: rolesSeleccionados.flatMap(rol => rol.permisos || []),
-        intentosFallidos: 0
-      };
-
-      if (modo === 'editar' && id) {
-        const usuarioAnterior = getUserById(id);
-        
-
-        // Verificar si hay cambios reales
-        const hayCambios = 
-          usuarioAnterior?.nombre !== data.nombre ||
-          usuarioAnterior?.apellido !== data.apellido ||
-          usuarioAnterior?.email !== data.email ||
-          usuarioAnterior?.estado !== data.estado ||
-          usuarioAnterior?.tipo !== data.tipo ||
-          JSON.stringify(usuarioAnterior?.roles.map(r => r.id)) !== JSON.stringify(data.roles);
-
-        if (!hayCambios) {
-          toast.info("No hay cambios para guardar");
-          navigate('/admin/usuarios');
-          return;
-        }
-                // Registrar el cambio en el historial de los reportes asignados
-                const reportesAsignados = filterReports({ userId: usuarioAnterior.id });
-                console.log('Reportes asignados:', reportesAsignados);
-
-        const usuarioActualizado = updateUser(id, userData);
-
-        if (usuarioActualizado) {
-          // Registrar el cambio en el historial del usuario
-          registrarCambioEstado(
-            usuarioActualizado,
-            usuarioAnterior?.estado || 'activo',
-            usuarioActualizado.estado,
-            usuarioActualizado,
-            `Usuario ${usuarioActualizado.estado === 'activo' ? 'activado' : 'desactivado'} por ${usuarioActualizado.nombre} ${usuarioActualizado.apellido}`,
-            'cambio_estado'
-          );
-
-          
-          
-          console.log('Reportes asignados:', reportesAsignados);
-          
-          reportesAsignados.forEach(reporte => {
-            console.log('Registrando cambio para reporte:', reporte.id);
-            registrarCambioEstadoReporte(
-              reporte,
-              `Usuario ${usuarioAnterior?.estado || 'activo'}`,
-              `Usuario ${usuarioActualizado.estado}`,
-              usuarioActualizado,
-              `Usuario ${usuarioActualizado.estado === 'activo' ? 'activado' : 'desactivado'} por ${usuarioActualizado.nombre} ${usuarioActualizado.apellido}`,
-              'cambio_estado'
-            );
-          });
-
-          toast.success("Usuario actualizado exitosamente");
-        } else {
-          throw new Error("No se pudo actualizar el usuario");
-        }
-      } else {
-        const nuevoUsuario = createUser({
-          ...userData,
-          fechaCreacion: new Date()
-        });
-
-        // Registrar el cambio de estado inicial
-        await registrarCambioEstado(
-          nuevoUsuario,
-          'no_existe',
-          nuevoUsuario.estado,
-          {
-            id: '0',
-            nombre: 'Sistema',
-            apellido: '',
-            email: 'sistema@example.com',
-            estado: 'activo',
-            tipo: 'usuario',
-            intentosFallidos: 0,
-            password: 'hashed_password',
-            roles: [{
-              id: '1',
-              nombre: 'Administrador',
-              descripcion: 'Rol con acceso total al sistema',
-              color: '#FF0000',
-              tipo: 'admin',
-              fechaCreacion: new Date('2023-01-01'),
-              activo: true
-            }],
-            fechaCreacion: new Date('2023-01-01'),
-          },
-          'Usuario creado en el sistema',
-          'creacion'
-        );
-
-        toast.success("Usuario creado exitosamente");
-      }
-
-      navigate('/admin/usuarios');
-    } catch (error) {
-      toast.error("Error al procesar el usuario");
-      console.error('Error:', error);
-    }
-  };
-
-  const handleCancel = () => {
-    // Si hay cambios en el formulario, mostrar diálogo de confirmación
-    if (form.formState.isDirty) {
-      setShowCancelDialog(true);
-    } else {
-      navigate('/admin/usuarios');
-    }
-  };
-
-  // Obtener las iniciales del usuario para el avatar
-  const getInitials = () => {
-    const nombre = form.watch('nombre');
-    const apellido = form.watch('apellido');
-    
-    if (nombre && apellido) {
-      return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
-    } else if (nombre) {
-      return nombre.substring(0, 2).toUpperCase();
-    } else {
-      return 'US';
-    }
-  };
+  const {
+    form,
+    showCancelDialog,
+    setShowCancelDialog,
+    handleSubmit,
+    handleCancel,
+    navigate,
+    isSubmitting
+  } = useUserForm(modo, id);
 
   return (
     <div>
       <div className="space-y-6">
-        {/* Encabezado con breadcrumbs y botón de regreso */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground flex items-center">
-              <Link to="/admin/usuarios" className="hover:underline flex items-center">
-                <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                Usuarios
-              </Link>
-              <span className="mx-2">/</span>
-              <span>{modo === 'crear' ? 'Crear' : 'Editar'}</span>
-            </div>
-          </div>
-          <div>
-            <Button 
-              variant="outline" 
-              className="mr-2"
-              onClick={handleCancel}
-            >
-              <X className="h-4 w-4 mr-2" /> Cancelar
-            </Button>
-            <Button onClick={form.handleSubmit(onSubmit)}>
-              <Edit className="h-4 w-4 mr-2" /> {modo === 'crear' ? 'Crear Usuario' : 'Guardar Cambios'}
-            </Button>
-          </div>
-        </div>
+        <FormHeader 
+          modo={modo} 
+          handleCancel={handleCancel}
+          handleSubmit={() => form.handleSubmit(handleSubmit)()}
+          isSubmitting={isSubmitting}
+        />
 
-        {/* Contenido principal */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Columna izquierda - Información del usuario */}
           <div className="md:col-span-2 space-y-6">
             <Card className="overflow-hidden">
-              <div className="bg-muted p-6">
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <Avatar className="h-20 w-20 border-4 border-background">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-semibold">
-                        {(form.watch('nombre') || form.watch('apellido')) 
-                          ? `${form.watch('nombre')} ${form.watch('apellido')}` 
-                          : 'Nuevo Usuario'}
-                      </h3>
-                      <Badge 
-                        className="ml-2"
-                        variant={form.watch('estado') === 'activo' ? 'default' : 'secondary'}
-                      >
-                        {form.watch('estado') === 'activo' ? 'Activo' : 
-                         form.watch('estado') === 'inactivo' ? 'Inactivo' : 'Bloqueado'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <Mail className="h-4 w-4 mr-2" />
-                      {form.watch('email') || 'correo@ejemplo.com'}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <UserProfile form={form} />
 
               <Tabs defaultValue="general" className="p-6">
                 <TabsList className="mb-4">
@@ -273,232 +43,19 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
                 </TabsList>
                 
                 <TabsContent value="general">
-                  <Form {...form}>
-                    <form className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="nombre"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Nombre</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Nombre del usuario" {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="apellido"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Apellido</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Apellido del usuario" {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Correo electrónico</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="correo@ejemplo.com" {...field} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <Separator className="my-4" />
-                      
-                      <FormField
-                        control={form.control}
-                        name="tipo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tipo de Usuario</FormLabel>
-                            <FormControl>
-                              <div className="flex gap-4">
-                                <div className="flex items-center space-x-2">
-                                  <input 
-                                    type="radio" 
-                                    id="usuario" 
-                                    value="usuario"
-                                    checked={field.value === "usuario"}
-                                    onChange={() => field.onChange("usuario")}
-                                    className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                                  />
-                                  <label htmlFor="usuario" className="text-sm text-gray-700">Usuario</label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <input 
-                                    type="radio" 
-                                    id="admin" 
-                                    value="admin"
-                                    checked={field.value === "admin"}
-                                    onChange={() => field.onChange("admin")}
-                                    className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                                  />
-                                  <label htmlFor="admin" className="text-sm text-gray-700">Administrativo</label>
-                                </div>
-                              </div>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </form>
-                  </Form>
+                  <GeneralInfoTab form={form} />
                 </TabsContent>
                 
                 <TabsContent value="cuenta">
-                  <Form {...form}>
-                    <form className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Contraseña</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="password" 
-                                placeholder={modo === 'editar' ? '••••••••' : 'Contraseña'}
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              {modo === 'editar' ? 'Deje en blanco para mantener la contraseña actual' : 
-                                'Mínimo 8 caracteres con letras y números'}
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="roles"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Rol</FormLabel>
-                            <FormControl>
-                              <Select 
-                                onValueChange={(value) => field.onChange([value])}
-                                defaultValue={field.value?.[0]}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un rol" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {roles.map((rol) => (
-                                    <SelectItem key={rol.id} value={rol.id}>
-                                      {rol.nombre}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="estado"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Estado</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecciona un estado" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="activo">Activo</SelectItem>
-                                <SelectItem value="inactivo">Inactivo</SelectItem>
-                                <SelectItem value="bloqueado">Bloqueado</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    </form>
-                  </Form>
+                  <AccountInfoTab form={form} modo={modo} />
                 </TabsContent>
               </Tabs>
             </Card>
           </div>
 
-          {/* Columna derecha - Información complementaria */}
           <div className="space-y-6">
-            {/* Tarjeta de información */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información de usuario</CardTitle>
-                <CardDescription>Detalles sobre este formulario</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Tipo de usuario</p>
-                  <p className="text-sm text-muted-foreground">
-                    Los usuarios de tipo administrativo tienen acceso a más funciones del sistema.
-                  </p>
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Roles</p>
-                  <p className="text-sm text-muted-foreground">
-                    El rol determina qué permisos tendrá el usuario en el sistema.
-                  </p>
-                </div>
-                
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Estado</p>
-                  <p className="text-sm text-muted-foreground">
-                    Activo: Usuario con acceso al sistema<br/>
-                    Inactivo: Usuario sin acceso al sistema<br/>
-                    Bloqueado: Usuario bloqueado por intentos fallidos
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Tarjeta de consejos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Consejos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md">
-                    <User className="h-5 w-5 text-blue-600" />
-                    <p className="text-sm">Complete todos los campos obligatorios marcados con un asterisco.</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md">
-                    <Shield className="h-5 w-5 text-amber-600" />
-                    <p className="text-sm">Los usuarios administrativos deben asignarse con precaución.</p>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-green-50 text-green-800 rounded-md">
-                    <Users className="h-5 w-5 text-green-600" />
-                    <p className="text-sm">Asigne roles apropiados según las funciones del usuario.</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <InfoCard />
+            <TipsCard />
           </div>
         </div>
       </div>

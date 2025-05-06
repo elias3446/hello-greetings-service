@@ -1,10 +1,10 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Usuario } from '@/types/tipos';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Usuario, Reporte, HistorialEstadoUsuario, Rol } from '@/types/tipos';
 import { UsuarioState, UsuarioActions } from '@/types/usuario';
-import { getUsers, updateUser, deleteUser } from '@/controller/CRUD/userController';
-import { getReports } from '@/controller/CRUD/reportController';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { getUsers, updateUser, deleteUser, getUserById } from '@/controller/CRUD/userController';
+import { getReports, filterReports } from '@/controller/CRUD/reportController';
+import { registrarCambioEstado, obtenerHistorialUsuario } from '@/controller/CRUD/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 import { normalizeText, getFieldValue, exportUsuariosToCSV } from '@/utils/usuarioUtils';
@@ -330,5 +330,242 @@ export const useUsuarioHandlers = (state: UsuarioState, actions: UsuarioActions)
     handleDeleteUser,
     handleEstadoChange,
     confirmarEliminacion
+  };
+};
+
+export const useUsuario = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [reportesAsignados, setReportesAsignados] = useState<Reporte[]>([]);
+  const [historialEstados, setHistorialEstados] = useState<HistorialEstadoUsuario[]>([]);
+
+  useEffect(() => {
+    const cargarUsuario = () => {
+      try {
+        if (!id) {
+          toast.error('ID de usuario no válido');
+          navigate('/admin/usuarios');
+          return;
+        }
+        
+        const userData = getUserById(id);
+        
+        if (!userData) {
+          toast.error('Usuario no encontrado');
+          navigate('/admin/usuarios');
+          return;
+        }
+        
+        setUsuario(userData);
+      } catch (error) {
+        console.error('Error al cargar el usuario:', error);
+        toast.error('Error al cargar el usuario');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    cargarUsuario();
+  }, [id, navigate]);
+
+  useEffect(() => {
+    if (id) {
+      const reportes = filterReports({ userId: id });
+      setReportesAsignados(reportes);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      const historial = obtenerHistorialUsuario(id);
+      setHistorialEstados(historial);
+    }
+  }, [id, usuario]);
+
+  const handleRoleChange = async (newRole: Rol) => {
+    try {
+      if (!usuario) return false;
+
+      const estadoAnterior = usuario.roles[0]?.nombre || 'Sin rol';
+      const usuarioActualizado = updateUser(usuario.id, {
+        roles: [newRole]
+      });
+
+      if (!usuarioActualizado) {
+        throw new Error('Error al actualizar el rol del usuario');
+      }
+
+      setUsuario(usuarioActualizado);
+      
+      const historial = obtenerHistorialUsuario(usuario.id);
+      setHistorialEstados(historial);
+      
+      toast.success('Rol asignado correctamente');
+      return true;
+    } catch (error) {
+      console.error('Error al asignar el rol:', error);
+      toast.error('Error al asignar el rol');
+      return false;
+    }
+  };
+
+  const handleCambiarEstado = async () => {
+    try {
+      if (!id || !usuario) return false;
+      
+      if (usuario.estado === 'bloqueado') {
+        toast.error('No se puede cambiar el estado de un usuario bloqueado directamente');
+        return false;
+      }
+      
+      const estadoAnterior = usuario.estado;
+      const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+      const usuarioActualizado = updateUser(id, { estado: nuevoEstado });
+      
+      if (usuarioActualizado) {
+        setUsuario(usuarioActualizado);
+        
+        await registrarCambioEstado(
+          usuario,
+          estadoAnterior,
+          nuevoEstado,
+          usuarioActualizado,
+          'Cambio de estado manual',
+          'cambio_estado'
+        );
+
+        for (const reporte of reportesAsignados) {
+          await registrarCambioEstadoReporte(
+            reporte,
+            reporte.estado.nombre,
+            reporte.estado.nombre,
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            },
+            `Usuario asignado ${usuario.nombre} ${usuario.apellido} ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'}`,
+            'asignacion_reporte'
+          );
+        }
+        
+        const historial = obtenerHistorialUsuario(id);
+        setHistorialEstados(historial);
+        
+        toast.success(`Usuario ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'} correctamente`);
+        return true;
+      }
+      
+      toast.error('Error al actualizar el estado del usuario');
+      return false;
+    } catch (error) {
+      console.error('Error al cambiar el estado del usuario:', error);
+      toast.error('Error al cambiar el estado del usuario');
+      return false;
+    }
+  };
+
+  const handleEliminarUsuario = async () => {
+    try {
+      if (!id || !usuario) return false;
+
+      await registrarCambioEstado(
+        usuario,
+        usuario.estado,
+        'eliminado',
+        usuario,
+        'Usuario eliminado del sistema',
+        'otro'
+      );
+
+      for (const reporte of reportesAsignados) {
+        await registrarCambioEstadoReporte(
+          reporte,
+          `${usuario.nombre} ${usuario.apellido}`,
+          'Sin asignar',
+          usuario,
+          'Usuario eliminado del sistema',
+          'asignacion_reporte'
+        );
+      }
+
+      const nuevoHistorial = await obtenerHistorialUsuario(id);
+      setHistorialEstados(nuevoHistorial);
+
+      const success = deleteUser(id);
+      
+      if (success) {
+        toast.success('Usuario eliminado correctamente');
+        navigate('/admin/usuarios');
+        return true;
+      }
+      
+      throw new Error('Error al eliminar el usuario');
+    } catch (error) {
+      console.error('Error al eliminar el usuario:', error);
+      toast.error('Error al eliminar el usuario');
+      return false;
+    }
+  };
+
+  const handleEditarUsuario = (datosActualizados: Partial<Usuario>) => {
+    try {
+      if (!usuario || !id) return false;
+
+      const usuarioActualizado = updateUser(id, datosActualizados);
+
+      if (!usuarioActualizado) {
+        throw new Error('Error al actualizar el usuario');
+      }
+
+      setUsuario(usuarioActualizado);
+
+      registrarCambioEstado(
+        usuario,
+        'Información anterior',
+        'Información actualizada',
+        usuarioActualizado,
+        'Edición de información del usuario',
+        'actualizacion'
+      );
+
+      const historial = obtenerHistorialUsuario(id);
+      setHistorialEstados(historial);
+
+      toast.success('Usuario actualizado correctamente');
+      return true;
+    } catch (error) {
+      console.error('Error al actualizar el usuario:', error);
+      toast.error('Error al actualizar el usuario');
+      return false;
+    }
+  };
+
+  return {
+    usuario,
+    loading,
+    reportesAsignados,
+    historialEstados,
+    handleRoleChange,
+    handleCambiarEstado,
+    handleEliminarUsuario,
+    handleEditarUsuario
   };
 }; 
