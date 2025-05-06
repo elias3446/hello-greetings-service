@@ -1,20 +1,15 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
-  PlusIcon, 
   PencilIcon, 
   Trash2Icon, 
-  DownloadIcon,
-  FileText
 } from 'lucide-react';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, filterReports, sortReports, deleteReport } from '@/controller/CRUD/reportController';
+import { getReports, sortReports, deleteReport } from '@/controller/CRUD/reportController';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import CategoriaSelector from '@/components/admin/selector/CategoriaSelector';
 import EstadoSelector from '@/components/admin/selector/EstadoSelector';
@@ -112,7 +107,7 @@ const exportToCSV = (reportes: Reporte[]): void => {
   document.body.removeChild(link);
 };
 
-// Custom hook for state management
+// Custom hooks
 const useReportesState = () => {
   const [reportes, setReportes] = React.useState<Reporte[]>([]);
   const [filteredReportes, setFilteredReportes] = React.useState<Reporte[]>([]);
@@ -158,7 +153,71 @@ const useReportesState = () => {
   };
 };
 
-// Delete confirmation dialog component
+const useReportesData = (
+  reportes: Reporte[],
+  searchTerm: string,
+  sortBy: string,
+  sortDirection: 'asc' | 'desc',
+  selectedFilterValues: any[]
+) => {
+  return React.useMemo(() => {
+    let result = [...reportes];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        reporte => reporte.titulo.toLowerCase().includes(term) ||
+                reporte.ubicacion.direccion.toLowerCase().includes(term) ||
+                getFullName(reporte).toLowerCase().includes(term) ||
+                reporte.estado.nombre.toLowerCase().includes(term) ||
+                reporte.estado.id.toString().toLowerCase().includes(term) ||
+                reporte.categoria.nombre.toLowerCase().includes(term) ||
+                formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
+      );
+    }
+
+    const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
+    const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
+    const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
+
+    if (filterValues.length > 0) {
+      result = result.filter(reporte => 
+        filterValues.includes(getFieldValue(reporte, sortBy))
+      );
+    }
+
+    if (filterStates.length > 0) {
+      result = result.filter(reporte => 
+        filterStates.includes(reporte.estado.nombre)
+      );
+    }
+
+    if (filterCategories.length > 0) {
+      result = result.filter(reporte => 
+        filterCategories.includes(reporte.categoria.nombre)
+      );
+    }
+
+    return sortReports(result, sortBy, sortDirection);
+  }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);
+};
+
+const usePagination = (items: Reporte[], itemsPerPage: number) => {
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+
+  return {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    currentItems,
+  };
+};
+
+// Components
 const DeleteConfirmationDialog: React.FC<DeleteDialogProps> = ({ 
   isOpen, 
   onClose, 
@@ -187,7 +246,6 @@ const DeleteConfirmationDialog: React.FC<DeleteDialogProps> = ({
   </AlertDialog>
 );
 
-// Table component for displaying reports
 const ReportesTable: React.FC<ReporteTableProps> = ({ 
   reportes, 
   isLoading, 
@@ -276,7 +334,6 @@ const ReportesTable: React.FC<ReporteTableProps> = ({
   );
 };
 
-// Pagination component
 const ReportesPagination: React.FC<PaginationProps> = ({ 
   currentPage, 
   totalPages, 
@@ -331,8 +388,6 @@ const ListaReportesAdmin: React.FC = () => {
     setSortBy,
     sortDirection,
     setSortDirection,
-    currentPage,
-    setCurrentPage,
     isLoading,
     setIsLoading,
     showDeleteDialog,
@@ -346,6 +401,8 @@ const ListaReportesAdmin: React.FC = () => {
   } = useReportesState();
 
   const itemsPerPage = 10;
+  const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
+  const { currentPage, setCurrentPage, totalPages, currentItems } = usePagination(filteredData, itemsPerPage);
 
   const sortOptions: SortOption[] = [
     { value: 'titulo', label: 'Título' },
@@ -371,6 +428,11 @@ const ListaReportesAdmin: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
+
+  React.useEffect(() => {
+    setFilteredReportes(filteredData);
+    setCurrentPage(1);
+  }, [filteredData]);
 
   const confirmarEliminacion = async () => {
     try {
@@ -418,50 +480,6 @@ const ListaReportesAdmin: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
-    let result = [...reportes];
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        reporte => reporte.titulo.toLowerCase().includes(term) ||
-                reporte.ubicacion.direccion.toLowerCase().includes(term) ||
-                getFullName(reporte).toLowerCase().includes(term) ||
-                reporte.estado.nombre.toLowerCase().includes(term) ||
-                reporte.estado.id.toString().toLowerCase().includes(term) ||
-                reporte.categoria.nombre.toLowerCase().includes(term) ||
-                formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
-      );
-    }
-
-    const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
-    const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
-    const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
-
-    if (filterValues.length > 0) {
-      result = result.filter(reporte => 
-        filterValues.includes(getFieldValue(reporte, sortBy))
-      );
-    }
-
-    if (filterStates.length > 0) {
-      result = result.filter(reporte => 
-        filterStates.includes(reporte.estado.nombre)
-      );
-    }
-
-    if (filterCategories.length > 0) {
-      result = result.filter(reporte => 
-        filterCategories.includes(reporte.categoria.nombre)
-      );
-    }
-
-    result = sortReports(result, sortBy, sortDirection);
-
-    setFilteredReportes(result);
-    setCurrentPage(1);
-  }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);
-
   const handleToggleSortDirection = () => {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
   };
@@ -480,14 +498,8 @@ const ListaReportesAdmin: React.FC = () => {
   };
 
   const handleExportReportes = () => {
-    exportToCSV(filteredReportes);
+    exportToCSV(filteredData);
   };
-
-  // Paginación
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentReportes = filteredReportes.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredReportes.length / itemsPerPage);
 
   return (
     <div>
@@ -514,7 +526,7 @@ const ListaReportesAdmin: React.FC = () => {
           newButtonLabel="Nuevo Reporte"
           showExportButton={true}
           sortOptions={sortOptions}
-          filteredCount={filteredReportes.length}
+          filteredCount={filteredData.length}
           totalCount={reportes.length}
           itemLabel="reportes"
           filterOptions={filterOptions}
@@ -535,7 +547,7 @@ const ListaReportesAdmin: React.FC = () => {
             </TableHeader>
             <TableBody>
               <ReportesTable
-                reportes={currentReportes}
+                reportes={currentItems}
                 isLoading={isLoading}
                 onEdit={handleEditReporte}
                 onDelete={handleDeleteReporte}
