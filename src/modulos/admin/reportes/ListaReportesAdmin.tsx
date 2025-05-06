@@ -34,6 +34,84 @@ interface FilterOption {
   label: string;
 }
 
+interface ReporteTableProps {
+  reportes: Reporte[];
+  isLoading: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (reporte: Reporte) => void;
+}
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+interface DeleteDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  reporte: Reporte | null;
+}
+
+// Utility functions
+const formatDate = (date: Date): string => {
+  return new Date(date).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
+const getFullName = (reporte: Reporte): string => {
+  if (!reporte.asignadoA) return 'Sin asignar';
+  return `${reporte.asignadoA.nombre} ${reporte.asignadoA.apellido}`.trim();
+};
+
+const getFieldValue = (reporte: Reporte, field: string): string => {
+  switch (field) {
+    case 'titulo':
+      return reporte.titulo;
+    case 'ubicacion':
+      return reporte.ubicacion.direccion;
+    case 'asignadoA':
+      return getFullName(reporte);
+    case 'fechaCreacion':
+      return formatDate(reporte.fechaCreacion);
+    case 'estado':
+      return reporte.estado.nombre;
+    case 'categoria':
+      return reporte.categoria.nombre;
+    default:
+      return '';
+  }
+};
+
+const exportToCSV = (reportes: Reporte[]): void => {
+  const data = reportes.map(reporte => ({
+    titulo: reporte.titulo,
+    categoria: reporte.categoria.nombre,
+    estado: reporte.estado.nombre,
+    fechaCreacion: formatDate(reporte.fechaCreacion),
+    ubicacion: reporte.ubicacion.direccion,
+    asignadoA: getFullName(reporte)
+  }));
+  
+  const csvContent = [
+    Object.keys(data[0]).join(','),
+    ...data.map(row => Object.values(row).join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'reportes.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 // Custom hook for state management
 const useReportesState = () => {
   const [reportes, setReportes] = React.useState<Reporte[]>([]);
@@ -81,12 +159,12 @@ const useReportesState = () => {
 };
 
 // Delete confirmation dialog component
-const DeleteConfirmationDialog: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  reporte: Reporte | null;
-}> = ({ isOpen, onClose, onConfirm, reporte }) => (
+const DeleteConfirmationDialog: React.FC<DeleteDialogProps> = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  reporte 
+}) => (
   <AlertDialog open={isOpen} onOpenChange={onClose}>
     <AlertDialogContent>
       <AlertDialogHeader>
@@ -109,58 +187,13 @@ const DeleteConfirmationDialog: React.FC<{
   </AlertDialog>
 );
 
-// Utility functions
-const getFieldValue = (reporte: Reporte, field: string): string => {
-  switch (field) {
-    case 'titulo':
-      return reporte.titulo;
-    case 'ubicacion':
-      return reporte.ubicacion.direccion;
-    case 'asignadoA':
-      return reporte.asignadoA?.nombre || 'Sin asignar';
-    case 'fechaCreacion':
-      return new Date(reporte.fechaCreacion).toLocaleDateString('es-ES');
-    case 'estado':
-      return reporte.estado.nombre;
-    case 'categoria':
-      return reporte.categoria.nombre;
-    default:
-      return '';
-  }
-};
-
-const exportToCSV = (reportes: Reporte[]) => {
-  const data = reportes.map(reporte => ({
-    titulo: reporte.titulo,
-    categoria: reporte.categoria.nombre,
-    estado: reporte.estado.nombre,
-    fechaCreacion: new Date(reporte.fechaCreacion).toLocaleDateString('es-ES'),
-    ubicacion: reporte.ubicacion.direccion,
-    asignadoA: reporte.asignadoA?.nombre || 'Sin asignar'
-  }));
-  
-  const csvContent = [
-    Object.keys(data[0]).join(','),
-    ...data.map(row => Object.values(row).join(','))
-  ].join('\n');
-  
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', 'reportes.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
 // Table component for displaying reports
-const ReportesTable: React.FC<{
-  reportes: Reporte[];
-  isLoading: boolean;
-  onEdit: (id: string) => void;
-  onDelete: (reporte: Reporte) => void;
-}> = ({ reportes, isLoading, onEdit, onDelete }) => {
+const ReportesTable: React.FC<ReporteTableProps> = ({ 
+  reportes, 
+  isLoading, 
+  onEdit, 
+  onDelete 
+}) => {
   if (isLoading) {
     return (
       <TableRow>
@@ -209,11 +242,7 @@ const ReportesTable: React.FC<{
             )}
           </TableCell>
           <TableCell>
-            {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric'
-            })}
+            {formatDate(reporte.fechaCreacion)}
           </TableCell>
           <TableCell>{reporte.ubicacion.direccion}</TableCell>
           <TableCell>
@@ -248,11 +277,11 @@ const ReportesTable: React.FC<{
 };
 
 // Pagination component
-const ReportesPagination: React.FC<{
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}> = ({ currentPage, totalPages, onPageChange }) => {
+const ReportesPagination: React.FC<PaginationProps> = ({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}) => {
   if (totalPages <= 1) return null;
 
   return (
@@ -363,7 +392,7 @@ const ListaReportesAdmin: React.FC = () => {
       for (const reporte of reportesAsignados) {
         await registrarCambioEstadoReporte(
           reporte,
-          `${reporteAEliminar.asignadoA?.nombre} ${reporteAEliminar.asignadoA?.apellido}`,
+          getFullName(reporteAEliminar),
           'Sin asignar',
           reporteAEliminar.asignadoA,
           'Reporte eliminado del sistema',
@@ -397,11 +426,11 @@ const ListaReportesAdmin: React.FC = () => {
       result = result.filter(
         reporte => reporte.titulo.toLowerCase().includes(term) ||
                 reporte.ubicacion.direccion.toLowerCase().includes(term) ||
-                reporte.asignadoA?.nombre.toLowerCase().includes(term) ||
+                getFullName(reporte).toLowerCase().includes(term) ||
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
                 reporte.categoria.nombre.toLowerCase().includes(term) ||
-                reporte.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term)
+                formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
       );
     }
 
@@ -446,12 +475,12 @@ const ListaReportesAdmin: React.FC = () => {
     setShowDeleteDialog(true);
   };
 
-  const handleExportReportes = () => {
-    exportToCSV(filteredReportes);
-  };
-
   const handleEditReporte = (id: string) => {
     navigate(`/admin/reportes/${id}/editar`);
+  };
+
+  const handleExportReportes = () => {
+    exportToCSV(filteredReportes);
   };
 
   // Paginación
