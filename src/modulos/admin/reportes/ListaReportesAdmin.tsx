@@ -14,11 +14,14 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, filterReports, sortReports } from '@/controller/CRUD/reportController';
+import { getReports, filterReports, sortReports, deleteReport } from '@/controller/CRUD/reportController';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import CategoriaSelector from '@/components/admin/selector/CategoriaSelector';
 import EstadoSelector from '@/components/admin/selector/EstadoSelector';
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
 const ListaReportesAdmin: React.FC = () => {
   const navigate = useNavigate();
@@ -31,6 +34,8 @@ const ListaReportesAdmin: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [reporteAEliminar, setReporteAEliminar] = useState<Reporte | null>(null);
   const [currentField, setCurrentField] = useState<string | undefined>();
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const itemsPerPage = 10;
@@ -60,6 +65,58 @@ const ListaReportesAdmin: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
+
+  const confirmarEliminacion = async () => {
+    try {
+      if (!reporteAEliminar) return;
+      
+      // Obtener todos los reportes asignados al usuario
+      const reportesAsignados = getReports().filter(reporte => 
+        reporte.asignadoA && reporte.asignadoA.id === reporteAEliminar.id
+      );
+
+      // Registrar el cambio en el historial del usuario
+      await registrarCambioEstado(
+        reporteAEliminar.asignadoA,
+        reporteAEliminar.estado.nombre,
+        'eliminado',
+        reporteAEliminar.asignadoA,
+        'Reporte eliminado del sistema',
+        'otro'
+      );
+
+      // Registrar el cambio en el historial de cada reporte asignado
+      for (const reporte of reportesAsignados) {
+        await registrarCambioEstadoReporte(
+          reporte,
+          `${reporteAEliminar.asignadoA?.nombre} ${reporteAEliminar.asignadoA?.apellido}`,
+          'Sin asignar',
+          reporteAEliminar.asignadoA,
+          'Reporte eliminado del sistema',
+          'asignacion_reporte'
+        );
+      }
+
+      // Eliminar el usuario
+      const success = deleteReport(reporteAEliminar.id);
+      
+      if (success) {
+        // Actualizar el estado local
+        setReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
+        setFilteredReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
+        
+        toast.success(`Reporte ${reporteAEliminar.titulo} eliminado correctamente`);
+      } else {
+        throw new Error('Error al eliminar el reporte');
+      }
+    } catch (error) {
+      console.error('Error al eliminar el reporte:', error);
+      toast.error('Error al eliminar el reporte');
+    } finally {
+      setShowDeleteDialog(false);
+      setReporteAEliminar(null);
+    }
+  };
 
   useEffect(() => {
     // Aplicar filtros, búsqueda y ordenamiento
@@ -138,6 +195,11 @@ const ListaReportesAdmin: React.FC = () => {
 
   const handleFilterChange = (values: any[]) => {
     setSelectedFilterValues(values);
+  };
+
+  const handleDeleteReporte = (reporte: Reporte) => {
+    setReporteAEliminar(reporte);
+    setShowDeleteDialog(true);
   };
 
   const handleExportReportes = () => {
@@ -274,10 +336,7 @@ const ListaReportesAdmin: React.FC = () => {
                           variant="ghost"
                           size="icon"
                           className="text-red-500 hover:text-red-600"
-                          onClick={() => {
-                            // Implementar lógica de eliminación
-                            toast.success('Reporte eliminado correctamente');
-                          }}
+                          onClick={() => handleDeleteReporte(reporte)}
                         >
                           <Trash2Icon className="h-4 w-4" />
                         </Button>
@@ -325,6 +384,27 @@ const ListaReportesAdmin: React.FC = () => {
           </Pagination>
         )}
       </div>
+      {/* Diálogo de confirmación para eliminar usuario */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
+              <span className="font-semibold">{reporteAEliminar?.titulo}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmarEliminacion}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
