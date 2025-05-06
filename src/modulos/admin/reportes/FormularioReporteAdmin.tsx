@@ -422,17 +422,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                       ubicacionInicial={ubicacion}
                       userPosition={userPosition}
                     />
-                    {ubicacion && (
-                      <div className="rounded-md border p-4 bg-gray-50">
-                        <div className="text-sm font-medium mb-2">Ubicación seleccionada:</div>
-                        <div className="text-sm text-muted-foreground">
-                          {ubicacion.direccion}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Lat: {ubicacion.latitud.toFixed(6)}, Long: {ubicacion.longitud.toFixed(6)}
-                        </div>
-                      </div>
-                    )}
+                   
                   </div>
                 </TabsContent>
 
