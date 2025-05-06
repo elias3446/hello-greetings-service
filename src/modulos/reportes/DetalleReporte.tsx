@@ -7,13 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft, FileText, Clock } from 'lucide-react';
-import { getReportById } from '@/controller/CRUD/reportController';
+import { getReportById, updateReport } from '@/controller/CRUD/reportController';
 import { obtenerHistorialReporte, registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
-import type { Reporte, HistorialEstadoReporte } from '@/types/tipos';
+import type { Reporte, HistorialEstadoReporte, Rol, Usuario } from '@/types/tipos';
 import MapaBase from '@/components/layout/MapaBase';
 import { ReporteAcciones } from '@/components/reportes/ReporteAcciones';
 import ReporteActividad from '@/components/reportes/ReporteActividad';
+import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogHeader } from '@/components/ui/alert-dialog';
+import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
+import { updateUser } from '@/controller/CRUD/userController';
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 
 const DetalleReporte = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +25,7 @@ const DetalleReporte = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [historialEstados, setHistorialEstados] = useState<HistorialEstadoReporte[]>([]);
-
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
   useEffect(() => {
     const cargarReporte = () => {
       try {
@@ -91,6 +95,29 @@ const DetalleReporte = () => {
 
   const handleMarkResolved = () => {
     toast.success('Reporte marcado como Resuelto');
+  };
+
+  const handleReporteChange = async (newUsuario: Usuario) => {
+    try {
+      if (!reporte) return;
+
+      const estadoAnterior = reporte.asignadoA?.nombre || 'Sin usuario';
+      const reporteActualizado = updateReport(reporte.id, {
+        asignadoA: newUsuario
+      });
+
+      if (!reporteActualizado) {
+        throw new Error('Error al actualizar el usuario del reporte');
+      }
+
+      setReporte(reporteActualizado);
+      setShowRoleDialog(false);
+      
+      toast.success('Rol asignado correctamente');
+    } catch (error) {
+      console.error('Error al asignar el usuario:', error);
+      toast.error('Error al asignar el usuario');
+    }
   };
 
   const getIconForAction = (tipoAccion: string) => {
@@ -383,7 +410,11 @@ const DetalleReporte = () => {
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Marcar como resuelto
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => setShowRoleDialog(true)}
+                >
                   <User className="mr-2 h-4 w-4" />
                   Reasignar
                 </Button>
@@ -472,6 +503,33 @@ const DetalleReporte = () => {
             </Card>
           </div>
         </div>
+        {/* Diálogo para asignar usuario */}
+      <AlertDialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Asignar usuario</AlertDialogTitle>
+            <AlertDialogDescription>
+              {reporte.asignadoA?.estado === 'bloqueado' ? (
+                <div className="text-destructive">
+                  No se puede cambiar el usuario de un reporte bloqueado
+                </div>
+              ) : (
+                `Selecciona el nuevo usuario para el reporte ${reporte.titulo}`
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <UsuarioSelector
+              ReporteId={reporte.id}
+              currentUsuarioId={reporte.asignadoA?.id || ''}
+              onUsuarioChange={handleReporteChange}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </>
   );
