@@ -18,6 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { getRoles } from '@/controller/CRUD/roleController';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { obtenerHistorialUsuario, registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { HistorialEstadoUsuario } from '@/types/tipos';
 import { Clock } from 'lucide-react';
 
@@ -190,31 +191,47 @@ const DetalleUsuario = () => {
     }
   };
 
-  const handleEliminarUsuario = () => {
+  const handleEliminarUsuario = async () => {
     try {
       if (!id || !usuario) return;
       
-      const eliminado = deleteUser(id);
-      
-      if (eliminado) {
-        // Registrar el cambio en el historial
-        registrarCambioEstado(
+      // Obtener todos los reportes asignados al usuario
+      const reportesAsignados = filterReports({ userId: id });
+
+      // Registrar el cambio en el historial del usuario
+      await registrarCambioEstado(
+        usuario,
+        usuario.estado,
+        'eliminado',
+        usuario,
+        'Usuario eliminado del sistema',
+        'otro'
+      );
+
+      // Registrar el cambio en el historial de cada reporte asignado
+      for (const reporte of reportesAsignados) {
+        await registrarCambioEstadoReporte(
+          reporte,
+          `${usuario.nombre} ${usuario.apellido}`,
+          'Sin asignar',
           usuario,
-          usuario.estado,
-          'eliminado',
-          usuario, // En un caso real, esto debería ser el usuario que está realizando la acción
           'Usuario eliminado del sistema',
-          'otro'
+          'asignacion_reporte'
         );
-        
-        // Actualizar el historial mostrado antes de navegar
-        const historial = obtenerHistorialUsuario(id);
-        setHistorialEstados(historial);
-        
+      }
+
+      // Actualizar el historial local
+      const nuevoHistorial = await obtenerHistorialUsuario(id);
+      setHistorialEstados(nuevoHistorial);
+
+      // Eliminar el usuario
+      const success = deleteUser(id);
+      
+      if (success) {
         toast.success('Usuario eliminado correctamente');
         navigate('/admin/usuarios');
       } else {
-        toast.error('Error al eliminar el usuario');
+        throw new Error('Error al eliminar el usuario');
       }
     } catch (error) {
       console.error('Error al eliminar el usuario:', error);

@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft, FileText, Clock } from 'lucide-react';
 import { getReportById } from '@/controller/CRUD/reportController';
-import { obtenerHistorialReporte, registrarCambioEstado } from '@/controller/CRUD/historialEstadosReporte';
+import { obtenerHistorialReporte, registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 import type { Reporte, HistorialEstadoReporte } from '@/types/tipos';
 import MapaBase from '@/components/layout/MapaBase';
@@ -98,11 +98,9 @@ const DetalleReporte = () => {
       case 'creacion':
         return <FileText className="h-4 w-4" />;
       case 'cambio_estado':
-        return <CheckCircle className="h-4 w-4" />;
+        return <History className="h-4 w-4" />;
       case 'asignacion_reporte':
         return <User className="h-4 w-4" />;
-      case 'actualizacion':
-        return <Edit className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
@@ -115,9 +113,7 @@ const DetalleReporte = () => {
       case 'cambio_estado':
         return `Estado cambiado de "${registro.estadoAnterior}" a "${registro.estadoNuevo}"`;
       case 'asignacion_reporte':
-        return 'Reporte asignado';
-      case 'actualizacion':
-        return 'Información actualizada';
+        return `Asignación cambiada de "${registro.estadoAnterior}" a "${registro.estadoNuevo}"`;
       default:
         return 'Acción realizada';
     }

@@ -34,6 +34,8 @@ import { sortUsers } from '@/utils/userUtils';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { getReports } from '@/controller/CRUD/reportController';
 
 const ListaUsuarios: React.FC = () => {
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ const ListaUsuarios: React.FC = () => {
   const [currentField, setCurrentField] = useState<string | undefined>();
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [usuarioAEliminar, setUsuarioAEliminar] = useState<{ id: string; nombre: string } | null>(null);
+  const [usuarioAEliminar, setUsuarioAEliminar] = useState<Usuario | null>(null);
   const itemsPerPage = 10;
   const [searchField, setSearchField] = useState<string>('nombre');
 
@@ -209,26 +211,53 @@ const ListaUsuarios: React.FC = () => {
     navigate(`/admin/usuarios/${usuarioId}`);
   };
 
-  // Función para manejar la eliminación de usuarios
-  const handleDeleteUser = (usuarioId: string, nombreUsuario: string) => {
-    setUsuarioAEliminar({ id: usuarioId, nombre: nombreUsuario });
+  const handleDeleteUser = (usuario: Usuario) => {
+    setUsuarioAEliminar(usuario);
     setShowDeleteDialog(true);
   };
 
-  const confirmarEliminacion = () => {
+  const confirmarEliminacion = async () => {
     try {
       if (!usuarioAEliminar) return;
       
-      const eliminado = deleteUser(usuarioAEliminar.id);
+      // Obtener todos los reportes asignados al usuario
+      const reportesAsignados = getReports().filter(reporte => 
+        reporte.asignadoA && reporte.asignadoA.id === usuarioAEliminar.id
+      );
+
+      // Registrar el cambio en el historial del usuario
+      await registrarCambioEstado(
+        usuarioAEliminar,
+        usuarioAEliminar.estado,
+        'eliminado',
+        usuarioAEliminar,
+        'Usuario eliminado del sistema',
+        'otro'
+      );
+
+      // Registrar el cambio en el historial de cada reporte asignado
+      for (const reporte of reportesAsignados) {
+        await registrarCambioEstadoReporte(
+          reporte,
+          `${usuarioAEliminar.nombre} ${usuarioAEliminar.apellido}`,
+          'Sin asignar',
+          usuarioAEliminar,
+          'Usuario eliminado del sistema',
+          'asignacion_reporte'
+        );
+      }
+
+      // Eliminar el usuario
+      const success = deleteUser(usuarioAEliminar.id);
       
-      if (eliminado) {
+      if (success) {
         // Actualizar el estado local
         setUsuarios(prevUsuarios => prevUsuarios.filter(user => user.id !== usuarioAEliminar.id));
         setFilteredUsuarios(prevUsuarios => prevUsuarios.filter(user => user.id !== usuarioAEliminar.id));
         
         toast.success(`Usuario ${usuarioAEliminar.nombre} eliminado correctamente`);
       } else {
-        toast.error('Error al eliminar el usuario');
+        throw new Error('Error al eliminar el usuario');
       }
     } catch (error) {
       console.error('Error al eliminar el usuario:', error);
@@ -240,7 +269,7 @@ const ListaUsuarios: React.FC = () => {
   };
 
   // Función para cambiar el estado del usuario (activo/inactivo)
-  const handleEstadoChange = (usuarioId: string) => {
+  const handleEstadoChange = async (usuarioId: string) => {
     const usuario = usuarios.find(user => user.id === usuarioId);
     if (usuario) {
       // Solo permitir cambiar entre activo e inactivo si no está bloqueado
@@ -252,52 +281,92 @@ const ListaUsuarios: React.FC = () => {
       // Determine the new state based on current state
       const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
       
-      // Update the user in the data layer
-      const updatedUser = updateUser(usuarioId, { estado: nuevoEstado });
-      
-      if (!updatedUser) {
-        toast.error('Error al actualizar el estado del usuario');
-        return;
-      }
+      try {
+        // Obtener todos los reportes asignados al usuario
+        const reportesAsignados = getReports().filter(reporte => 
+          reporte.asignadoA && reporte.asignadoA.id === usuario.id
+        );
 
-      // Registrar el cambio en el historial
-      registrarCambioEstado(
-        usuario,
-        usuario.estado,
-        nuevoEstado,
-        {
-          id: '0',
-          nombre: 'Sistema',
-          apellido: '',
-          email: 'sistema@example.com',
-          estado: 'activo',
-          tipo: 'usuario',
-          intentosFallidos: 0,
-          password: 'hashed_password',
-          roles: [{
-            id: '1',
-            nombre: 'Administrador',
-            descripcion: 'Rol con acceso total al sistema',
-            color: '#FF0000',
-            tipo: 'admin',
+        // Registrar el cambio en el historial del usuario
+        await registrarCambioEstado(
+          usuario,
+          usuario.estado,
+          nuevoEstado,
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
             fechaCreacion: new Date('2023-01-01'),
-            activo: true
-          }],
-          fechaCreacion: new Date('2023-01-01'),
-        },
-        `Cambio de estado de usuario ${usuario.nombre} ${usuario.apellido}`,
-        'cambio_estado'
-      );
-      
-      // Update both usuarios and filteredUsuarios arrays to reflect the change immediately
-      setUsuarios(prevUsuarios => prevUsuarios.map(user => {
-        if (user.id === usuarioId) {
-          return { ...user, estado: nuevoEstado };
+          },
+          `Cambio de estado de usuario ${usuario.nombre} ${usuario.apellido}`,
+          'cambio_estado'
+        );
+
+        // Registrar el cambio en el historial de cada reporte asignado
+        for (const reporte of reportesAsignados) {
+          await registrarCambioEstadoReporte(
+            reporte,
+            reporte.estado.nombre,
+            reporte.estado.nombre,
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            },
+            `Usuario asignado ${usuario.nombre} ${usuario.apellido} ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'}`,
+            'asignacion_reporte'
+          );
         }
-        return user;
-      }));
-      
-      toast.success(`Estado del usuario actualizado a ${nuevoEstado === 'activo' ? 'Activo' : 'Inactivo'}`);
+
+        // Update the user in the data layer
+        const updatedUser = updateUser(usuarioId, { estado: nuevoEstado });
+        
+        if (!updatedUser) {
+          throw new Error('Error al actualizar el estado del usuario');
+        }
+        
+        // Update both usuarios and filteredUsuarios arrays to reflect the change immediately
+        setUsuarios(prevUsuarios => prevUsuarios.map(user => {
+          if (user.id === usuarioId) {
+            return { ...user, estado: nuevoEstado };
+          }
+          return user;
+        }));
+        
+        toast.success(`Estado del usuario actualizado a ${nuevoEstado === 'activo' ? 'Activo' : 'Inactivo'}`);
+      } catch (error) {
+        console.error('Error al actualizar el estado del usuario:', error);
+        toast.error('Error al actualizar el estado del usuario');
+      }
     }
   };
 
@@ -450,7 +519,7 @@ const ListaUsuarios: React.FC = () => {
                           variant="ghost"
                           size="icon"
                           className="text-red-500 hover:text-red-600"
-                          onClick={() => handleDeleteUser(usuario.id, `${usuario.nombre} ${usuario.apellido}`)}
+                          onClick={() => handleDeleteUser(usuario)}
                         >
                           <Trash2Icon className="h-4 w-4" />
                         </Button>

@@ -1,4 +1,4 @@
-import { HistorialEstadoReporte, Reporte } from '@/types/tipos';
+import { HistorialEstadoReporte, Reporte, Usuario } from '@/types/tipos';
 import { historialEstadosReporteEjemplo } from '@/data/actividades';
 
 // Array para almacenar los registros del historial (simulación de base de datos)
@@ -91,23 +91,32 @@ export const eliminarRegistroHistorial = (id: string | number): boolean => {
 
 /**
  * Registra automáticamente un cambio de estado de reporte
- * @param idReporte - ID del reporte afectado
+ * @param reporte - Reporte afectado
  * @param estadoAnterior - Estado previo del reporte
  * @param estadoNuevo - Nuevo estado del reporte
  * @param realizadoPor - Usuario que realizó el cambio
  * @param motivoCambio - Motivo opcional del cambio
  * @param tipoAccion - Tipo de acción realizada
  */
-export const registrarCambioEstado = (
-  idReporte: Reporte,
+export const registrarCambioEstadoReporte = (
+  reporte: Reporte,
   estadoAnterior: string,
   estadoNuevo: string,
-  realizadoPor: any,
+  realizadoPor: Usuario,
   motivoCambio?: string,
   tipoAccion: HistorialEstadoReporte['tipoAccion'] = 'cambio_estado'
 ): void => {
-  crearRegistroHistorial({
-    idReporte,
+  console.log('Registrando cambio de estado en reporte:', {
+    reporte,
+    estadoAnterior,
+    estadoNuevo,
+    realizadoPor,
+    motivoCambio,
+    tipoAccion
+  });
+
+  const nuevoRegistro = crearRegistroHistorial({
+    idReporte: reporte,
     estadoAnterior,
     estadoNuevo,
     fechaHoraCambio: new Date(),
@@ -115,4 +124,6 @@ export const registrarCambioEstado = (
     motivoCambio,
     tipoAccion,
   });
+
+  console.log('Nuevo registro creado:', nuevoRegistro);
 }; 
