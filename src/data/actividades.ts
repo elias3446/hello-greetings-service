@@ -449,3 +449,178 @@ export const historialEstadosReporte: HistorialEstadoReporte[] = [
     tipoAccion: 'cambio_estado',
   },
 ];
+
+export const historialEstadosReporteEjemplo: HistorialEstadoReporte[] = [
+  {
+    id: '1',
+    idReporte: {
+      id: '1',
+      titulo: 'Reporte de prueba',
+      descripcion: 'Descripción del reporte',
+      estado: {
+        id: '1',
+        nombre: 'Pendiente',
+        color: '#FF0000',
+        descripcion: 'Reporte pendiente de atención',
+        tipo: 'pendiente',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true,
+        icono: 'clock'
+      },
+      ubicacion: {
+        id: '1',
+        latitud: 19.4326,
+        longitud: -99.1332,
+        direccion: 'Ciudad de México',
+        referencia: 'Centro histórico',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      },
+      categoria: {
+        id: '1',
+        nombre: 'General',
+        descripcion: 'Categoría general',
+        color: '#000000',
+        icono: 'folder',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      },
+      usuarioCreador: {
+        id: '1',
+        nombre: 'Admin',
+        apellido: 'Sistema',
+        email: 'admin@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01')
+      },
+      historialAsignaciones: [],
+      fechaCreacion: new Date('2023-01-01'),
+      fechaActualizacion: new Date('2023-01-02'),
+      fechaInicio: new Date('2023-01-01'),
+      activo: true
+    },
+    estadoAnterior: 'Pendiente',
+    estadoNuevo: 'En Proceso',
+    fechaHoraCambio: new Date('2023-01-02'),
+    realizadoPor: {
+      id: '1',
+      nombre: 'Admin',
+      apellido: 'Sistema',
+      email: 'admin@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01')
+    },
+    motivoCambio: 'Inicio de atención del reporte',
+    tipoAccion: 'cambio_estado'
+  },
+  {
+    id: '2',
+    idReporte: {
+      id: '1',
+      titulo: 'Reporte de prueba',
+      descripcion: 'Descripción del reporte',
+      estado: {
+        id: '2',
+        nombre: 'En Proceso',
+        color: '#FFA500',
+        descripcion: 'Reporte en proceso de atención',
+        tipo: 'en_progreso',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true,
+        icono: 'clock'
+      },
+      ubicacion: {
+        id: '1',
+        latitud: 19.4326,
+        longitud: -99.1332,
+        direccion: 'Ciudad de México',
+        referencia: 'Centro histórico',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      },
+      categoria: {
+        id: '1',
+        nombre: 'General',
+        descripcion: 'Categoría general',
+        color: '#000000',
+        icono: 'folder',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      },
+      usuarioCreador: {
+        id: '1',
+        nombre: 'Admin',
+        apellido: 'Sistema',
+        email: 'admin@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01')
+      },
+      historialAsignaciones: [],
+      fechaCreacion: new Date('2023-01-01'),
+      fechaActualizacion: new Date('2023-01-03'),
+      fechaInicio: new Date('2023-01-01'),
+      activo: true
+    },
+    estadoAnterior: 'En Proceso',
+    estadoNuevo: 'Resuelto',
+    fechaHoraCambio: new Date('2023-01-03'),
+    realizadoPor: {
+      id: '1',
+      nombre: 'Admin',
+      apellido: 'Sistema',
+      email: 'admin@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01')
+    },
+    motivoCambio: 'Reporte resuelto satisfactoriamente',
+    tipoAccion: 'cambio_estado'
+  }
+];

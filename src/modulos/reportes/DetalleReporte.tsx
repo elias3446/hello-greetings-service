@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft } from 'lucide-react';
+import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft, FileText, Clock } from 'lucide-react';
 import { getReportById } from '@/controller/CRUD/reportController';
+import { obtenerHistorialReporte, registrarCambioEstado } from '@/controller/CRUD/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
-import type { Reporte } from '@/types/tipos';
+import type { Reporte, HistorialEstadoReporte } from '@/types/tipos';
 import MapaBase from '@/components/layout/MapaBase';
 import { ReporteAcciones } from '@/components/reportes/ReporteAcciones';
 import ReporteActividad from '@/components/reportes/ReporteActividad';
@@ -19,6 +20,7 @@ const DetalleReporte = () => {
   const [reporte, setReporte] = useState<Reporte | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [historialEstados, setHistorialEstados] = useState<HistorialEstadoReporte[]>([]);
 
   useEffect(() => {
     const cargarReporte = () => {
@@ -48,6 +50,15 @@ const DetalleReporte = () => {
     
     cargarReporte();
   }, [id, navigate]);
+
+  useEffect(() => {
+    if (id) {
+      console.log('Actualizando historial para reporte:', id);
+      const historial = obtenerHistorialReporte(id);
+      console.log('Historial obtenido:', historial);
+      setHistorialEstados(historial);
+    }
+  }, [id, reporte]);
 
   if (loading) {
     return (
@@ -80,6 +91,36 @@ const DetalleReporte = () => {
 
   const handleMarkResolved = () => {
     toast.success('Reporte marcado como Resuelto');
+  };
+
+  const getIconForAction = (tipoAccion: string) => {
+    switch (tipoAccion) {
+      case 'creacion':
+        return <FileText className="h-4 w-4" />;
+      case 'cambio_estado':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'asignacion_reporte':
+        return <User className="h-4 w-4" />;
+      case 'actualizacion':
+        return <Edit className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const getActionDescription = (registro: HistorialEstadoReporte) => {
+    switch (registro.tipoAccion) {
+      case 'creacion':
+        return 'Reporte creado';
+      case 'cambio_estado':
+        return `Estado cambiado de "${registro.estadoAnterior}" a "${registro.estadoNuevo}"`;
+      case 'asignacion_reporte':
+        return 'Reporte asignado';
+      case 'actualizacion':
+        return 'Información actualizada';
+      default:
+        return 'Acción realizada';
+    }
   };
 
   return (
@@ -391,27 +432,43 @@ const DetalleReporte = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
-                      <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
-                    </div>
-                    <div className="space-y-1">
-                      <Badge>Creado</Badge>
-                      <p className="text-sm">{reporte.fechaCreacion.toLocaleDateString('es-ES')}</p>
-                    </div>
-                  </div>
-                  
-                  {reporte.estado.nombre !== "Pendiente" && (
-                    <div className="flex items-start gap-3">
-                      <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
-                        <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
+                  {historialEstados && historialEstados.length > 0 ? (
+                    historialEstados.map((registro) => (
+                      <div key={registro.id} className="flex items-start gap-3">
+                        <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
+                          <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {getIconForAction(registro.tipoAccion)}
+                            <Badge variant="outline" className="capitalize">
+                              {registro.tipoAccion.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-medium">{getActionDescription(registro)}</p>
+                          {registro.motivoCambio && (
+                            <p className="text-sm text-muted-foreground">Motivo: {registro.motivoCambio}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>
+                              {registro.fechaHoraCambio.toLocaleDateString('es-ES', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                            <span>•</span>
+                            <span>Por: {registro.realizadoPor.nombre} {registro.realizadoPor.apellido}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <Badge style={{ backgroundColor: reporte.estado.color }}>
-                          {reporte.estado.nombre}
-                        </Badge>
-                        <p className="text-sm">{reporte.fechaActualizacion ? reporte.fechaActualizacion.toLocaleDateString('es-ES') : 'Fecha no disponible'}</p>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No hay registros en el historial
                     </div>
                   )}
                 </div>

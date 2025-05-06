@@ -1,11 +1,11 @@
-import { HistorialEstadoReporte, Usuario, Reporte } from '@/types/tipos';
-import { historialEstadosReporte } from '@/data/actividades';
+import { HistorialEstadoReporte, Reporte } from '@/types/tipos';
+import { historialEstadosReporteEjemplo } from '@/data/actividades';
 
 // Array para almacenar los registros del historial (simulación de base de datos)
-let historialEstados: HistorialEstadoReporte[] = [...historialEstadosReporte];
+let historialEstados: HistorialEstadoReporte[] = [...historialEstadosReporteEjemplo];
 
 /**
- * Crea un nuevo registro en el historial de estados de usuario
+ * Crea un nuevo registro en el historial de estados de reporte
  * @param registro - El registro a crear
  * @returns El registro creado con su ID
  */
@@ -20,14 +20,31 @@ export const crearRegistroHistorial = (registro: Omit<HistorialEstadoReporte, 'i
 };
 
 /**
- * Obtiene todos los registros del historial de un usuario específico
- * @param idUsuario - ID del usuario
+ * Obtiene todos los registros del historial de un reporte específico
+ * @param idReporte - ID del reporte
  * @returns Array de registros ordenados cronológicamente
  */
-export const obtenerHistorialUsuario = (idUsuario: string | number): HistorialEstadoReporte[] => {
-  return historialEstados
-    .filter(registro => registro.idReporte.id === idUsuario)
+export const obtenerHistorialReporte = (idReporte: string | number): HistorialEstadoReporte[] => {
+  console.log('Buscando historial para reporte:', idReporte);
+  console.log('Tipo de idReporte:', typeof idReporte);
+  console.log('Historial actual:', historialEstados);
+  
+  const historialFiltrado = historialEstados
+    .filter(registro => {
+      const idReporteRegistro = registro.idReporte.id;
+      console.log('Comparando IDs:', {
+        idReporte,
+        idReporteRegistro,
+        tipoIdReporte: typeof idReporte,
+        tipoIdReporteRegistro: typeof idReporteRegistro,
+        iguales: String(idReporte) === String(idReporteRegistro)
+      });
+      return String(idReporte) === String(idReporteRegistro);
+    })
     .sort((a, b) => b.fechaHoraCambio.getTime() - a.fechaHoraCambio.getTime());
+  
+  console.log('Historial filtrado:', historialFiltrado);
+  return historialFiltrado;
 };
 
 /**
@@ -73,38 +90,29 @@ export const eliminarRegistroHistorial = (id: string | number): boolean => {
 };
 
 /**
- * Registra automáticamente un cambio de estado de usuario
- * @param entidad - Entidad afectada (Reporte o Usuario)
- * @param estadoAnterior - Estado previo de la entidad
- * @param estadoNuevo - Nuevo estado de la entidad
+ * Registra automáticamente un cambio de estado de reporte
+ * @param idReporte - ID del reporte afectado
+ * @param estadoAnterior - Estado previo del reporte
+ * @param estadoNuevo - Nuevo estado del reporte
  * @param realizadoPor - Usuario que realizó el cambio
  * @param motivoCambio - Motivo opcional del cambio
  * @param tipoAccion - Tipo de acción realizada
  */
 export const registrarCambioEstado = (
-  entidad: Reporte | Usuario,
+  idReporte: Reporte,
   estadoAnterior: string,
   estadoNuevo: string,
-  realizadoPor: Usuario,
+  realizadoPor: any,
   motivoCambio?: string,
   tipoAccion: HistorialEstadoReporte['tipoAccion'] = 'cambio_estado'
 ): void => {
-  const registro: Omit<HistorialEstadoReporte, 'id'> = {
+  crearRegistroHistorial({
+    idReporte,
     estadoAnterior,
     estadoNuevo,
     fechaHoraCambio: new Date(),
     realizadoPor,
     motivoCambio,
     tipoAccion,
-  };
-
-  if ('titulo' in entidad) {
-    // Es un Reporte
-    registro.idReporte = entidad;
-  } else {
-    // Es un Usuario
-    registro.idUsuario = entidad;
-  }
-
-  crearRegistroHistorial(registro);
+  });
 }; 
