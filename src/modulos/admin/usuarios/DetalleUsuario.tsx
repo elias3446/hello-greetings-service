@@ -150,7 +150,7 @@ const DetalleUsuario = () => {
     }
   };
 
-  const handleCambiarEstado = () => {
+  const handleCambiarEstado = async () => {
     try {
       if (!id || !usuario) return;
       
@@ -168,14 +168,45 @@ const DetalleUsuario = () => {
         setUsuario(usuarioActualizado);
         
         // Registrar el cambio en el historial
-        registrarCambioEstado(
+        await registrarCambioEstado(
           usuario,
           estadoAnterior,
           nuevoEstado,
-          usuarioActualizado, // En un caso real, esto debería ser el usuario que está realizando la acción
+          usuarioActualizado,
           'Cambio de estado manual',
           'cambio_estado'
         );
+
+        // Registrar el cambio en el historial de cada reporte asignado
+        for (const reporte of reportesAsignados) {
+          await registrarCambioEstadoReporte(
+            reporte,
+            reporte.estado.nombre,
+            reporte.estado.nombre,
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            },
+            `Usuario asignado ${usuario.nombre} ${usuario.apellido} ${nuevoEstado === 'activo' ? 'activado' : 'desactivado'}`,
+            'asignacion_reporte'
+          );
+        }
         
         // Actualizar el historial mostrado
         const historial = obtenerHistorialUsuario(id);
