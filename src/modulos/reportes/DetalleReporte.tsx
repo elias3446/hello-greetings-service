@@ -100,11 +100,8 @@ const DetalleReporte = () => {
   const handleReporteChange = async (newUsuario: Usuario) => {
     try {
       if (!reporte) return;
-
-      const estadoAnterior = reporte.asignadoA?.nombre || 'Sin usuario';
-      const reporteActualizado = updateReport(reporte.id, {
-        asignadoA: newUsuario
-      });
+      
+      const reporteActualizado = getReportById(reporte.id);
 
       if (!reporteActualizado) {
         throw new Error('Error al actualizar el usuario del reporte');
