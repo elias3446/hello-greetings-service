@@ -19,6 +19,20 @@ export const createReport = (reportData: Omit<Reporte, 'id'>): Reporte => {
     ...reportData
   };
   reportes.push(newReport);
+  const index = reportes.findIndex((report) => report.id === newReport.id);
+  if (index !== -1) {
+    const reporte = reportes[index];
+    
+    // Si se está actualizando el usuario asignado, actualizar el historial
+    if ('asignadoA' in reportData) {
+      const historialActualizado = agregarAsignacion(reporte, reportData.asignadoA);
+      reportData.historialAsignaciones = historialActualizado;
+    }
+    
+    const updatedReport = { ...reporte, ...reportData };
+    reportes[index] = updatedReport;
+    return updatedReport;
+  }
   return newReport;
 };
 

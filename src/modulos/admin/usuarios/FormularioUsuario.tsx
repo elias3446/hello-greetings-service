@@ -20,6 +20,7 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 import { getReportById, getReports } from '@/controller/CRUD/reportController';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { filterReports } from '@/controller/CRUD/reportController';
 
 interface FormularioUsuarioProps {
   modo: 'crear' | 'editar';
@@ -97,9 +98,8 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
           return;
         }
                 // Registrar el cambio en el historial de los reportes asignados
-                const reportesAsignados = getReports().filter(reporte => 
-                  reporte.asignadoA && reporte.asignadoA.id === usuarioAnterior.id
-                );
+                const reportesAsignados = filterReports({ userId: usuarioAnterior.id });
+                console.log('Reportes asignados:', reportesAsignados);
 
         const usuarioActualizado = updateUser(id, userData);
 

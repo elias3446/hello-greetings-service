@@ -40,7 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 interface FormularioReporteAdminProps {
   modo: 'crear' | 'editar';
 }
@@ -195,10 +195,73 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
 
       if (modo === 'crear') {
         const nuevoReporte = createReport(reporteData);
+                // Registrar el cambio en el historial del reporte
+      const reporte = getReportById(nuevoReporte.id);
+      if (reporte) {
+        registrarCambioEstadoReporte(
+          reporte,
+           'Sin asignar',
+          'Sin asignar',
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          },
+          `Desasignación de reporte`,
+          'asignacion_reporte'
+        );
+      }
         toast.success('Reporte creado correctamente');
         navigate(`/admin/reportes/${nuevoReporte.id}`);
+        
       } else if (modo === 'editar' && id) {
         updateReport(id, reporteData);
+                // Registrar el cambio en el historial del reporte
+      const reporte = getReportById(id);
+      if (reporte) {
+        registrarCambioEstadoReporte(
+          reporte,
+           'Sin asignar',
+          'Sin asignar',
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          },
+          `Desasignación de reporte`,
+          'asignacion_reporte'
+        );
+      }
         toast.success('Reporte actualizado correctamente');
         navigate(`/admin/reportes/${id}`);
       }
