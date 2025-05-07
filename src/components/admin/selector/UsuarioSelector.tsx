@@ -18,12 +18,14 @@ interface UsuarioSelectorProps {
   ReporteId: string;
   currentUsuarioId: string;
   onUsuarioChange?: (newUsuario: Usuario) => void;
+  disabled?: boolean;
 }
 
 const UsuarioSelector: React.FC<UsuarioSelectorProps> = ({ 
   ReporteId, 
   currentUsuarioId,
-  onUsuarioChange 
+  onUsuarioChange,
+  disabled = false
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUsuarioId, setSelectedUsuarioId] = useState(currentUsuarioId);
@@ -186,7 +188,7 @@ const UsuarioSelector: React.FC<UsuarioSelectorProps> = ({
     <Select
       value={selectedUsuarioId}
       onValueChange={handleUsuarioChange}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
     >
       <SelectTrigger className="w-[180px] h-9">
         <SelectValue placeholder="Seleccionar usuario">

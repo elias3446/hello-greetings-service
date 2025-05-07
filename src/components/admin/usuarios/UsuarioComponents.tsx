@@ -48,12 +48,14 @@ export const UsuarioRow: React.FC<UsuarioRowProps> = ({ usuario, onEstadoChange,
       </Link>
     </TableCell>
     <TableCell>{usuario.email}</TableCell>
-    <TableCell>
+    <TableCell >
       {usuario.roles && usuario.roles.length > 0 && (
+        <div className={usuario.estado === 'bloqueado' ? 'pointer-events-none opacity-50' : ''}>
         <RoleSelector
           userId={usuario.id}
           currentRoleId={usuario.roles[0].id}
         />
+        </div>
       )}
     </TableCell>
     <TableCell>

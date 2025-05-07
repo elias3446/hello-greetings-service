@@ -16,12 +16,15 @@ export const UserReports: React.FC<UserReportsProps> = ({ reportes, onAsignarRep
     onAsignarReporte({ id: reporteId });
   };
 
+  // Filtramos solo los reportes activos
+  const reportesActivos = reportes.filter((reporte) => reporte.activo);
+
   return (
     <Card className="bg-muted/30">
       <CardContent className="pt-6">
-        {reportes.length > 0 ? (
+        {reportesActivos.length > 0 ? (
           <div className="space-y-4">
-            {reportes.map((reporte) => (
+            {reportesActivos.map((reporte) => (
               <div key={reporte.id} className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
                 <div className="flex-shrink-0">
                   <FileText className="h-5 w-5 text-muted-foreground" />
@@ -49,13 +52,6 @@ export const UserReports: React.FC<UserReportsProps> = ({ reportes, onAsignarRep
                     </span>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleAsignarReporte(reporte.id)}
-                >
-                  Asignar
-                </Button>
               </div>
             ))}
           </div>
@@ -68,4 +64,4 @@ export const UserReports: React.FC<UserReportsProps> = ({ reportes, onAsignarRep
       </CardContent>
     </Card>
   );
-}; 
+};

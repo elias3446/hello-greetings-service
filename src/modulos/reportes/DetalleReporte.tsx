@@ -96,7 +96,18 @@ const DetalleReporte = () => {
   };
 
   const handleMarkResolved = () => {
-    toast.success('Reporte marcado como Resuelto');
+    if (!reporte) return;
+    
+    try {
+      const updatedReport = updateReport(reporte.id, { activo: !reporte.activo });
+      if (updatedReport) {
+        setReporte(updatedReport);
+        toast.success(reporte.activo ? 'Reporte reabierto' : 'Reporte marcado como resuelto');
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estado del reporte:', error);
+      toast.error('Error al actualizar el estado del reporte');
+    }
   };
 
   const handleReporteChange = async (newUsuario: Usuario) => {
@@ -400,19 +411,30 @@ const DetalleReporte = () => {
                 <CardDescription>Opciones para gestionar este reporte</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start"
+                <Button variant="outline" className="w-full justify-start" 
+                disabled={!reporte.activo}
                 onClick={() => navigate(`/admin/reportes/${reporte.id}/editar`)}>
                   <Edit className="mr-2 h-4 w-4" />
                   Editar reporte
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Marcar como resuelto
+                <Button variant="outline" className="w-full justify-start" onClick={handleMarkResolved}>
+                  {reporte.activo ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Marcar como resuelto
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Reabrir
+                    </>
+                  )}
                 </Button>
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
                   onClick={() => setShowRoleDialog(true)}
+                  disabled={!reporte.activo}
                 >
                   <User className="mr-2 h-4 w-4" />
                   Reasignar

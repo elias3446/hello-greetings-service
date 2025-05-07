@@ -49,10 +49,12 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
           </TableCell>
           <TableCell>
             {reporte.categoria.nombre && (
+              <div className={reporte.activo === false ? 'pointer-events-none opacity-50' : ''}>
               <CategoriaSelector
                 ReporteId={reporte.id}
                 currentCategoriaId={reporte.categoria.id}
               />
+              </div>
             )}
           </TableCell>
           <TableCell>
@@ -60,6 +62,7 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
               <EstadoSelector
                 ReporteId={reporte.id}
                 currentEstadoId={reporte.estado.id}
+                disabled={!reporte.activo}
               />
             )}
           </TableCell>
@@ -71,6 +74,7 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
             <UsuarioSelector
               ReporteId={reporte.id}
               currentUsuarioId={reporte.asignadoA?.id}
+              disabled={!reporte.activo}
             />
           </TableCell>
           <TableCell className="text-right">
@@ -79,6 +83,7 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => onEdit(reporte.id)}
+                disabled={!reporte.activo}
               >
                 <PencilIcon className="h-4 w-4 text-gray-500" />
               </Button>

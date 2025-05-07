@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Select,
@@ -17,12 +16,14 @@ interface EstadoSelectorProps {
   ReporteId: string;
   currentEstadoId: string;
   onEstadoChange?: (newEstado: EstadoReporte) => void;
+  disabled?: boolean;
 }
 
 const EstadoSelector: React.FC<EstadoSelectorProps> = ({ 
   ReporteId, 
   currentEstadoId,
-  onEstadoChange 
+  onEstadoChange,
+  disabled = false
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedEstadoId, setSelectedEstadoId] = useState(currentEstadoId);
@@ -101,7 +102,7 @@ const EstadoSelector: React.FC<EstadoSelectorProps> = ({
     <Select
       value={selectedEstadoId}
       onValueChange={handleEstadoChange}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
     >
       <SelectTrigger className="w-[180px] h-9">
         <SelectValue placeholder="Seleccionar rol">
