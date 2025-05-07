@@ -9,7 +9,7 @@ let historialEstados: ActividadUsuario[] = [...actividadesUsuario];
  * @param registro - El registro a crear
  * @returns El registro creado con su ID
  */
-export const crearRegistroHistorial = (registro: Omit<ActividadUsuario, 'id'>): ActividadUsuario => {
+export const crearHistorial = (registro: Omit<ActividadUsuario, 'id'>): ActividadUsuario => {
   const nuevoRegistro: ActividadUsuario = {
     ...registro,
     id: Date.now().toString(), // Usamos timestamp como ID temporal
@@ -120,7 +120,7 @@ export const registrarCambioEstado = (
     detalles
   });
 
-  const nuevoRegistro = crearRegistroHistorial({
+  const nuevoRegistro = crearHistorial({
     tipo,
     descripcion,
     fecha,
