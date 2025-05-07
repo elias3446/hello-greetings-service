@@ -9,7 +9,7 @@ import { DEFAULT_FORM_VALUES, formSchema } from '@/utils/userConstants';
 import { hasUserChanges, getSystemUser, handleUserStateChange } from '@/utils/userUtils';
 import { Usuario } from '@/types/tipos';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-
+import { crearUsuario } from '@/controller/controller/newUser';
 export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
   const navigate = useNavigate();
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
@@ -130,19 +130,7 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
       throw new Error("Faltan campos requeridos para crear el usuario");
     }
 
-    const nuevoUsuario = createUser({
-      ...userData,
-      fechaCreacion: new Date()
-    } as Omit<Usuario, 'id'>);
-
-    await registrarCambioEstado(
-      nuevoUsuario,
-      'no_existe',
-      nuevoUsuario.estado,
-      getSystemUser(),
-      'Usuario creado en el sistema',
-      'creacion'
-    );
+    const nuevoUsuario = await crearUsuario(userData);  
 
     toast.success("Usuario creado exitosamente");
   };

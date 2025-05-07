@@ -3,6 +3,7 @@ import { createReport } from '@/controller/CRUD/reportController';
 import { createCategory } from '@/controller/CRUD/categoryController';
 import { createRole } from '@/controller/CRUD/roleController';
 import { createEstado } from '@/controller/CRUD/estadoController';
+import { crearUsuario } from '@/controller/controller/newUser';
 import { TipoEntidad } from '@/types/tipos';
 
 // Definición de campos por tipo de entidad
@@ -339,50 +340,30 @@ const createEntityRecord = async (record: any, tipoEntidad: TipoEntidad): Promis
   try {
     switch (tipoEntidad) {
       case 'usuarios':
-        // Para usuarios, necesitamos transformar algunos datos
-        const roles = record.rolId ? [{ id: record.rolId }] : [];
-        const estado = record.estado || 'activo';
-        const tipo = record.tipo || 'usuario';
-        
-        await createUser({
-          ...record,
-          roles,
-          estado,
-          tipo
-        });
-        break;
+        await crearUsuario(record);
+        return true;
       
       case 'reportes':
-        // Para reportes, necesitamos transformar la ubicación
-        await createReport({
-          ...record,
-          ubicacion: {
-            latitud: parseFloat(record.latitud),
-            longitud: parseFloat(record.longitud),
-            direccion: record.direccion
-          }
-        });
-        break;
+        await createReport(record);
+        return true;
       
       case 'categorias':
         await createCategory(record);
-        break;
+        return true;
       
       case 'roles':
         await createRole(record);
-        break;
+        return true;
       
       case 'estados':
         await createEstado(record);
-        break;
+        return true;
       
       default:
-        throw new Error('Tipo de entidad no soportado');
+        throw new Error(`Tipo de entidad no soportado: ${tipoEntidad}`);
     }
-    
-    return true;
   } catch (error) {
-    console.error(`Error al crear ${tipoEntidad}:`, error);
-    return false;
+    console.error(`Error al crear registro de ${tipoEntidad}:`, error);
+    throw error;
   }
 };

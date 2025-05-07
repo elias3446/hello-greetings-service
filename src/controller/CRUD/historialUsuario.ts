@@ -99,7 +99,7 @@ export const eliminarRegistroHistorial = (id: string | number): boolean => {
  * @param motivoCambio - Motivo opcional del cambio
  * @param tipoAccion - Tipo de acción realizada
  */
-export const registrarCambioEstado = (
+export const registrarCambioHistorial = (
   id: string,
   tipo: 'login' | 'logout' | 'creacion' | 'modificacion' | 'eliminacion',
   descripcion: string,

@@ -9,8 +9,8 @@ import { UserInfo } from '@/components/admin/usuarios/UserInfo';
 import { UserActions } from '@/components/admin/usuarios/UserActions';
 import { UserHistory } from '@/components/admin/usuarios/UserHistory';
 import { UserReports } from '@/components/admin/usuarios/UserReports';
-import { actividadesUsuario } from '@/data/actividades';
 import ActividadItem from '@/components/layout/ActividadItem';
+import { obtenerHistorialUsuario } from '@/controller/CRUD/historialUsuario';
 
 const DetalleUsuario = () => {
   const {
@@ -49,7 +49,7 @@ const DetalleUsuario = () => {
     );
   }
 
-  const actividadesDelUsuario = actividadesUsuario.filter(actividad => actividad.usuarioId === usuario.id);
+  const actividadesDelUsuario = obtenerHistorialUsuario(usuario.id);
 
   return (
     <div>
