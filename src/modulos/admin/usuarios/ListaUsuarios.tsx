@@ -7,6 +7,8 @@ import { UsuarioTableHeader, LoadingRow, EmptyStateRow, UsuarioRow, PaginationCo
 import { getFieldValue } from '@/utils/usuarioUtils';
 import { SORT_OPTIONS, FILTER_OPTIONS, ITEMS_PER_PAGE } from '@/utils/userListConstants';
 import { calculatePagination, getUniqueRoles } from '@/utils/userListUtils';
+import { actualizarRolUsuario } from '@/controller/controller/userRoleController';
+import { toast } from '@/components/ui/sonner';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
@@ -21,6 +23,60 @@ const ListaUsuarios: React.FC = () => {
   // Count results
   const filteredCount = state.filteredUsuarios.length;
   const totalCount = state.usuarios.length;
+
+  const handleRoleChange = async (userId: string, newRoleId: string) => {
+    try {
+      const usuarioActual = state.usuarios.find(u => u.id === userId);
+      if (!usuarioActual) {
+        toast.error('Usuario no encontrado');
+        return;
+      }
+
+      const usuarioActualizado = actualizarRolUsuario(
+        userId,
+        newRoleId,
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        },
+        `Cambio de rol para usuario ${usuarioActual.nombre} ${usuarioActual.apellido}`
+      );
+
+      if (usuarioActualizado) {
+        // Actualizar el estado local
+        actions.setUsuarios(prevUsuarios => 
+          prevUsuarios.map(user => 
+            user.id === userId ? usuarioActualizado : user
+          )
+        );
+        actions.setFilteredUsuarios(prevUsuarios => 
+          prevUsuarios.map(user => 
+            user.id === userId ? usuarioActualizado : user
+          )
+        );
+        toast.success('Rol actualizado correctamente');
+      }
+    } catch (error) {
+      console.error('Error al actualizar el rol:', error);
+      toast.error('Error al actualizar el rol del usuario');
+    }
+  };
 
   return (
     <div>
@@ -65,6 +121,7 @@ const ListaUsuarios: React.FC = () => {
                     usuario={usuario}
                     onEstadoChange={handlers.handleEstadoChange}
                     onDelete={handlers.handleDeleteUser}
+                    onRoleChange={handleRoleChange}
                   />
                 ))
               ) : (

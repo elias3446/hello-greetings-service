@@ -40,7 +40,7 @@ export const EmptyStateRow: React.FC = () => (
   </TableRow>
 );
 
-export const UsuarioRow: React.FC<UsuarioRowProps> = ({ usuario, onEstadoChange, onDelete }) => (
+export const UsuarioRow: React.FC<UsuarioRowProps> = ({ usuario, onEstadoChange, onDelete, onRoleChange }) => (
   <TableRow key={usuario.id}>
     <TableCell>
       <Link to={`/admin/usuarios/${usuario.id}`} className="text-blue-600 hover:underline">
@@ -51,10 +51,11 @@ export const UsuarioRow: React.FC<UsuarioRowProps> = ({ usuario, onEstadoChange,
     <TableCell >
       {usuario.roles && usuario.roles.length > 0 && (
         <div className={usuario.estado === 'bloqueado' ? 'pointer-events-none opacity-50' : ''}>
-        <RoleSelector
-          userId={usuario.id}
-          currentRoleId={usuario.roles[0].id}
-        />
+          <RoleSelector
+            userId={usuario.id}
+            currentRoleId={usuario.roles[0].id}
+            onRoleChange={onRoleChange}
+          />
         </div>
       )}
     </TableCell>

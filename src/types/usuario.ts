@@ -38,6 +38,7 @@ export interface UsuarioRowProps {
   usuario: Usuario;
   onEstadoChange: (id: string) => void;
   onDelete: (usuario: Usuario) => void;
+  onRoleChange: (userId: string, newRoleId: string) => Promise<void>;
 }
 
 export interface PaginationProps {
