@@ -180,10 +180,6 @@ const DetalleReporte = () => {
             <Card className="overflow-hidden">
               <div className="bg-muted p-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <Avatar className="h-20 w-20 border-4 border-background">
-                    <AvatarImage src="https://placehold.co/100" alt="Avatar" />
-                    <AvatarFallback>{reporte.categoria.nombre.substring(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-2xl font-semibold">{reporte.titulo}</h3>
@@ -376,23 +372,6 @@ const DetalleReporte = () => {
                     </div>
                   </div>
 
-                  {/* Imágenes adjuntas */}
-                  {reporte.imagenes && reporte.imagenes.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-3">Imágenes</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {reporte.imagenes.map((imagen, idx) => (
-                          <div key={idx} className="aspect-square rounded-md overflow-hidden border">
-                            <img 
-                              src={imagen} 
-                              alt={`Imagen ${idx + 1}`} 
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </TabsContent>
                 
                 <TabsContent value="activity">
@@ -455,24 +434,23 @@ const DetalleReporte = () => {
                 <CardTitle>Documentos adjuntos</CardTitle>
               </CardHeader>
               <CardContent>
-                {reporte.imagenes && reporte.imagenes.length > 0 ? (
-                  <ul className="space-y-3">
-                    {reporte.imagenes.map((_, idx) => (
-                      <li key={idx} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted">
-                        <File className="h-5 w-5 text-muted-foreground" />
-                        <span className="flex-1 text-sm">Documento-{idx + 1}.jpg</span>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <History className="h-4 w-4" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-center p-4">
-                    <File className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">No hay documentos adjuntos</p>
-                  </div>
-                )}
+                {/* Imágenes adjuntas */}
+                {reporte.imagenes && reporte.imagenes.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-3">Imágenes</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {reporte.imagenes.map((imagen, idx) => (
+                          <div key={idx} className="aspect-square rounded-md overflow-hidden border">
+                            <img 
+                              src={imagen} 
+                              alt={`Imagen ${idx + 1}`} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </CardContent>
             </Card>
             
