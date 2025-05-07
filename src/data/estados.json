@@ -3,27 +3,37 @@
     {
       "nombre": "pendiente",
       "descripcion": "Estado inicial de la solicitud",
-      "color": "#FFA500"
+      "color": "#FFA500",
+      "tipo": "pendiente",
+      "icono": "clock"
     },
     {
-      "nombre": "en_proceso",
+      "nombre": "en_progreso",
       "descripcion": "En proceso de revisión",
-      "color": "#1E90FF"
+      "color": "#1E90FF",
+      "tipo": "en_progreso",
+      "icono": "play"
     },
     {
       "nombre": "completado",
       "descripcion": "Tarea finalizada",
-      "color": "#32CD32"
+      "color": "#32CD32",
+      "tipo": "completado",
+      "icono": "check"
     },
     {
-      "nombre": "rechazado",
+      "nombre": "cancelado",
       "descripcion": "Solicitud no aprobada",
-      "color": "#FF0000"
+      "color": "#FF0000",
+      "tipo": "cancelado",
+      "icono": "times"
     },
     {
       "nombre": "archivado",
       "descripcion": "Documento archivado",
-      "color": "#808080"
+      "color": "#808080",
+      "tipo": "completado",
+      "icono": "archive"
     }
   ]
 } 

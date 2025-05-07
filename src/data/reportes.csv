@@ -1,6 +1,6 @@
-titulo,descripcion,categoria,estado,fecha
-Reporte Mensual,Análisis de ventas del mes,ventas,pendiente,2024-03-15
-Informe Trimestral,Resumen de actividades Q1,finanzas,completado,2024-03-10
-Evaluación Anual,Revisión de objetivos 2024,recursos,en_proceso,2024-03-20
-Auditoría Interna,Control de procesos,auditoria,pendiente,2024-03-25
-Análisis de Mercado,Tendencias del sector,marketing,completado,2024-03-05 
+titulo,descripcion,direccion,latitud,longitud,categoriaId,estadoId,usuarioId
+Reporte Mensual,Análisis de ventas del mes,Calle Principal 123,40.4168,-3.7038,1,1,1
+Informe Trimestral,Resumen de actividades Q1,Avenida Central 456,40.4168,-3.7038,2,2,2
+Evaluación Anual,Revisión de objetivos 2024,Plaza Mayor 789,40.4168,-3.7038,3,3,3
+Auditoría Interna,Control de procesos,Calle Secundaria 321,40.4168,-3.7038,4,1,4
+Análisis de Mercado,Tendencias del sector,Avenida Norte 654,40.4168,-3.7038,5,2,5 

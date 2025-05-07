@@ -31,13 +31,18 @@ export const getFieldsForEntityType = (tipoEntidad: TipoEntidad): Field[] => {
             return value.length >= 6 ? null : 'La contraseña debe tener al menos 6 caracteres';
           }
         },
-        { key: 'estado', label: 'Estado', required: false, type: 'string',
+        { key: 'estado', label: 'Estado', required: true, type: 'string',
           validate: (value) => {
             const validStates = ['activo', 'inactivo', 'bloqueado'];
             return validStates.includes(value) ? null : 'Estado no válido (activo, inactivo, bloqueado)';
           }
         },
-        { key: 'tipo', label: 'Tipo', required: false, type: 'string' },
+        { key: 'tipo', label: 'Tipo', required: true, type: 'string',
+          validate: (value) => {
+            const validTypes = ['admin', 'usuario'];
+            return validTypes.includes(value) ? null : 'Tipo no válido (admin, usuario)';
+          }
+        },
         { key: 'rolId', label: 'ID del Rol', required: true, type: 'string' }
       ];
     
@@ -60,7 +65,8 @@ export const getFieldsForEntityType = (tipoEntidad: TipoEntidad): Field[] => {
         },
         { key: 'categoriaId', label: 'ID de Categoría', required: true, type: 'string' },
         { key: 'estadoId', label: 'ID de Estado', required: true, type: 'string' },
-        { key: 'usuarioId', label: 'ID de Usuario asignado', required: false, type: 'string' }
+        { key: 'usuarioId', label: 'ID de Usuario asignado', required: false, type: 'string' },
+        { key: 'fechaInicio', label: 'Fecha de Inicio', required: true, type: 'date' }
       ];
     
     case 'categorias':
@@ -73,7 +79,13 @@ export const getFieldsForEntityType = (tipoEntidad: TipoEntidad): Field[] => {
             return hexColorRegex.test(value) ? null : 'Formato de color inválido (ej: #FF5733)';
           }
         },
-        { key: 'icono', label: 'Icono', required: false, type: 'string' }
+        { key: 'icono', label: 'Icono', required: true, type: 'string' },
+        { key: 'tipo', label: 'Tipo', required: true, type: 'string',
+          validate: (value) => {
+            const validTypes = ['admin', 'usuario'];
+            return validTypes.includes(value) ? null : 'Tipo no válido (admin, usuario)';
+          }
+        }
       ];
     
     case 'roles':
@@ -86,7 +98,12 @@ export const getFieldsForEntityType = (tipoEntidad: TipoEntidad): Field[] => {
             return hexColorRegex.test(value) ? null : 'Formato de color inválido (ej: #FF5733)';
           }
         },
-        { key: 'tipo', label: 'Tipo', required: true, type: 'string' }
+        { key: 'tipo', label: 'Tipo', required: true, type: 'string',
+          validate: (value) => {
+            const validTypes = ['admin', 'usuario'];
+            return validTypes.includes(value) ? null : 'Tipo no válido (admin, usuario)';
+          }
+        }
       ];
     
     case 'estados':
@@ -99,13 +116,13 @@ export const getFieldsForEntityType = (tipoEntidad: TipoEntidad): Field[] => {
             return hexColorRegex.test(value) ? null : 'Formato de color inválido (ej: #FF5733)';
           }
         },
-        { key: 'icono', label: 'Icono', required: false, type: 'string' },
+        { key: 'icono', label: 'Icono', required: true, type: 'string' },
         { key: 'tipo', label: 'Tipo', required: true, type: 'string',
           validate: (value) => {
-            const validTypes = ['pendiente', 'proceso', 'completado', 'cancelado'];
-            return validTypes.includes(value) ? null : 'Tipo de estado no válido';
+            const validTypes = ['pendiente', 'en_progreso', 'completado', 'cancelado'];
+            return validTypes.includes(value) ? null : 'Tipo de estado no válido (pendiente, en_progreso, completado, cancelado)';
           }
-        },
+        }
       ];
     
     default:

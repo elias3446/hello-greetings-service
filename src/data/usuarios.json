@@ -4,36 +4,46 @@
       "nombre": "Juan",
       "apellido": "Pérez",
       "email": "juan.perez@example.com",
-      "rol": "admin",
-      "estado": "activo"
+      "password": "password123",
+      "estado": "activo",
+      "tipo": "admin",
+      "rolId": "1"
     },
     {
       "nombre": "María",
       "apellido": "García",
       "email": "maria.garcia@example.com",
-      "rol": "usuario",
-      "estado": "activo"
+      "password": "password123",
+      "estado": "activo",
+      "tipo": "usuario",
+      "rolId": "2"
     },
     {
       "nombre": "Carlos",
       "apellido": "López",
       "email": "carlos.lopez@example.com",
-      "rol": "editor",
-      "estado": "pending"
+      "password": "password123",
+      "estado": "activo",
+      "tipo": "usuario",
+      "rolId": "3"
     },
     {
       "nombre": "Ana",
       "apellido": "Martínez",
       "email": "ana.martinez@example.com",
-      "rol": "usuario",
-      "estado": "activo"
+      "password": "password123",
+      "estado": "activo",
+      "tipo": "usuario",
+      "rolId": "2"
     },
     {
       "nombre": "Roberto",
       "apellido": "Sánchez",
       "email": "roberto.sanchez@example.com",
-      "rol": "editor",
-      "estado": "activo"
+      "password": "password123",
+      "estado": "activo",
+      "tipo": "usuario",
+      "rolId": "3"
     }
   ]
 } 

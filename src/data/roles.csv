@@ -1,6 +1,6 @@
-nombre,descripcion,permisos
-admin,Administrador del sistema,all
-editor,Editor de contenido,read,write
-usuario,Usuario básico,read
-supervisor,Supervisor de equipo,read,write,approve
-auditor,Auditor del sistema,read,audit 
+nombre,descripcion,color,tipo
+admin,Administrador del sistema,#FF0000,admin
+editor,Editor de contenido,#00FF00,usuario
+usuario,Usuario básico,#0000FF,usuario
+supervisor,Supervisor de equipo,#FFFF00,usuario
+auditor,Auditor del sistema,#FF00FF,usuario 

@@ -1,6 +1,6 @@
-nombre,descripcion,color
-pendiente,Estado inicial de la solicitud,#FFA500
-en_proceso,En proceso de revisión,#1E90FF
-completado,Tarea finalizada,#32CD32
-rechazado,Solicitud no aprobada,#FF0000
-archivado,Documento archivado,#808080 
+nombre,descripcion,color,tipo,icono
+pendiente,Estado inicial de la solicitud,#FFA500,pendiente,clock
+en_progreso,En proceso de revisión,#1E90FF,en_progreso,play
+completado,Tarea finalizada,#32CD32,completado,check
+cancelado,Solicitud no aprobada,#FF0000,cancelado,times
+archivado,Documento archivado,#808080,completado,archive 

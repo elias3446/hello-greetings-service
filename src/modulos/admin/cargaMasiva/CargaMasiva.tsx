@@ -19,7 +19,7 @@ const CargaMasiva = () => {
           <CardHeader>
             <CardTitle>Importar datos</CardTitle>
             <CardDescription>
-              Carga masiva de datos mediante archivos CSV, Excel o JSON.
+              Carga masiva de datos mediante archivos CSV.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-2">

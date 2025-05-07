@@ -3,27 +3,32 @@
     {
       "nombre": "admin",
       "descripcion": "Administrador del sistema",
-      "permisos": ["all"]
+      "color": "#FF0000",
+      "tipo": "admin"
     },
     {
       "nombre": "editor",
       "descripcion": "Editor de contenido",
-      "permisos": ["read", "write"]
+      "color": "#00FF00",
+      "tipo": "usuario"
     },
     {
       "nombre": "usuario",
       "descripcion": "Usuario básico",
-      "permisos": ["read"]
+      "color": "#0000FF",
+      "tipo": "usuario"
     },
     {
       "nombre": "supervisor",
       "descripcion": "Supervisor de equipo",
-      "permisos": ["read", "write", "approve"]
+      "color": "#FFFF00",
+      "tipo": "usuario"
     },
     {
       "nombre": "auditor",
       "descripcion": "Auditor del sistema",
-      "permisos": ["read", "audit"]
+      "color": "#FF00FF",
+      "tipo": "usuario"
     }
   ]
 } 

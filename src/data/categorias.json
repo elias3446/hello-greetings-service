@@ -3,27 +3,37 @@
     {
       "nombre": "Ventas",
       "descripcion": "Reportes relacionados con ventas y comercialización",
-      "activo": true
+      "color": "#FF5733",
+      "icono": "shopping-cart",
+      "tipo": "admin"
     },
     {
       "nombre": "Finanzas",
       "descripcion": "Informes financieros y contables",
-      "activo": true
+      "color": "#33FF57",
+      "icono": "chart-line",
+      "tipo": "admin"
     },
     {
       "nombre": "Recursos Humanos",
       "descripcion": "Documentación de personal y RRHH",
-      "activo": true
+      "color": "#3357FF",
+      "icono": "users",
+      "tipo": "admin"
     },
     {
       "nombre": "Marketing",
       "descripcion": "Análisis de mercado y campañas",
-      "activo": true
+      "color": "#FF33A8",
+      "icono": "bullhorn",
+      "tipo": "admin"
     },
     {
       "nombre": "Operaciones",
       "descripcion": "Reportes operativos y logística",
-      "activo": true
+      "color": "#33A8FF",
+      "icono": "cogs",
+      "tipo": "admin"
     }
   ]
 } 

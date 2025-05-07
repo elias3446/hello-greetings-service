@@ -165,24 +165,6 @@ const ImportForm: React.FC<ImportFormProps> = ({ tipoEntidad }) => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const getTemplateUrl = () => {
-    // En un entorno real, estas URLs apuntarían a archivos de plantilla reales
-    switch (tipoEntidad) {
-      case 'usuarios':
-        return '/templates/usuarios_template.csv';
-      case 'reportes':
-        return '/templates/reportes_template.csv';
-      case 'categorias':
-        return '/templates/categorias_template.csv';
-      case 'roles':
-        return '/templates/roles_template.csv';
-      case 'estados':
-        return '/templates/estados_template.csv';
-      default:
-        return '#';
-    }
-  };
-
   return (
     <div className="space-y-6">
       {!importResults ? (
@@ -193,19 +175,6 @@ const ImportForm: React.FC<ImportFormProps> = ({ tipoEntidad }) => {
             </h3>
             
             <div className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Formatos soportados: CSV, Excel (.xlsx, .xls) y JSON.
-                </p>
-                <a 
-                  href={getTemplateUrl()} 
-                  className="text-sm text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Descargar plantilla de ejemplo
-                </a>
-              </div>
               
               <div className="flex items-center gap-4">
                 <Input
