@@ -169,7 +169,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
   };
 
   return (
-    <Layout titulo={modo === 'crear' ? 'Nuevo Reporte' : 'Editar Reporte'}>
+    <Layout >
       <Card>
         <CardHeader>
           <CardTitle>{modo === 'crear' ? 'Crear nuevo reporte' : 'Actualizar información del reporte'}</CardTitle>
