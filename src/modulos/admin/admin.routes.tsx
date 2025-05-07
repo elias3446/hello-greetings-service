@@ -26,6 +26,9 @@ import ListaEstados from './estados/ListaEstados';
 import DetalleEstado from './estados/DetalleEstado';
 import FormularioEstado from './estados/FormularioEstado';
 
+// Importar componentes de carga masiva
+import CargaMasiva from './cargaMasiva/CargaMasiva';
+
 export const adminRoutes = (
   <Route path="/admin" element={<MenuAdmin />}>
     {/* Rutas de usuarios */}
@@ -58,5 +61,8 @@ export const adminRoutes = (
     <Route path="estados/:id" element={<DetalleEstado />} />
     <Route path="estados/nuevo" element={<FormularioEstado modo="crear" />} />
     <Route path="estados/:id/editar" element={<FormularioEstado modo="editar" />} />
+
+    {/* Rutas de carga masiva */}
+    <Route path="cargaMasiva" element={<CargaMasiva />} />
   </Route>
 ); 

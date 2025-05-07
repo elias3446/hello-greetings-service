@@ -1,0 +1,29 @@
+{
+  "estados": [
+    {
+      "nombre": "pendiente",
+      "descripcion": "Estado inicial de la solicitud",
+      "color": "#FFA500"
+    },
+    {
+      "nombre": "en_proceso",
+      "descripcion": "En proceso de revisión",
+      "color": "#1E90FF"
+    },
+    {
+      "nombre": "completado",
+      "descripcion": "Tarea finalizada",
+      "color": "#32CD32"
+    },
+    {
+      "nombre": "rechazado",
+      "descripcion": "Solicitud no aprobada",
+      "color": "#FF0000"
+    },
+    {
+      "nombre": "archivado",
+      "descripcion": "Documento archivado",
+      "color": "#808080"
+    }
+  ]
+} 

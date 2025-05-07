@@ -1,0 +1,29 @@
+{
+  "roles": [
+    {
+      "nombre": "admin",
+      "descripcion": "Administrador del sistema",
+      "permisos": ["all"]
+    },
+    {
+      "nombre": "editor",
+      "descripcion": "Editor de contenido",
+      "permisos": ["read", "write"]
+    },
+    {
+      "nombre": "usuario",
+      "descripcion": "Usuario básico",
+      "permisos": ["read"]
+    },
+    {
+      "nombre": "supervisor",
+      "descripcion": "Supervisor de equipo",
+      "permisos": ["read", "write", "approve"]
+    },
+    {
+      "nombre": "auditor",
+      "descripcion": "Auditor del sistema",
+      "permisos": ["read", "audit"]
+    }
+  ]
+} 

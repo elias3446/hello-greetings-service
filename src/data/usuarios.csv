@@ -1,0 +1,6 @@
+nombre,apellido,email,rol,estado
+Juan,Pérez,juan.perez@example.com,admin,activo
+María,García,maria.garcia@example.com,usuario,activo
+Carlos,López,carlos.lopez@example.com,editor,pending
+Ana,Martínez,ana.martinez@example.com,usuario,activo
+Roberto,Sánchez,roberto.sanchez@example.com,editor,activo 

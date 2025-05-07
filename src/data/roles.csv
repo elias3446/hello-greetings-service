@@ -1,0 +1,6 @@
+nombre,descripcion,permisos
+admin,Administrador del sistema,all
+editor,Editor de contenido,read,write
+usuario,Usuario básico,read
+supervisor,Supervisor de equipo,read,write,approve
+auditor,Auditor del sistema,read,audit 

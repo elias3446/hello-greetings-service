@@ -1,0 +1,39 @@
+{
+  "usuarios": [
+    {
+      "nombre": "Juan",
+      "apellido": "Pérez",
+      "email": "juan.perez@example.com",
+      "rol": "admin",
+      "estado": "activo"
+    },
+    {
+      "nombre": "María",
+      "apellido": "García",
+      "email": "maria.garcia@example.com",
+      "rol": "usuario",
+      "estado": "activo"
+    },
+    {
+      "nombre": "Carlos",
+      "apellido": "López",
+      "email": "carlos.lopez@example.com",
+      "rol": "editor",
+      "estado": "pending"
+    },
+    {
+      "nombre": "Ana",
+      "apellido": "Martínez",
+      "email": "ana.martinez@example.com",
+      "rol": "usuario",
+      "estado": "activo"
+    },
+    {
+      "nombre": "Roberto",
+      "apellido": "Sánchez",
+      "email": "roberto.sanchez@example.com",
+      "rol": "editor",
+      "estado": "activo"
+    }
+  ]
+} 

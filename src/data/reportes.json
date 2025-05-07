@@ -1,0 +1,39 @@
+{
+  "reportes": [
+    {
+      "titulo": "Reporte Mensual",
+      "descripcion": "Análisis de ventas del mes",
+      "categoria": "ventas",
+      "estado": "pendiente",
+      "fecha": "2024-03-15"
+    },
+    {
+      "titulo": "Informe Trimestral",
+      "descripcion": "Resumen de actividades Q1",
+      "categoria": "finanzas",
+      "estado": "completado",
+      "fecha": "2024-03-10"
+    },
+    {
+      "titulo": "Evaluación Anual",
+      "descripcion": "Revisión de objetivos 2024",
+      "categoria": "recursos",
+      "estado": "en_proceso",
+      "fecha": "2024-03-20"
+    },
+    {
+      "titulo": "Auditoría Interna",
+      "descripcion": "Control de procesos",
+      "categoria": "auditoria",
+      "estado": "pendiente",
+      "fecha": "2024-03-25"
+    },
+    {
+      "titulo": "Análisis de Mercado",
+      "descripcion": "Tendencias del sector",
+      "categoria": "marketing",
+      "estado": "completado",
+      "fecha": "2024-03-05"
+    }
+  ]
+} 

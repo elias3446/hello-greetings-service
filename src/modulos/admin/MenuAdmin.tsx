@@ -6,34 +6,10 @@ import {
   FileText, 
   List, 
   Shield, 
-  Activity 
+  Activity,
+  Upload
 } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
-
-// Importar componentes de usuarios
-import ListaUsuarios from './usuarios/ListaUsuarios';
-import DetalleUsuario from './usuarios/DetalleUsuario';
-import FormularioUsuario from './usuarios/FormularioUsuario';
-
-// Importar componentes de reportes
-import ListaReportesAdmin from './reportes/ListaReportesAdmin';
-import DetalleReporteAdmin from './reportes/DetalleReporteAdmin';
-import FormularioReporteAdmin from './reportes/FormularioReporteAdmin';
-
-// Importar componentes de categorías
-import ListaCategorias from './categorias/ListaCategorias';
-import DetalleCategoria from './categorias/DetalleCategoria';
-import FormularioCategoria from './categorias/FormularioCategoria';
-
-// Importar componentes de roles
-import ListaRoles from './roles/ListaRoles';
-import DetalleRol from './roles/DetalleRol';
-import FormularioRol from './roles/FormularioRol';
-
-// Importar componentes de estados
-import ListaEstados from './estados/ListaEstados';
-import DetalleEstado from './estados/DetalleEstado';
-import FormularioEstado from './estados/FormularioEstado';
 
 const MenuAdmin = () => {
   const navigate = useNavigate();
@@ -47,6 +23,7 @@ const MenuAdmin = () => {
     if (path.includes('/admin/categorias')) return 'categorias';
     if (path.includes('/admin/roles')) return 'roles';
     if (path.includes('/admin/estados')) return 'estados';
+    if (path.includes('/admin/cargaMasiva')) return 'cargaMasiva';
     return 'usuarios'; // Por defecto
   };
 
@@ -68,6 +45,9 @@ const MenuAdmin = () => {
       case 'estados':
         navigate('/admin/estados');
         break;
+      case 'cargaMasiva':
+        navigate('/admin/cargaMasiva');
+        break;
       default:
         navigate('/admin/usuarios');
     }
@@ -78,7 +58,8 @@ const MenuAdmin = () => {
     { value: 'reportes', label: 'Reportes', icon: FileText },
     { value: 'categorias', label: 'Categorías', icon: List },
     { value: 'roles', label: 'Roles', icon: Shield },
-    { value: 'estados', label: 'Estados', icon: Activity }
+    { value: 'estados', label: 'Estados', icon: Activity },
+    { value: 'cargaMasiva', label: 'Carga Masiva', icon: Upload }
   ];
 
   return (

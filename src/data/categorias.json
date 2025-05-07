@@ -1,0 +1,29 @@
+{
+  "categorias": [
+    {
+      "nombre": "Ventas",
+      "descripcion": "Reportes relacionados con ventas y comercialización",
+      "activo": true
+    },
+    {
+      "nombre": "Finanzas",
+      "descripcion": "Informes financieros y contables",
+      "activo": true
+    },
+    {
+      "nombre": "Recursos Humanos",
+      "descripcion": "Documentación de personal y RRHH",
+      "activo": true
+    },
+    {
+      "nombre": "Marketing",
+      "descripcion": "Análisis de mercado y campañas",
+      "activo": true
+    },
+    {
+      "nombre": "Operaciones",
+      "descripcion": "Reportes operativos y logística",
+      "activo": true
+    }
+  ]
+} 

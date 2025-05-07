@@ -193,3 +193,4 @@ export interface HistorialEstadoReporte {
   tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'asignacion_reporte' | 'cambio_rol' | 'otro';
 }
 
+export type TipoEntidad = 'usuarios' | 'reportes' | 'categorias' | 'roles' | 'estados';

@@ -1,0 +1,6 @@
+nombre,descripcion,color
+pendiente,Estado inicial de la solicitud,#FFA500
+en_proceso,En proceso de revisión,#1E90FF
+completado,Tarea finalizada,#32CD32
+rechazado,Solicitud no aprobada,#FF0000
+archivado,Documento archivado,#808080 
