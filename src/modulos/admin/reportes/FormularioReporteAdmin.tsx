@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -41,6 +40,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import ImageUploader from '@/components/ui/ImageUploader';
+
 interface FormularioReporteAdminProps {
   modo: 'crear' | 'editar';
 }
@@ -66,6 +67,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
   const [usuarios, setUsuarios] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [imagenes, setImagenes] = useState<File[]>([]);
 
   // Configurar el formulario
   const form = useForm<z.infer<typeof formSchema>>({
@@ -188,80 +190,79 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
         fechaActualizacion: new Date(),
         fechaInicio: new Date(),
         usuarioCreador: { id: '1', nombre: 'Admin', apellido: 'Sistema', email: 'admin@sistema.com' } as any,
-        imagenes: [],
+        imagenes: imagenes.map(img => URL.createObjectURL(img)),
         activo: values.activo,
         historialAsignaciones: [],
       };
 
       if (modo === 'crear') {
         const nuevoReporte = createReport(reporteData);
-                // Registrar el cambio en el historial del reporte
-      const reporte = getReportById(nuevoReporte.id);
-      if (reporte) {
-        registrarCambioEstadoReporte(
-          reporte,
-           'Sin asignar',
-          'Sin asignar',
-          {
-            id: '0',
-            nombre: 'Sistema',
-            apellido: '',
-            email: 'sistema@example.com',
-            estado: 'activo',
-            tipo: 'usuario',
-            intentosFallidos: 0,
-            password: 'hashed_password',
-            roles: [{
-              id: '1',
-              nombre: 'Administrador',
-              descripcion: 'Rol con acceso total al sistema',
-              color: '#FF0000',
-              tipo: 'admin',
+        // Registrar el cambio en el historial del reporte
+        const reporte = getReportById(nuevoReporte.id);
+        if (reporte) {
+          registrarCambioEstadoReporte(
+            reporte,
+             'Sin asignar',
+            'Sin asignar',
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
               fechaCreacion: new Date('2023-01-01'),
-              activo: true
-            }],
-            fechaCreacion: new Date('2023-01-01'),
-          },
-          `Desasignación de reporte`,
-          'asignacion_reporte'
-        );
-      }
+            },
+            `Desasignación de reporte`,
+            'asignacion_reporte'
+          );
+        }
         toast.success('Reporte creado correctamente');
         navigate(`/admin/reportes/${nuevoReporte.id}`);
-        
       } else if (modo === 'editar' && id) {
         updateReport(id, reporteData);
-                // Registrar el cambio en el historial del reporte
-      const reporte = getReportById(id);
-      if (reporte) {
-        registrarCambioEstadoReporte(
-          reporte,
-           'Sin asignar',
-          'Sin asignar',
-          {
-            id: '0',
-            nombre: 'Sistema',
-            apellido: '',
-            email: 'sistema@example.com',
-            estado: 'activo',
-            tipo: 'usuario',
-            intentosFallidos: 0,
-            password: 'hashed_password',
-            roles: [{
-              id: '1',
-              nombre: 'Administrador',
-              descripcion: 'Rol con acceso total al sistema',
-              color: '#FF0000',
-              tipo: 'admin',
+        // Registrar el cambio en el historial del reporte
+        const reporte = getReportById(id);
+        if (reporte) {
+          registrarCambioEstadoReporte(
+            reporte,
+             'Sin asignar',
+            'Sin asignar',
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
               fechaCreacion: new Date('2023-01-01'),
-              activo: true
-            }],
-            fechaCreacion: new Date('2023-01-01'),
-          },
-          `Desasignación de reporte`,
-          'asignacion_reporte'
-        );
-      }
+            },
+            `Desasignación de reporte`,
+            'asignacion_reporte'
+          );
+        }
         toast.success('Reporte actualizado correctamente');
         navigate(`/admin/reportes/${id}`);
       }
@@ -301,9 +302,6 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
               <span className="mx-2">/</span>
               <span>{modo === 'crear' ? 'Crear' : 'Editar'}</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">
-              {modo === 'crear' ? 'Crear Nuevo Reporte' : 'Editar Reporte'}
-            </h2>
           </div>
           <div>
             <Button 
@@ -326,11 +324,6 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
             <Card className="overflow-hidden">
               <div className="bg-muted p-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <Avatar className="h-20 w-20 border-4 border-background">
-                    <AvatarFallback style={{ backgroundColor: getEstadoColor(form.watch('estadoId')) }}>
-                      {form.watch('titulo').substring(0, 2).toUpperCase() || 'RP'}
-                    </AvatarFallback>
-                  </Avatar>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-2xl font-semibold">{form.watch('titulo') || 'Nuevo Reporte'}</h3>
@@ -358,7 +351,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                 
                 <TabsContent value="general">
                   <Form {...form}>
-                    <form className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       <FormField
                         control={form.control}
                         name="titulo"
@@ -471,6 +464,8 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                           </FormItem>
                         )}
                       />
+
+                      <ImageUploader images={imagenes} setImages={setImagenes} maxImages={3} />
                     </form>
                   </Form>
                 </TabsContent>

@@ -99,10 +99,73 @@ const DetalleReporte = () => {
     if (!reporte) return;
     
     try {
-      const updatedReport = updateReport(reporte.id, { activo: !reporte.activo });
+      const currentReporte = getReportById(reporte.id);
+      if (!currentReporte) return;
+
+      // Registrar el cambio en el historial del usuario anterior
+      if (currentReporte.asignadoA) {
+        registrarCambioEstado(
+          currentReporte.asignadoA,
+          `Reporte ${currentReporte.id} asignado`,
+          'Sin reporte asignado',
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          },
+          `Desasignación de reporte ${currentReporte.id}`,
+          'asignacion_reporte'
+        );
+      }
+
+      // Registrar el cambio en el historial del reporte
+      registrarCambioEstadoReporte(
+        currentReporte,
+        currentReporte.asignadoA ? `${currentReporte.asignadoA.nombre} ${currentReporte.asignadoA.apellido}` : 'Sin asignar',
+        'Sin asignar',
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        },
+        `Desasignación de reporte`,
+        'asignacion_reporte'
+      );
+
+      const updatedReport = updateReport(currentReporte.id, { activo: !currentReporte.activo });
       if (updatedReport) {
         setReporte(updatedReport);
-        toast.success(reporte.activo ? 'Reporte reabierto' : 'Reporte marcado como resuelto');
+        toast.success(currentReporte.activo ? 'Reporte reabierto' : 'Reporte marcado como resuelto');
       }
     } catch (error) {
       console.error('Error al actualizar el estado del reporte:', error);

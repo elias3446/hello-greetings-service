@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -31,6 +30,7 @@ import { categorias } from '@/data/categorias';
 import { estadosReporte } from '@/data/estadosReporte';
 import MapaSeleccionUbicacion from '@/components/reportes/MapaSeleccionUbicacion';
 import type { Reporte, Ubicacion } from '@/types/tipos';
+import ImageUploader from '@/components/ui/ImageUploader';
 
 interface FormularioReporteProps {
   modo: 'crear' | 'editar';
@@ -49,6 +49,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
   const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
   const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [imagenes, setImagenes] = useState<File[]>([]);
 
   // Configurar el formulario
   const form = useForm<z.infer<typeof formSchema>>({
@@ -145,8 +146,9 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
         fechaActualizacion: new Date(),
         fechaInicio: new Date(),
         usuarioCreador: { id: '4', nombre: 'Juan', apellido: 'Pérez', email: 'juan@ejemplo.com' } as any,
-        imagenes: [],
+        imagenes: imagenes.map(img => URL.createObjectURL(img)),
         activo: true,
+        historialAsignaciones: [],
       };
 
       if (modo === 'crear') {
@@ -246,6 +248,8 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
                 </FormControl>
                 <FormMessage />
               </FormItem>
+
+              <ImageUploader images={imagenes} setImages={setImagenes} maxImages={3} />
 
               <div className="flex justify-end space-x-2">
                 <Button
