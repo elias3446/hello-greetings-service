@@ -43,6 +43,7 @@ export const hasUserChanges = (usuarioAnterior: Usuario, newData: UserFormData):
     usuarioAnterior.nombre !== newData.nombre ||
     usuarioAnterior.apellido !== newData.apellido ||
     usuarioAnterior.email !== newData.email ||
+    usuarioAnterior.password !== newData.password ||
     usuarioAnterior.estado !== newData.estado ||
     usuarioAnterior.tipo !== newData.tipo ||
     JSON.stringify(usuarioAnterior.roles.map(r => r.id)) !== JSON.stringify(newData.roles)

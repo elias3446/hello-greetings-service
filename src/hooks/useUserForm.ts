@@ -41,8 +41,10 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
         errors.email = { message: 'Correo electrónico inválido' };
       }
 
-      // Validate password strength
-      if (data.password && !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(data.password)) {
+      // Validate password strength only for new users or when password is changed
+      if (modo === 'crear' && data.password && !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(data.password)) {
+        errors.password = { message: 'La contraseña debe contener letras y números' };
+      } else if (modo === 'editar' && data.password && data.password !== usuarioExistente?.password && !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(data.password)) {
         errors.password = { message: 'La contraseña debe contener letras y números' };
       }
 
