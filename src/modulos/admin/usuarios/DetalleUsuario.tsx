@@ -14,6 +14,7 @@ import { obtenerHistorialUsuario } from '@/controller/CRUD/historialUsuario';
 import { actualizarEstadoUsuario } from '@/controller/controller/userStateController';
 import { toast } from '@/components/ui/sonner';
 import { updateUser } from '@/controller/CRUD/userController';
+import { filterReports } from '@/controller/CRUD/reportController';
 
 const DetalleUsuario = () => {
   const {
@@ -24,7 +25,8 @@ const DetalleUsuario = () => {
     handleRoleChange,
     handleEliminarUsuario,
     handleEditarUsuario,
-    setUsuario
+    setUsuario,
+    setReportesAsignados
   } = useUsuario();
 
   const handleCambiarEstado = async () => {
@@ -67,6 +69,9 @@ const DetalleUsuario = () => {
       const usuarioActualizado = updateUser(usuario.id, { estado: nuevoEstado });
       if (usuarioActualizado) {
         setUsuario(usuarioActualizado);
+        // Actualizar los reportes asignados
+        const nuevosReportes = filterReports({ userId: usuario.id });
+        setReportesAsignados(nuevosReportes);
       }
     }
 

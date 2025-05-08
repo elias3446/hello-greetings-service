@@ -587,6 +587,7 @@ export const useUsuario = () => {
     handleCambiarEstado,
     handleEliminarUsuario,
     handleEditarUsuario,
-    setUsuario
+    setUsuario,
+    setReportesAsignados
   };
 }; 
