@@ -402,7 +402,7 @@ export const useUsuario = () => {
 
   const handleRoleChange = async (userId: string, newRoleId: string) => {
     try {
-      if (!usuario) return false;
+      if (!usuario) return;
 
       const rolAnterior = usuario.roles[0]?.nombre || 'Sin rol';
       const nuevoRol = roles.find(r => r.id === newRoleId);
@@ -425,11 +425,9 @@ export const useUsuario = () => {
       setHistorialEstados(historial);
       
       toast.success('Rol asignado correctamente');
-      return true;
     } catch (error) {
       console.error('Error al asignar el rol:', error);
       toast.error('Error al asignar el rol');
-      return false;
     }
   };
 
@@ -588,6 +586,7 @@ export const useUsuario = () => {
     handleRoleChange,
     handleCambiarEstado,
     handleEliminarUsuario,
-    handleEditarUsuario
+    handleEditarUsuario,
+    setUsuario
   };
 }; 

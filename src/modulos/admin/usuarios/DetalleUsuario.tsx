@@ -11,6 +11,9 @@ import { UserHistory } from '@/components/admin/usuarios/UserHistory';
 import { UserReports } from '@/components/admin/usuarios/UserReports';
 import ActividadItem from '@/components/layout/ActividadItem';
 import { obtenerHistorialUsuario } from '@/controller/CRUD/historialUsuario';
+import { actualizarEstadoUsuario } from '@/controller/controller/userStateController';
+import { toast } from '@/components/ui/sonner';
+import { updateUser } from '@/controller/CRUD/userController';
 
 const DetalleUsuario = () => {
   const {
@@ -19,10 +22,56 @@ const DetalleUsuario = () => {
     reportesAsignados,
     historialEstados,
     handleRoleChange,
-    handleCambiarEstado,
     handleEliminarUsuario,
-    handleEditarUsuario
+    handleEditarUsuario,
+    setUsuario
   } = useUsuario();
+
+  const handleCambiarEstado = async () => {
+    if (!usuario) return false;
+
+    if (usuario.estado === 'bloqueado') {
+      toast.error('No se puede cambiar el estado de un usuario bloqueado');
+      return false;
+    }
+
+    const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+    
+    const resultado = await actualizarEstadoUsuario(
+      usuario,
+      nuevoEstado,
+      {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      }
+    );
+
+    if (resultado) {
+      // Actualizar el estado local del usuario
+      const usuarioActualizado = updateUser(usuario.id, { estado: nuevoEstado });
+      if (usuarioActualizado) {
+        setUsuario(usuarioActualizado);
+      }
+    }
+
+    return resultado;
+  };
 
   if (loading) {
     return (

@@ -16,8 +16,7 @@ export const getUserById = (id: string): Usuario | undefined => {
 export const createUser = (userData: Omit<Usuario, 'id'>): Usuario => {
   const newUser: Usuario = {
     id: crypto.randomUUID(),
-    ...userData,
-    fechaCreacion: new Date(),
+    ...userData
   };
   usuarios.push(newUser);
   return newUser;
@@ -29,15 +28,6 @@ export const updateUser = (id: string, userData: Partial<Usuario>): Usuario | un
   if (index !== -1) {
     const updatedUser = { ...usuarios[index], ...userData };
     usuarios[index] = updatedUser;
-
-    // Si el estado del usuario cambia a 'bloqueado' o 'inactivo', desasignar sus reportes
-    if (userData.estado && (userData.estado === 'bloqueado' || userData.estado === 'inactivo')) {
-      const reportesAsignados = filterReports({ userId: id });
-      reportesAsignados.forEach(reporte => {
-        updateReport(reporte.id, { asignadoA: undefined });
-      });
-    }
-
     return updatedUser;
   }
   return undefined;

@@ -8,6 +8,7 @@ import { getFieldValue } from '@/utils/usuarioUtils';
 import { SORT_OPTIONS, FILTER_OPTIONS, ITEMS_PER_PAGE } from '@/utils/userListConstants';
 import { calculatePagination, getUniqueRoles } from '@/utils/userListUtils';
 import { actualizarRolUsuario } from '@/controller/controller/userRoleController';
+import { actualizarEstadoUsuario } from '@/controller/controller/userStateController';
 import { toast } from '@/components/ui/sonner';
 
 const ListaUsuarios: React.FC = () => {
@@ -78,6 +79,71 @@ const ListaUsuarios: React.FC = () => {
     }
   };
 
+  const handleEstadoChange = async (userId: string) => {
+    const usuario = state.usuarios.find(user => user.id === userId);
+    if (!usuario) {
+      toast.error('Usuario no encontrado');
+      return;
+    }
+
+    if (usuario.estado === 'bloqueado') {
+      toast.error('No se puede cambiar el estado de un usuario bloqueado');
+      return;
+    }
+
+    const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+    
+    console.log('Iniciando cambio de estado:', {
+      userId,
+      estadoAnterior: usuario.estado,
+      nuevoEstado
+    });
+
+    const resultado = await actualizarEstadoUsuario(
+      usuario,
+      nuevoEstado,
+      {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      }
+    );
+
+    if (resultado) {
+      console.log('Actualizando estado local');
+      // Actualizar el estado local de usuarios
+      actions.setUsuarios(prevUsuarios => 
+        prevUsuarios.map(user => 
+          user.id === userId ? { ...user, estado: nuevoEstado } : user
+        )
+      );
+
+      // Actualizar el estado local de usuarios filtrados
+      actions.setFilteredUsuarios(prevUsuarios => 
+        prevUsuarios.map(user => 
+          user.id === userId ? { ...user, estado: nuevoEstado } : user
+        )
+      );
+
+      console.log('Estado local actualizado');
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -119,7 +185,7 @@ const ListaUsuarios: React.FC = () => {
                   <UsuarioRow
                     key={usuario.id}
                     usuario={usuario}
-                    onEstadoChange={handlers.handleEstadoChange}
+                    onEstadoChange={handleEstadoChange}
                     onDelete={handlers.handleDeleteUser}
                     onRoleChange={handleRoleChange}
                   />
