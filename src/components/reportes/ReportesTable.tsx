@@ -3,18 +3,30 @@ import { Link } from 'react-router-dom';
 import { Table, TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { PencilIcon, Trash2Icon } from 'lucide-react';
-import { Reporte } from '@/types/tipos';
-import { ReporteTableProps } from '@/types/reportes';
+import { Reporte, Categoria, EstadoReporte, Usuario } from '@/types/tipos';
 import { formatDate } from '@/utils/reportes';
 import CategoriaSelector from '@/components/admin/selector/CategoriaSelector';
 import EstadoSelector from '@/components/admin/selector/EstadoSelector';
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
 
+interface ReporteTableProps {
+  reportes: Reporte[];
+  isLoading: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (reporte: Reporte) => void;
+  onCategoriaChange: (reporte: Reporte, nuevaCategoria: Categoria) => Promise<void>;
+  onEstadoChange: (reporte: Reporte, nuevoEstado: EstadoReporte) => Promise<void>;
+  onUsuarioChange: (reporte: Reporte, nuevoUsuario: Usuario | undefined) => Promise<void>;
+}
+
 export const ReportesTable: React.FC<ReporteTableProps> = ({ 
   reportes, 
   isLoading, 
   onEdit, 
-  onDelete 
+  onDelete, 
+  onCategoriaChange,
+  onEstadoChange,
+  onUsuarioChange 
 }) => {
   if (isLoading) {
     return (
@@ -50,10 +62,11 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
           <TableCell>
             {reporte.categoria.nombre && (
               <div className={reporte.activo === false ? 'pointer-events-none opacity-50' : ''}>
-              <CategoriaSelector
-                ReporteId={reporte.id}
-                currentCategoriaId={reporte.categoria.id}
-              />
+                <CategoriaSelector
+                  ReporteId={reporte.id}
+                  currentCategoriaId={reporte.categoria.id}
+                  onCategoriaChange={(nuevaCategoria) => onCategoriaChange(reporte, nuevaCategoria)}
+                />
               </div>
             )}
           </TableCell>
@@ -63,6 +76,7 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
                 ReporteId={reporte.id}
                 currentEstadoId={reporte.estado.id}
                 disabled={!reporte.activo}
+                onEstadoChange={(nuevoEstado) => onEstadoChange(reporte, nuevoEstado)}
               />
             )}
           </TableCell>
@@ -75,6 +89,7 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
               ReporteId={reporte.id}
               currentUsuarioId={reporte.asignadoA?.id}
               disabled={!reporte.activo}
+              onUsuarioChange={(nuevoUsuario) => onUsuarioChange(reporte, nuevoUsuario)}
             />
           </TableCell>
           <TableCell className="text-right">

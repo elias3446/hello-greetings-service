@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
-import { Reporte } from '@/types/tipos';
+import { Reporte, Usuario, Categoria, EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, deleteReport } from '@/controller/CRUD/reportController';
+import { getReports, deleteReport, getReportById, updateReport } from '@/controller/CRUD/reportController';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
@@ -14,6 +14,10 @@ import { useReportesState, useReportesData, usePagination } from '@/hooks/useRep
 import { ReportesTable } from '@/components/reportes/ReportesTable';
 import { ReportesPagination } from '@/components/reportes/ReportesPagination';
 import { DeleteConfirmationDialog } from '@/components/reportes/DeleteConfirmationDialog';
+import { getCategories } from '@/controller/CRUD/categoryController';
+import { actualizarCategoriaReporte } from '@/controller/controller/reportCategoryController';
+import { actualizarEstadoReporte } from '@/controller/controller/reportStateController';
+import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -145,6 +149,131 @@ const ListaReportesAdmin: React.FC = () => {
     exportToCSV(filteredData);
   };
 
+  const handleCategoriaChange = async (reporte: Reporte, nuevaCategoria: Categoria) => {
+    try {
+      const usuarioSistema: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
+
+      const success = await actualizarCategoriaReporte(reporte, nuevaCategoria, usuarioSistema);
+      if (success) {
+        // Actualizar la lista de reportes
+        setReportes(prevReportes => 
+          prevReportes.map(r => 
+            r.id === reporte.id ? { ...r, categoria: nuevaCategoria } : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error al actualizar la categoría:', error);
+    }
+  };
+
+  const handleEstadoChange = async (reporte: Reporte, nuevoEstado: EstadoReporte) => {
+    try {
+      const usuarioSistema: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
+
+      const success = await actualizarEstadoReporte(reporte, nuevoEstado, usuarioSistema);
+      if (success) {
+        // Actualizar la lista de reportes
+        setReportes(prevReportes => 
+          prevReportes.map(r => 
+            r.id === reporte.id ? { ...r, estado: nuevoEstado } : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estado:', error);
+    }
+  };
+
+  const handleUsuarioChange = async (reporte: Reporte, nuevoUsuario: Usuario | undefined) => {
+    try {
+      const usuarioSistema: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
+
+      if (!nuevoUsuario) {
+        // Si no hay nuevo usuario, desasignar el reporte
+        const reporteActualizado = updateReport(reporte.id, { asignadoA: undefined });
+        if (reporteActualizado) {
+          setReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporte.id ? { ...r, asignadoA: undefined } : r
+            )
+          );
+          toast.success('Reporte desasignado correctamente');
+        }
+        return;
+      }
+
+      const success = await actualizarAsignacionReporte(reporte, nuevoUsuario, usuarioSistema);
+      if (success) {
+        // Actualizar la lista de reportes
+        setReportes(prevReportes => 
+          prevReportes.map(r => 
+            r.id === reporte.id ? { ...r, asignadoA: nuevoUsuario } : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error al actualizar la asignación:', error);
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -195,6 +324,9 @@ const ListaReportesAdmin: React.FC = () => {
                 isLoading={isLoading}
                 onEdit={handleEditReporte}
                 onDelete={handleDeleteReporte}
+                onCategoriaChange={handleCategoriaChange}
+                onEstadoChange={handleEstadoChange}
+                onUsuarioChange={handleUsuarioChange}
               />
             </TableBody>
           </Table>
