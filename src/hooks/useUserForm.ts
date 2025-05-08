@@ -10,6 +10,8 @@ import { hasUserChanges, getSystemUser, handleUserStateChange } from '@/utils/us
 import { Usuario } from '@/types/tipos';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 import { crearUsuario } from '@/controller/controller/newUser';
+import { actualizarUsuario } from '@/controller/controller/userUpdateController';
+
 export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
   const navigate = useNavigate();
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
@@ -120,11 +122,34 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
       return;
     }
 
-    const usuarioActualizado = updateUser(id, userData);
-    if (!usuarioActualizado) throw new Error("No se pudo actualizar el usuario");
+    const resultado = await actualizarUsuario(
+      usuarioAnterior,
+      userData,
+      {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      }
+    );
 
-    await handleUserStateChange(usuarioActualizado, usuarioAnterior);
-    toast.success("Usuario actualizado exitosamente");
+    if (resultado) {
+      navigate('/admin/usuarios');
+    }
   };
 
   const handleCreateUser = async (userData: Partial<Usuario>): Promise<void> => {
