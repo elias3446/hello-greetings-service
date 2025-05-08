@@ -7,6 +7,8 @@ import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { Usuario } from '@/types/tipos';
 import { actualizarRolUsuario } from '@/controller/controller/userRoleController';
 import { toast } from '@/components/ui/sonner';
+import { eliminarUsuario } from '@/controller/controller/userDeleteController';
+import { useNavigate } from 'react-router-dom';
 
 interface UserActionsProps {
   usuario: Usuario;
@@ -24,6 +26,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [currentUsuario, setCurrentUsuario] = useState<Usuario>(usuario);
+  const navigate = useNavigate();
 
   // Actualizar el usuario local cuando cambia el prop
   React.useEffect(() => {
@@ -75,6 +78,44 @@ export const UserActions: React.FC<UserActionsProps> = ({
     } catch (error) {
       console.error('Error al cambiar el rol:', error);
       toast.error('Error al actualizar el rol');
+    }
+  };
+
+  const confirmarEliminacion = async () => {
+    try {
+      if (!currentUsuario) return;
+
+      const resultado = await eliminarUsuario(
+        currentUsuario,
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        }
+      );
+
+    } catch (error) {
+      console.error('Error al eliminar el usuario:', error);
+      toast.error('Error al eliminar el usuario');
+    } finally {
+      setShowDeleteDialog(false);
+      setCurrentUsuario(null);
+      navigate('/admin/usuarios');
     }
   };
 
@@ -131,7 +172,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={onDelete}
+              onClick={confirmarEliminacion}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Eliminar

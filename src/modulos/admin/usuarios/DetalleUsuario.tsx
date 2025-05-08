@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,9 @@ import { toast } from '@/components/ui/sonner';
 import { updateUser } from '@/controller/CRUD/userController';
 import { filterReports } from '@/controller/CRUD/reportController';
 
-const DetalleUsuario = () => {
+const DetalleUsuario: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const {
     usuario,
     loading,
