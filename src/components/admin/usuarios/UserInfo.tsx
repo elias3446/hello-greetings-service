@@ -38,7 +38,7 @@ export const UserInfo: React.FC<UserInfoProps> = ({ usuario }) => {
                 const rolInfo = roles.find(r => r.id === rolUsuario.id);
                 return (
                   <Badge 
-                    key={rolUsuario.id} 
+                    key={`${usuario.id}-${rolUsuario.id}`}
                     style={{ backgroundColor: rolInfo?.color, color: "white" }}
                   >
                     {rolInfo?.nombre}

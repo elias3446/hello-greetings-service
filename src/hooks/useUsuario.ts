@@ -9,6 +9,7 @@ import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstados
 import { toast } from '@/components/ui/sonner';
 import { normalizeText, getFieldValue, exportUsuariosToCSV } from '@/utils/usuarioUtils';
 import { sortUsers } from '@/utils/userUtils';
+import { roles } from '@/data/roles';
 
 export const useUsuarioState = (): [UsuarioState, UsuarioActions] => {
   const [usuarios, setUsuarios] = React.useState<Usuario[]>([]);
@@ -340,6 +341,7 @@ export const useUsuario = () => {
   const [loading, setLoading] = useState(true);
   const [reportesAsignados, setReportesAsignados] = useState<Reporte[]>([]);
   const [historialEstados, setHistorialEstados] = useState<HistorialEstadoUsuario[]>([]);
+  const [roles, setRoles] = useState<Rol[]>([]);
 
   useEffect(() => {
     const cargarUsuario = () => {
@@ -384,13 +386,33 @@ export const useUsuario = () => {
     }
   }, [id, usuario]);
 
-  const handleRoleChange = async (newRole: Rol) => {
+  useEffect(() => {
+    const cargarRoles = async () => {
+      try {
+        const rolesData = getUsers().filter(user => user.roles && user.roles.length > 0);
+        setRoles(rolesData.map(user => user.roles[0]));
+      } catch (error) {
+        console.error('Error al cargar roles:', error);
+        toast.error('Error al cargar roles');
+      }
+    };
+
+    cargarRoles();
+  }, []);
+
+  const handleRoleChange = async (userId: string, newRoleId: string) => {
     try {
       if (!usuario) return false;
 
-      const estadoAnterior = usuario.roles[0]?.nombre || 'Sin rol';
+      const rolAnterior = usuario.roles[0]?.nombre || 'Sin rol';
+      const nuevoRol = roles.find(r => r.id === newRoleId);
+      
+      if (!nuevoRol) {
+        throw new Error('Rol no encontrado');
+      }
+
       const usuarioActualizado = updateUser(usuario.id, {
-        roles: [newRole]
+        roles: [nuevoRol]
       });
 
       if (!usuarioActualizado) {
