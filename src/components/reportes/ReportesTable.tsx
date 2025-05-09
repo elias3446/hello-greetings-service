@@ -8,6 +8,7 @@ import { formatDate } from '@/utils/reportes';
 import CategoriaSelector from '@/components/admin/selector/CategoriaSelector';
 import EstadoSelector from '@/components/admin/selector/EstadoSelector';
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ReporteTableProps {
   reportes: Reporte[];
@@ -17,6 +18,8 @@ interface ReporteTableProps {
   onCategoriaChange: (reporte: Reporte, nuevaCategoria: Categoria) => Promise<void>;
   onEstadoChange: (reporte: Reporte, nuevoEstado: EstadoReporte) => Promise<void>;
   onUsuarioChange: (reporte: Reporte, nuevoUsuario: Usuario | undefined) => Promise<void>;
+  onSelect?: (reporteId: string, checked: boolean) => void;
+  selectedReportes?: Set<string>;
 }
 
 export const ReportesTable: React.FC<ReporteTableProps> = ({ 
@@ -26,12 +29,14 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
   onDelete, 
   onCategoriaChange,
   onEstadoChange,
-  onUsuarioChange 
+  onUsuarioChange,
+  onSelect,
+  selectedReportes = new Set()
 }) => {
   if (isLoading) {
     return (
       <TableRow>
-        <TableCell colSpan={7} className="text-center">
+        <TableCell colSpan={8} className="text-center">
           <div className="flex justify-center items-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
           </div>
@@ -43,7 +48,7 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
   if (reportes.length === 0) {
     return (
       <TableRow>
-        <TableCell colSpan={7} className="text-center">
+        <TableCell colSpan={8} className="text-center">
           No se encontraron reportes
         </TableCell>
       </TableRow>
@@ -54,6 +59,15 @@ export const ReportesTable: React.FC<ReporteTableProps> = ({
     <>
       {reportes.map((reporte) => (
         <TableRow key={reporte.id}>
+          <TableCell className="w-[50px]">
+            {onSelect && (
+              <Checkbox
+                checked={selectedReportes.has(reporte.id)}
+                onCheckedChange={(checked) => onSelect(reporte.id, checked as boolean)}
+                aria-label={`Seleccionar reporte ${reporte.titulo}`}
+              />
+            )}
+          </TableCell>
           <TableCell>
             <Link to={`/admin/reportes/${reporte.id}`} className="text-blue-600 hover:underline">
               {reporte.titulo}

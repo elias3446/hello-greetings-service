@@ -19,6 +19,8 @@ import { actualizarCategoriaReporte } from '@/controller/controller/reportCatego
 import { actualizarEstadoReporte } from '@/controller/controller/reportStateController';
 import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
 import { eliminarReporte } from '@/controller/controller/reportDeleteController';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -49,6 +51,8 @@ const ListaReportesAdmin: React.FC = () => {
     selectedFilterValues,
     setSelectedFilterValues,
   } = useReportesState();
+
+  const [selectedReportes, setSelectedReportes] = useState<Set<string>>(new Set());
 
   const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
   const { currentPage, setCurrentPage, totalPages, currentItems } = usePagination(filteredData, ITEMS_PER_PAGE);
@@ -203,15 +207,6 @@ const ListaReportesAdmin: React.FC = () => {
         fechaCreacion: new Date('2023-01-01'),
       };
 
-      const success = await actualizarEstadoReporte(reporte, nuevoEstado, usuarioSistema);
-      if (success) {
-        // Actualizar la lista de reportes
-        setReportes(prevReportes => 
-          prevReportes.map(r => 
-            r.id === reporte.id ? { ...r, estado: nuevoEstado } : r
-          )
-        );
-      }
     } catch (error) {
       console.error('Error al actualizar el estado:', error);
     }
@@ -242,7 +237,7 @@ const ListaReportesAdmin: React.FC = () => {
 
       if (!nuevoUsuario) {
         // Si no hay nuevo usuario, desasignar el reporte
-        const reporteActualizado = updateReport(reporte.id, { asignadoA: undefined });
+        const reporteActualizado = updateReport(reporte.id, { asignadoA: undefined } as Partial<Reporte>);
         if (reporteActualizado) {
           setReportes(prevReportes => 
             prevReportes.map(r => 
@@ -265,6 +260,26 @@ const ListaReportesAdmin: React.FC = () => {
       }
     } catch (error) {
       console.error('Error al actualizar la asignación:', error);
+    }
+  };
+
+  const handleSelectReporte = (reporteId: string, checked: boolean) => {
+    setSelectedReportes(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(reporteId);
+      } else {
+        newSelected.delete(reporteId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedReportes(new Set(currentItems.map(reporte => reporte.id)));
+    } else {
+      setSelectedReportes(new Set());
     }
   };
 
@@ -299,10 +314,35 @@ const ListaReportesAdmin: React.FC = () => {
           filterOptions={filterOptions}
         />
 
+        {selectedReportes.size > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedReportes.size} {selectedReportes.size === 1 ? 'reporte seleccionado' : 'reportes seleccionados'}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setSelectedReportes(new Set())}
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedReportes.size === currentItems.length && currentItems.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Seleccionar todos los reportes"
+                  />
+                </TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Estado</TableHead>
@@ -321,6 +361,8 @@ const ListaReportesAdmin: React.FC = () => {
                 onCategoriaChange={handleCategoriaChange}
                 onEstadoChange={handleEstadoChange}
                 onUsuarioChange={handleUsuarioChange}
+                onSelect={handleSelectReporte}
+                selectedReportes={selectedReportes}
               />
             </TableBody>
           </Table>
