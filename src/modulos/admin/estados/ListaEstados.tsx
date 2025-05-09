@@ -30,6 +30,7 @@ import { toast } from '@/components/ui/sonner';
 import { getEstados, updateEstado, deleteEstado } from '@/controller/CRUD/estadoController';
 import FilterByValues from '@/components/common/FilterByValues';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ListaEstados: React.FC = () => {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ const ListaEstados: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentField, setCurrentField] = useState<string | undefined>('nombre');
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
+  const [selectedEstados, setSelectedEstados] = useState<Set<string>>(new Set());
   const itemsPerPage = 10;
 
   const sortOptions = [
@@ -257,6 +259,26 @@ const ListaEstados: React.FC = () => {
     navigate('/admin/estados/nuevo');
   };
 
+  const handleSelectEstado = (estadoId: string, checked: boolean) => {
+    setSelectedEstados(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(estadoId);
+      } else {
+        newSelected.delete(estadoId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedEstados(new Set(currentEstados.map(estado => estado.id)));
+    } else {
+      setSelectedEstados(new Set());
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -289,11 +311,36 @@ const ListaEstados: React.FC = () => {
           ]}
         />
 
+        {selectedEstados.size > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedEstados.size} {selectedEstados.size === 1 ? 'estado seleccionado' : 'estados seleccionados'}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setSelectedEstados(new Set())}
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Tabla de estados */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedEstados.size === currentEstados.length && currentEstados.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Seleccionar todos los estados"
+                  />
+                </TableHead>
                 <TableHead className="font-semibold text-gray-600">Nombre</TableHead>
                 <TableHead className="font-semibold text-gray-600">Descripción</TableHead>
                 <TableHead className="font-semibold text-gray-600">Color</TableHead>
@@ -305,7 +352,7 @@ const ListaEstados: React.FC = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <div className="flex justify-center">
                       <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
                     </div>
@@ -314,6 +361,13 @@ const ListaEstados: React.FC = () => {
               ) : currentEstados.length > 0 ? (
                 currentEstados.map((estado) => (
                   <TableRow key={estado.id}>
+                    <TableCell className="w-[50px]">
+                      <Checkbox
+                        checked={selectedEstados.has(estado.id)}
+                        onCheckedChange={(checked) => handleSelectEstado(estado.id, checked as boolean)}
+                        aria-label={`Seleccionar estado ${estado.nombre}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Link to={`/admin/estados/${estado.id}`} className="text-blue-600 hover:underline">
                         {estado.nombre}
@@ -370,7 +424,7 @@ const ListaEstados: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-4 text-gray-500">
                     No se encontraron estados con los criterios seleccionados
                   </TableCell>
                 </TableRow>
