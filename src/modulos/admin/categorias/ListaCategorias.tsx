@@ -29,6 +29,7 @@ import { filterCategories, getCategories, getReportesPorCategoria, sortCategorie
 import { toast } from 'sonner';
 import FilterByValues from '@/components/common/FilterByValues';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const ListaCategorias: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [currentField, setCurrentField] = useState<string | undefined>('nombre');
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
+  const [selectedCategorias, setSelectedCategorias] = useState<Set<string>>(new Set());
   const categoriasPerPage = 10;
 
   const sortOptions = [
@@ -228,6 +230,26 @@ const ListaCategorias: React.FC = () => {
   const filteredCount = filteredCategorias.length;
   const totalCount = categorias.length;
 
+  const handleSelectCategoria = (categoriaId: string, checked: boolean) => {
+    setSelectedCategorias(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(categoriaId);
+      } else {
+        newSelected.delete(categoriaId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedCategorias(new Set(currentCategorias.map(categoria => categoria.id)));
+    } else {
+      setSelectedCategorias(new Set());
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -258,11 +280,36 @@ const ListaCategorias: React.FC = () => {
           filterOptions={filterOptions}
         />
 
+        {selectedCategorias.size > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedCategorias.size} {selectedCategorias.size === 1 ? 'categoría seleccionada' : 'categorías seleccionadas'}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setSelectedCategorias(new Set())}
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Tabla de categorías */}
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedCategorias.size === currentCategorias.length && currentCategorias.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Seleccionar todas las categorías"
+                  />
+                </TableHead>
                 <TableHead className="font-semibold text-gray-600">Nombre</TableHead>
                 <TableHead className="font-semibold text-gray-600">Descripción</TableHead>
                 <TableHead className="font-semibold text-gray-600 text-center">Reportes</TableHead>
@@ -274,7 +321,7 @@ const ListaCategorias: React.FC = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <div className="flex justify-center">
                       <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
                     </div>
@@ -286,6 +333,13 @@ const ListaCategorias: React.FC = () => {
                   
                   return (
                     <TableRow key={categoria.id}>
+                      <TableCell className="w-[50px]">
+                        <Checkbox
+                          checked={selectedCategorias.has(categoria.id)}
+                          onCheckedChange={(checked) => handleSelectCategoria(categoria.id, checked as boolean)}
+                          aria-label={`Seleccionar categoría ${categoria.nombre}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <Link to={`/admin/categorias/${categoria.id}`} className="text-blue-600 hover:underline flex items-center">
                           <div
@@ -309,11 +363,11 @@ const ListaCategorias: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                      {new Date(categoria.fechaCreacion).toLocaleDateString('es-ES', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
+                        {new Date(categoria.fechaCreacion).toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-2">
@@ -340,7 +394,7 @@ const ListaCategorias: React.FC = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-4 text-gray-500">
                     No se encontraron categorías con los criterios seleccionados
                   </TableCell>
                 </TableRow>
