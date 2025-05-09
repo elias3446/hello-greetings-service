@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Reporte, Usuario, Categoria, EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
 import { getReports, getReportById, updateReport } from '@/controller/CRUD/reportController';
@@ -11,18 +11,34 @@ import { SortOption, FilterOption } from '@/types/reportes';
 import { getFieldValue } from '@/utils/reportes';
 import { exportToCSV } from '@/utils/reportes';
 import { useReportesState, useReportesData, usePagination } from '@/hooks/useReportes';
-import { ReportesTable } from '@/components/reportes/ReportesTable';
-import { ReportesPagination } from '@/components/reportes/ReportesPagination';
-import { DeleteConfirmationDialog } from '@/components/reportes/DeleteConfirmationDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { getCategories } from '@/controller/CRUD/categoryController';
 import { actualizarCategoriaReporte } from '@/controller/controller/reportCategoryController';
 import { actualizarEstadoReporte } from '@/controller/controller/reportStateController';
 import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
 import { eliminarReporte } from '@/controller/controller/reportDeleteController';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { getEstados } from '@/controller/CRUD/estadoController';
+import { usuarios } from '@/data/usuarios';
+import { getSystemUser } from '@/utils/userUtils';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
+
+const SORT_OPTIONS: SortOption[] = [
+  { value: 'titulo', label: 'Título' },
+  { value: 'ubicacion', label: 'Ubicación' },
+  { value: 'asignadoA', label: 'Asignado a' },
+  { value: 'fechaCreacion', label: 'Fecha creación' }
+];
+
+const FILTER_OPTIONS: FilterOption[] = [
+  { value: 'estado', label: 'Estado' },
+  { value: 'categoria', label: 'Categoría' },
+  { value: 'activo', label: 'Activo' }
+];
 
 const ListaReportesAdmin: React.FC = () => {
   const navigate = useNavigate();
@@ -53,21 +69,11 @@ const ListaReportesAdmin: React.FC = () => {
   } = useReportesState();
 
   const [selectedReportes, setSelectedReportes] = useState<Set<string>>(new Set());
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>('');
+  const [selectedEstado, setSelectedEstado] = useState<EstadoReporte>(getEstados()[0]);
 
   const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
   const { currentPage, setCurrentPage, totalPages, currentItems } = usePagination(filteredData, ITEMS_PER_PAGE);
-
-  const sortOptions: SortOption[] = [
-    { value: 'titulo', label: 'Título' },
-    { value: 'ubicacion', label: 'Ubicación' },
-    { value: 'asignadoA', label: 'Asignado a' },
-    { value: 'fechaCreacion', label: 'Fecha creación' }
-  ];
-
-  const filterOptions: FilterOption[] = [
-    { value: 'estado', label: 'Estado' },
-    { value: 'categoria', label: 'Categoría' }
-  ];
 
   React.useEffect(() => {
     setIsLoading(true);
@@ -86,182 +92,6 @@ const ListaReportesAdmin: React.FC = () => {
     setFilteredReportes(filteredData);
     setCurrentPage(1);
   }, [filteredData]);
-
-  const confirmarEliminacion = async () => {
-    try {
-      if (!reporteAEliminar) return;
-
-      const usuarioSistema: Usuario = {
-        id: '0',
-        nombre: 'Sistema',
-        apellido: '',
-        email: 'sistema@example.com',
-        estado: 'activo',
-        tipo: 'usuario',
-        intentosFallidos: 0,
-        password: 'hashed_password',
-        roles: [{
-          id: '1',
-          nombre: 'Administrador',
-          descripcion: 'Rol con acceso total al sistema',
-          color: '#FF0000',
-          tipo: 'admin',
-          fechaCreacion: new Date('2023-01-01'),
-          activo: true
-        }],
-        fechaCreacion: new Date('2023-01-01'),
-      };
-
-      const success = await eliminarReporte(reporteAEliminar, usuarioSistema);
-      if (success) {
-        setReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
-        setFilteredReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
-      }
-    } catch (error) {
-      console.error('Error al eliminar el reporte:', error);
-      toast.error('Error al eliminar el reporte');
-    } finally {
-      setShowDeleteDialog(false);
-      setReporteAEliminar(null);
-    }
-  };
-
-  const handleToggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
-
-  const handleFilterChange = (values: any[]) => {
-    setSelectedFilterValues(values);
-  };
-
-  const handleDeleteReporte = (reporte: Reporte) => {
-    setReporteAEliminar(reporte);
-    setShowDeleteDialog(true);
-  };
-
-  const handleEditReporte = (id: string) => {
-    navigate(`/admin/reportes/${id}/editar`);
-  };
-
-  const handleExportReportes = () => {
-    exportToCSV(filteredData);
-  };
-
-  const handleCategoriaChange = async (reporte: Reporte, nuevaCategoria: Categoria) => {
-    try {
-      const usuarioSistema: Usuario = {
-        id: '0',
-        nombre: 'Sistema',
-        apellido: '',
-        email: 'sistema@example.com',
-        estado: 'activo',
-        tipo: 'usuario',
-        intentosFallidos: 0,
-        password: 'hashed_password',
-        roles: [{
-          id: '1',
-          nombre: 'Administrador',
-          descripcion: 'Rol con acceso total al sistema',
-          color: '#FF0000',
-          tipo: 'admin',
-          fechaCreacion: new Date('2023-01-01'),
-          activo: true
-        }],
-        fechaCreacion: new Date('2023-01-01'),
-      };
-
-      const success = await actualizarCategoriaReporte(reporte, nuevaCategoria, usuarioSistema);
-      if (success) {
-        // Actualizar la lista de reportes
-        setReportes(prevReportes => 
-          prevReportes.map(r => 
-            r.id === reporte.id ? { ...r, categoria: nuevaCategoria } : r
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error al actualizar la categoría:', error);
-    }
-  };
-
-  const handleEstadoChange = async (reporte: Reporte, nuevoEstado: EstadoReporte) => {
-    try {
-      const usuarioSistema: Usuario = {
-        id: '0',
-        nombre: 'Sistema',
-        apellido: '',
-        email: 'sistema@example.com',
-        estado: 'activo',
-        tipo: 'usuario',
-        intentosFallidos: 0,
-        password: 'hashed_password',
-        roles: [{
-          id: '1',
-          nombre: 'Administrador',
-          descripcion: 'Rol con acceso total al sistema',
-          color: '#FF0000',
-          tipo: 'admin',
-          fechaCreacion: new Date('2023-01-01'),
-          activo: true
-        }],
-        fechaCreacion: new Date('2023-01-01'),
-      };
-
-    } catch (error) {
-      console.error('Error al actualizar el estado:', error);
-    }
-  };
-
-  const handleUsuarioChange = async (reporte: Reporte, nuevoUsuario: Usuario | undefined) => {
-    try {
-      const usuarioSistema: Usuario = {
-        id: '0',
-        nombre: 'Sistema',
-        apellido: '',
-        email: 'sistema@example.com',
-        estado: 'activo',
-        tipo: 'usuario',
-        intentosFallidos: 0,
-        password: 'hashed_password',
-        roles: [{
-          id: '1',
-          nombre: 'Administrador',
-          descripcion: 'Rol con acceso total al sistema',
-          color: '#FF0000',
-          tipo: 'admin',
-          fechaCreacion: new Date('2023-01-01'),
-          activo: true
-        }],
-        fechaCreacion: new Date('2023-01-01'),
-      };
-
-      if (!nuevoUsuario) {
-        // Si no hay nuevo usuario, desasignar el reporte
-        const reporteActualizado = updateReport(reporte.id, { asignadoA: undefined } as Partial<Reporte>);
-        if (reporteActualizado) {
-          setReportes(prevReportes => 
-            prevReportes.map(r => 
-              r.id === reporte.id ? { ...r, asignadoA: undefined } : r
-            )
-          );
-          toast.success('Reporte desasignado correctamente');
-        }
-        return;
-      }
-
-      const success = await actualizarAsignacionReporte(reporte, nuevoUsuario, usuarioSistema);
-      if (success) {
-        // Actualizar la lista de reportes
-        setReportes(prevReportes => 
-          prevReportes.map(r => 
-            r.id === reporte.id ? { ...r, asignadoA: nuevoUsuario } : r
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error al actualizar la asignación:', error);
-    }
-  };
 
   const handleSelectReporte = (reporteId: string, checked: boolean) => {
     setSelectedReportes(prev => {
@@ -283,9 +113,205 @@ const ListaReportesAdmin: React.FC = () => {
     }
   };
 
+  const handleBulkEstadoUpdate = async () => {
+    if (selectedReportes.size === 0) {
+      toast.error('Por favor seleccione al menos un reporte');
+      return;
+    }
+
+    const systemUser: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const reporteId of selectedReportes) {
+      try {
+        const reporte = reportes.find(r => r.id === reporteId);
+        if (!reporte) continue;
+
+        const success = await actualizarEstadoReporte(reporte, selectedEstado, systemUser);
+      if (success) {
+          successCount++;
+        setReportes(prevReportes => 
+          prevReportes.map(r => 
+              r.id === reporteId ? { ...r, estado: selectedEstado } : r
+            )
+          );
+          setFilteredReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, estado: selectedEstado } : r
+            )
+          );
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error(`Error al actualizar el estado del reporte ${reporteId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se actualizaron ${successCount} reportes correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+
+    setSelectedReportes(new Set());
+    setSelectedEstado(getEstados()[0]);
+  };
+
+  const handleBulkCategoriaUpdate = async () => {
+    if (!selectedCategoriaId || selectedReportes.size === 0) {
+      toast.error('Por favor seleccione una categoría y al menos un reporte');
+      return;
+    }
+
+    const systemUser: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const reporteId of selectedReportes) {
+      try {
+        const reporte = reportes.find(r => r.id === reporteId);
+        if (!reporte) continue;
+
+        const nuevaCategoria = getCategories().find(c => c.id === selectedCategoriaId);
+        if (!nuevaCategoria) continue;
+
+        const success = await actualizarCategoriaReporte(reporte, nuevaCategoria, systemUser);
+        if (success) {
+          successCount++;
+          setReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, categoria: nuevaCategoria } : r
+            )
+          );
+          setFilteredReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, categoria: nuevaCategoria } : r
+            )
+          );
+        } else {
+          errorCount++;
+        }
+    } catch (error) {
+        console.error(`Error al actualizar la categoría del reporte ${reporteId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se actualizaron ${successCount} reportes correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+
+    setSelectedReportes(new Set());
+    setSelectedCategoriaId('');
+    setSelectedEstado(getEstados()[0]);
+  };
+
+  const handleDeleteReporte = (reporte: Reporte) => {
+    setReporteAEliminar(reporte);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmarEliminacion = async () => {
+    try {
+      if (!reporteAEliminar) return;
+
+      const systemUser: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
+
+      const success = await eliminarReporte(reporteAEliminar, systemUser);
+      if (success) {
+        setReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
+        setFilteredReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
+        toast.success('Reporte eliminado correctamente');
+      }
+    } catch (error) {
+      console.error('Error al eliminar el reporte:', error);
+      toast.error('Error al eliminar el reporte');
+    } finally {
+      setShowDeleteDialog(false);
+      setReporteAEliminar(null);
+    }
+  };
+
+  const handleToggleSortDirection = () => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
+  const handleFilterChange = (values: any[]) => {
+    setSelectedFilterValues(values);
+  };
+
+  const handleExportReportes = () => {
+    exportToCSV(filteredData);
+  };
+
   return (
-    <div>
-      <div className="space-y-4">
+    <div className="space-y-6">
         <SearchFilterBar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -307,11 +333,12 @@ const ListaReportesAdmin: React.FC = () => {
           showNewButton={true}
           newButtonLabel="Nuevo Reporte"
           showExportButton={true}
-          sortOptions={sortOptions}
+        sortOptions={SORT_OPTIONS}
           filteredCount={filteredData.length}
           totalCount={reportes.length}
           itemLabel="reportes"
-          filterOptions={filterOptions}
+        filterOptions={FILTER_OPTIONS}
+        searchPlaceholder="Buscar reportes..."
         />
 
         {selectedReportes.size > 0 && (
@@ -322,9 +349,63 @@ const ListaReportesAdmin: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
+            <div className="w-[200px]">
+              <Select
+                value={selectedCategoriaId}
+                onValueChange={setSelectedCategoriaId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getCategories().map(categoria => (
+                    <SelectItem key={categoria.id} value={categoria.id}>
+                      {categoria.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
               <Button
-                onClick={() => setSelectedReportes(new Set())}
-                variant="outline"
+              onClick={handleBulkCategoriaUpdate}
+              disabled={!selectedCategoriaId}
+              variant="default"
+            >
+              Actualizar Categorías
+            </Button>
+            <div className="w-[200px]">
+              <Select
+                value={selectedEstado.id}
+                onValueChange={(value) => {
+                  const estado = getEstados().find(e => e.id === value);
+                  if (estado) setSelectedEstado(estado);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getEstados().map(estado => (
+                    <SelectItem key={estado.id} value={estado.id}>
+                      {estado.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={handleBulkEstadoUpdate}
+              variant="default"
+            >
+              Actualizar Estados
+            </Button>
+            <Button
+              onClick={() => {
+                setSelectedReportes(new Set());
+                setSelectedCategoriaId('');
+                setSelectedEstado(getEstados()[0]);
+              }}
+              variant="outline"
               >
                 Cancelar
               </Button>
@@ -332,7 +413,7 @@ const ListaReportesAdmin: React.FC = () => {
           </div>
         )}
 
-        <div className="border rounded-lg">
+      <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -353,34 +434,186 @@ const ListaReportesAdmin: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <ReportesTable
-                reportes={currentItems}
-                isLoading={isLoading}
-                onEdit={handleEditReporte}
-                onDelete={handleDeleteReporte}
-                onCategoriaChange={handleCategoriaChange}
-                onEstadoChange={handleEstadoChange}
-                onUsuarioChange={handleUsuarioChange}
-                onSelect={handleSelectReporte}
-                selectedReportes={selectedReportes}
-              />
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-4">
+                  Cargando reportes...
+                </TableCell>
+              </TableRow>
+            ) : currentItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-4">
+                  No se encontraron reportes
+                </TableCell>
+              </TableRow>
+            ) : (
+              currentItems.map((reporte) => (
+                <TableRow key={reporte.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedReportes.has(reporte.id)}
+                      onCheckedChange={(checked) => handleSelectReporte(reporte.id, checked as boolean)}
+                      aria-label={`Seleccionar reporte ${reporte.titulo}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <a
+                      href="#"
+                      className="text-primary font-medium hover:underline cursor-pointer"
+                      onClick={e => {
+                        e.preventDefault();
+                        navigate(`/admin/reportes/${reporte.id}`);
+                      }}
+                    >
+                      {reporte.titulo}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={reporte.categoria.id}
+                      onValueChange={async (value) => {
+                        const nuevaCategoria = getCategories().find(c => c.id === value);
+                        if (nuevaCategoria) {
+                          await actualizarCategoriaReporte(reporte, nuevaCategoria, getSystemUser());
+                          setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, categoria: nuevaCategoria } : r));
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full bg-white border-none focus:ring-0 focus:outline-none">
+                        <SelectValue>{reporte.categoria.nombre}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getCategories().map(categoria => (
+                          <SelectItem key={categoria.id} value={categoria.id}>
+                            {categoria.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={reporte.estado.id}
+                      onValueChange={async (value) => {
+                        const nuevoEstado = getEstados().find(e => e.id === value);
+                        if (nuevoEstado) {
+                          await actualizarEstadoReporte(reporte, nuevoEstado, getSystemUser());
+                          setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, estado: nuevoEstado } : r));
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full bg-white border-none focus:ring-0 focus:outline-none">
+                        <SelectValue>{reporte.estado.nombre}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getEstados().map(estado => (
+                          <SelectItem key={estado.id} value={estado.id}>
+                            {estado.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>{new Date(reporte.fechaCreacion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</TableCell>
+                  <TableCell>{reporte.ubicacion.direccion}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={reporte.asignadoA?.id || 'none'}
+                      onValueChange={async (value) => {
+                        let nuevoUsuario = null;
+                        if (value !== 'none') {
+                          nuevoUsuario = usuarios.find(u => u.id === value);
+                        }
+                        await actualizarAsignacionReporte(reporte, nuevoUsuario, getSystemUser());
+                        setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, asignadoA: nuevoUsuario || undefined } : r));
+                      }}
+                    >
+                      <SelectTrigger className="w-full bg-white border-none focus:ring-0 focus:outline-none">
+                        <SelectValue>{reporte.asignadoA ? `${reporte.asignadoA.nombre} ${reporte.asignadoA.apellido}` : 'No asignado'}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No asignado</SelectItem>
+                        {usuarios.map(usuario => (
+                          <SelectItem key={usuario.id} value={usuario.id}>
+                            {usuario.nombre} {usuario.apellido}
+                            {usuario.estado === 'inactivo' && (
+                              <span className="ml-2 px-2 py-0.5 rounded bg-gray-200 text-xs text-gray-600">Inactivo</span>
+                            )}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/admin/reportes/${reporte.id}/editar`)}
+                    >
+                      <Pencil className="w-4 h-4 text-muted-foreground" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteReporte(reporte)}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
             </TableBody>
           </Table>
         </div>
 
-        <ReportesPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-500">
+          Mostrando {currentItems.length} de {filteredData.length} reportes
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Anterior
+          </Button>
+          <span className="text-sm">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Siguiente
+          </Button>
+        </div>
       </div>
 
-      <DeleteConfirmationDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={confirmarEliminacion}
-        reporte={reporteAEliminar}
-      />
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
+              <span className="font-semibold">{reporteAEliminar?.titulo}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmarEliminacion}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
