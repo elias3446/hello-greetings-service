@@ -14,11 +14,13 @@ import { toast } from '@/components/ui/sonner';
 import { Usuario } from '@/types/tipos';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
+  const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
   
   useUsuarioData(state, actions);
   useUsuarioFilters(state, actions);
@@ -49,6 +51,88 @@ const ListaUsuarios: React.FC = () => {
     } else {
       setSelectedUsers(new Set());
     }
+  };
+
+  const handleBulkEstadoUpdate = async () => {
+    if (selectedUsers.size === 0) {
+      toast.error('Por favor seleccione al menos un usuario');
+      return;
+    }
+
+    const systemUser: Usuario = {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin' as const,
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const userId of selectedUsers) {
+      try {
+        const usuario = state.usuarios.find(u => u.id === userId);
+        if (!usuario) continue;
+
+        if (usuario.estado === 'bloqueado') {
+          toast.error(`No se puede cambiar el estado del usuario ${usuario.nombre} ${usuario.apellido} porque está bloqueado`);
+          errorCount++;
+          continue;
+        }
+
+        const resultado = await actualizarEstadoUsuario(
+          usuario,
+          selectedEstado,
+          systemUser,
+          'Actualización masiva de estados'
+        );
+
+        if (resultado) {
+          successCount++;
+          // Actualizar el estado local
+          actions.setUsuarios(prevUsuarios => 
+            prevUsuarios.map(user => 
+              user.id === userId ? { ...user, estado: selectedEstado } : user
+            )
+          );
+          actions.setFilteredUsuarios(prevUsuarios => 
+            prevUsuarios.map(user => 
+              user.id === userId ? { ...user, estado: selectedEstado } : user
+            )
+          );
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error(`Error al actualizar el estado del usuario ${userId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se actualizaron ${successCount} usuarios correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} usuarios`);
+    }
+
+    // Limpiar la selección después de la actualización
+    setSelectedUsers(new Set());
+    setSelectedEstado('activo');
   };
 
   const handleBulkRoleUpdate = async () => {
@@ -352,10 +436,31 @@ const ListaUsuarios: React.FC = () => {
               >
                 Actualizar Roles
               </Button>
+              <div className="w-[200px]">
+                <Select
+                  value={selectedEstado}
+                  onValueChange={(value: 'activo' | 'inactivo') => setSelectedEstado(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inactivo">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={handleBulkEstadoUpdate}
+                variant="default"
+              >
+                Actualizar Estados
+              </Button>
               <Button
                 onClick={() => {
                   setSelectedUsers(new Set());
                   setSelectedRoleId('');
+                  setSelectedEstado('activo');
                 }}
                 variant="outline"
               >
