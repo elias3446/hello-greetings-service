@@ -68,20 +68,75 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [imagenes, setImagenes] = useState<File[]>([]);
+  const [formValues, setFormValues] = useState({
+    titulo: '',
+    descripcion: '',
+    categoriaId: '',
+    estadoId: '',
+    activo: true,
+    prioridadId: '',
+    asignadoId: ''
+  });
 
   // Configurar el formulario
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      titulo: '',
-      descripcion: '',
-      categoriaId: '',
-      estadoId: '',
-      prioridadId: '',
-      asignadoId: '',
-      activo: true,
-    },
+    defaultValues: formValues,
   });
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const categoriasData = getCategories();
+        const estadosData = getEstados();
+        const usuariosData = getUsers();
+        
+        console.log('Categorías cargadas:', categoriasData);
+        console.log('Estados cargados:', estadosData);
+        
+        setCategorias(categoriasData);
+        setEstados(estadosData);
+        setUsuarios(usuariosData);
+      } catch (error) {
+        console.error('Error al cargar datos iniciales:', error);
+        toast.error('Error al cargar datos iniciales');
+      }
+    };
+
+    loadInitialData();
+  }, []);
+
+  // Efecto para sincronizar los valores del formulario
+  useEffect(() => {
+    if (modo === 'editar' && id) {
+      const reporteExistente = getReportById(id);
+      console.log('Reporte existente:', reporteExistente);
+      
+      if (reporteExistente) {
+        const newFormValues = {
+          titulo: reporteExistente.titulo || '',
+          descripcion: reporteExistente.descripcion || '',
+          categoriaId: reporteExistente.categoria?.id || '',
+          estadoId: reporteExistente.estado?.id || '',
+          activo: reporteExistente.activo !== undefined ? reporteExistente.activo : true,
+          prioridadId: reporteExistente.prioridad?.id || '',
+          asignadoId: reporteExistente.asignadoA?.id || ''
+        };
+        console.log('Nuevos valores del formulario:', newFormValues);
+        setFormValues(newFormValues);
+        form.reset(newFormValues);
+      }
+    }
+  }, [form, id, modo]);
+
+  // Agregar un efecto para monitorear los valores del formulario
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log('Valores actuales del formulario:', value);
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // Handler para actualizar la ubicación
   const handleUbicacionSeleccionada = (ubicacionData: {
@@ -106,56 +161,6 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
     
     setUbicacion(nuevaUbicacion);
   };
-
-  // Cargar datos iniciales
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setCategorias(getCategories());
-        setEstados(getEstados());
-        setUsuarios(getUsers());
-        
-        // Si es modo editar, cargar datos del reporte
-        if (modo === 'editar' && id) {
-          const reporteExistente = getReportById(id);
-          if (reporteExistente) {
-            form.setValue('titulo', reporteExistente.titulo);
-            form.setValue('descripcion', reporteExistente.descripcion);
-            form.setValue('categoriaId', reporteExistente.categoria.id);
-            form.setValue('estadoId', reporteExistente.estado.id);
-            form.setValue('activo', reporteExistente.activo !== undefined ? reporteExistente.activo : true);
-            if (reporteExistente.prioridad) {
-              form.setValue('prioridadId', reporteExistente.prioridad.id);
-            }
-            if (reporteExistente.asignadoA) {
-              form.setValue('asignadoId', reporteExistente.asignadoA.id);
-            }
-            setUbicacion(reporteExistente.ubicacion);
-          }
-        }
-      } catch (error) {
-        console.error('Error al cargar datos iniciales:', error);
-        toast.error('Error al cargar datos iniciales');
-      }
-    };
-
-    // Obtener posición del usuario
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserPosition([
-            position.coords.latitude,
-            position.coords.longitude
-          ]);
-        },
-        (error) => {
-          console.error('Error al obtener la ubicación:', error);
-        }
-      );
-    }
-
-    loadInitialData();
-  }, [form, id, modo]);
 
   // Manejar envío del formulario
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -358,12 +363,15 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                             <FormItem>
                               <FormLabel>Categoría</FormLabel>
                               <Select
+                                key={`categoria-${field.value}`}
                                 onValueChange={field.onChange}
-                                defaultValue={field.value}
+                                value={field.value || undefined}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona una categoría" />
+                                    <SelectValue placeholder="Selecciona una categoría">
+                                      {categorias.find(c => c.id === field.value)?.nombre}
+                                    </SelectValue>
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -386,12 +394,15 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                             <FormItem>
                               <FormLabel>Estado</FormLabel>
                               <Select
+                                key={`estado-${field.value}`}
                                 onValueChange={field.onChange}
-                                defaultValue={field.value}
+                                value={field.value || undefined}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Selecciona un estado" />
+                                    <SelectValue placeholder="Selecciona un estado">
+                                      {estados.find(e => e.id === field.value)?.nombre}
+                                    </SelectValue>
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -498,11 +509,13 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {usuarios.map((usuario) => (
-                                    <SelectItem key={usuario.id} value={usuario.id}>
-                                      {usuario.nombre} {usuario.apellido}
-                                    </SelectItem>
-                                  ))}
+                                  {usuarios
+                                    .filter(usuario => usuario.estado === 'activo')
+                                    .map((usuario) => (
+                                      <SelectItem key={usuario.id} value={usuario.id}>
+                                        {usuario.nombre} {usuario.apellido}
+                                      </SelectItem>
+                                    ))}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
