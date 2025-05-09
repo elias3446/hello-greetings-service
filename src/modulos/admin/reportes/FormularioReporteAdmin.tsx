@@ -25,13 +25,13 @@ import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getReportById, createReport, updateReport } from '@/controller/CRUD/reportController';
+import { getReportById, createReport } from '@/controller/CRUD/reportController';
 import { getCategories } from '@/controller/CRUD/categoryController';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import { getUsers } from '@/controller/CRUD/userController';
 import { prioridades } from '@/data/categorias';
 import MapaSeleccionUbicacion from '@/components/reportes/MapaSeleccionUbicacion';
-import type { Reporte, Ubicacion } from '@/types/tipos';
+import type { Reporte, Ubicacion, Usuario } from '@/types/tipos';
 import { ArrowLeft, Edit, X, Map, Calendar, User, ClipboardList } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
@@ -39,7 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { actualizarReporte } from '@/controller/controller/reportUpdateController';
 import ImageUploader from '@/components/ui/ImageUploader';
 
 interface FormularioReporteAdminProps {
@@ -197,74 +197,40 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
 
       if (modo === 'crear') {
         const nuevoReporte = createReport(reporteData);
-        // Registrar el cambio en el historial del reporte
-        const reporte = getReportById(nuevoReporte.id);
-        if (reporte) {
-          registrarCambioEstadoReporte(
-            reporte,
-             'Sin asignar',
-            'Sin asignar',
-            {
-              id: '0',
-              nombre: 'Sistema',
-              apellido: '',
-              email: 'sistema@example.com',
-              estado: 'activo',
-              tipo: 'usuario',
-              intentosFallidos: 0,
-              password: 'hashed_password',
-              roles: [{
-                id: '1',
-                nombre: 'Administrador',
-                descripcion: 'Rol con acceso total al sistema',
-                color: '#FF0000',
-                tipo: 'admin',
-                fechaCreacion: new Date('2023-01-01'),
-                activo: true
-              }],
-              fechaCreacion: new Date('2023-01-01'),
-            },
-            `Desasignación de reporte`,
-            'asignacion_reporte'
-          );
-        }
         toast.success('Reporte creado correctamente');
         navigate(`/admin/reportes/${nuevoReporte.id}`);
       } else if (modo === 'editar' && id) {
-        updateReport(id, reporteData);
-        // Registrar el cambio en el historial del reporte
-        const reporte = getReportById(id);
-        if (reporte) {
-          registrarCambioEstadoReporte(
-            reporte,
-             'Sin asignar',
-            'Sin asignar',
-            {
-              id: '0',
-              nombre: 'Sistema',
-              apellido: '',
-              email: 'sistema@example.com',
-              estado: 'activo',
-              tipo: 'usuario',
-              intentosFallidos: 0,
-              password: 'hashed_password',
-              roles: [{
-                id: '1',
-                nombre: 'Administrador',
-                descripcion: 'Rol con acceso total al sistema',
-                color: '#FF0000',
-                tipo: 'admin',
-                fechaCreacion: new Date('2023-01-01'),
-                activo: true
-              }],
-              fechaCreacion: new Date('2023-01-01'),
-            },
-            `Desasignación de reporte`,
-            'asignacion_reporte'
-          );
+        const reporteActual = getReportById(id);
+        if (!reporteActual) {
+          toast.error('No se encontró el reporte a actualizar');
+          return;
         }
-        toast.success('Reporte actualizado correctamente');
-        navigate(`/admin/reportes/${id}`);
+
+        const usuarioSistema: Usuario = {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        };
+
+        const success = await actualizarReporte(reporteActual, reporteData, usuarioSistema);
+        if (success) {
+          navigate(`/admin/reportes/${id}`);
+        }
       }
     } catch (error) {
       console.error('Error al guardar reporte:', error);
