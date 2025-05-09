@@ -24,6 +24,7 @@ import { toast } from '@/components/ui/sonner';
 import { getRoles } from '@/controller/CRUD/roleController';
 import type { Rol } from '@/types/tipos';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ListaRoles = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const ListaRoles = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentField, setCurrentField] = useState<string | undefined>();
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const itemsPerPage = 10;
 
   const sortOptions = [
@@ -219,6 +221,26 @@ const ListaRoles = () => {
     }
   };
 
+  const handleSelectRole = (roleId: string, checked: boolean) => {
+    setSelectedRoles(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(roleId);
+      } else {
+        newSelected.delete(roleId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedRoles(new Set(currentRoles.map(role => role.id)));
+    } else {
+      setSelectedRoles(new Set());
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -250,11 +272,35 @@ const ListaRoles = () => {
           filterOptions={filterOptions}
         />
 
-        {/* Tabla de roles */}
+        {selectedRoles.size > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedRoles.size} {selectedRoles.size === 1 ? 'rol seleccionado' : 'roles seleccionados'}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setSelectedRoles(new Set())}
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedRoles.size === currentRoles.length && currentRoles.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Seleccionar todos los roles"
+                  />
+                </TableHead>
                 <TableHead className="font-semibold text-gray-600">Nombre</TableHead>
                 <TableHead className="font-semibold text-gray-600">Descripción</TableHead>
                 <TableHead className="font-semibold text-gray-600">Permisos</TableHead>
@@ -266,7 +312,7 @@ const ListaRoles = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <div className="flex justify-center">
                       <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
                     </div>
@@ -275,6 +321,13 @@ const ListaRoles = () => {
               ) : currentRoles.length > 0 ? (
                 currentRoles.map((rol) => (
                   <TableRow key={rol.id}>
+                    <TableCell className="w-[50px]">
+                      <Checkbox
+                        checked={selectedRoles.has(rol.id)}
+                        onCheckedChange={(checked) => handleSelectRole(rol.id, checked as boolean)}
+                        aria-label={`Seleccionar rol ${rol.nombre}`}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Link to={`/admin/roles/${rol.id}`} className="text-blue-600 hover:underline">
                         {rol.nombre}
@@ -310,7 +363,7 @@ const ListaRoles = () => {
                         month: 'short',
                         year: 'numeric'
                       })}
-                      </TableCell>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -336,7 +389,7 @@ const ListaRoles = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-4 text-gray-500">
                     No se encontraron roles con los criterios seleccionados
                   </TableCell>
                 </TableRow>
