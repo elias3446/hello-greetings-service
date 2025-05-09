@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import { Reporte, Usuario, Categoria, EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, deleteReport, getReportById, updateReport } from '@/controller/CRUD/reportController';
+import { getReports, getReportById, updateReport } from '@/controller/CRUD/reportController';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
@@ -18,6 +18,7 @@ import { getCategories } from '@/controller/CRUD/categoryController';
 import { actualizarCategoriaReporte } from '@/controller/controller/reportCategoryController';
 import { actualizarEstadoReporte } from '@/controller/controller/reportStateController';
 import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
+import { eliminarReporte } from '@/controller/controller/reportDeleteController';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -85,39 +86,32 @@ const ListaReportesAdmin: React.FC = () => {
   const confirmarEliminacion = async () => {
     try {
       if (!reporteAEliminar) return;
-      
-      const reportesAsignados = getReports().filter(reporte => 
-        reporte.asignadoA && reporte.asignadoA.id === reporteAEliminar.id
-      );
 
-      await registrarCambioEstado(
-        reporteAEliminar.asignadoA,
-        reporteAEliminar.estado.nombre,
-        'eliminado',
-        reporteAEliminar.asignadoA,
-        'Reporte eliminado del sistema',
-        'otro'
-      );
+      const usuarioSistema: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
 
-      for (const reporte of reportesAsignados) {
-        await registrarCambioEstadoReporte(
-          reporte,
-          getFieldValue(reporteAEliminar, 'asignadoA'),
-          'Sin asignar',
-          reporteAEliminar.asignadoA,
-          'Reporte eliminado del sistema',
-          'asignacion_reporte'
-        );
-      }
-
-      const success = deleteReport(reporteAEliminar.id);
-      
+      const success = await eliminarReporte(reporteAEliminar, usuarioSistema);
       if (success) {
         setReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
         setFilteredReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
-        toast.success(`Reporte ${reporteAEliminar.titulo} eliminado correctamente`);
-      } else {
-        throw new Error('Error al eliminar el reporte');
       }
     } catch (error) {
       console.error('Error al eliminar el reporte:', error);
