@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft, FileText, Clock } from 'lucide-react';
-import { deleteReport, getReportById, updateReport } from '@/controller/CRUD/reportController';
+import { getReportById, updateReport } from '@/controller/CRUD/reportController';
 import { obtenerHistorialReporte, registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 import type { Reporte, HistorialEstadoReporte, Rol, Usuario } from '@/types/tipos';
@@ -18,6 +18,8 @@ import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, 
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
 import { updateUser } from '@/controller/CRUD/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { eliminarReporte } from '@/controller/controller/reportDeleteController';
+import { actualizarEstadoResolucionReporte } from '@/controller/controller/reportResolutionController';
 
 const DetalleReporte = () => {
   const { id } = useParams<{ id: string }>();
@@ -95,77 +97,37 @@ const DetalleReporte = () => {
     toast.success('Reporte marcado como En Proceso');
   };
 
-  const handleMarkResolved = () => {
+  const handleMarkResolved = async () => {
     if (!reporte) return;
     
     try {
       const currentReporte = getReportById(reporte.id);
       if (!currentReporte) return;
 
-      // Registrar el cambio en el historial del usuario anterior
-      if (currentReporte.asignadoA) {
-        registrarCambioEstado(
-          currentReporte.asignadoA,
-          `Reporte ${currentReporte.id} asignado`,
-          'Sin reporte asignado',
-          {
-            id: '0',
-            nombre: 'Sistema',
-            apellido: '',
-            email: 'sistema@example.com',
-            estado: 'activo',
-            tipo: 'usuario',
-            intentosFallidos: 0,
-            password: 'hashed_password',
-            roles: [{
-              id: '1',
-              nombre: 'Administrador',
-              descripcion: 'Rol con acceso total al sistema',
-              color: '#FF0000',
-              tipo: 'admin',
-              fechaCreacion: new Date('2023-01-01'),
-              activo: true
-            }],
-            fechaCreacion: new Date('2023-01-01'),
-          },
-          `Desasignación de reporte ${currentReporte.id}`,
-          'asignacion_reporte'
-        );
-      }
-
-      // Registrar el cambio en el historial del reporte
-      registrarCambioEstadoReporte(
-        currentReporte,
-        currentReporte.asignadoA ? `${currentReporte.asignadoA.nombre} ${currentReporte.asignadoA.apellido}` : 'Sin asignar',
-        'Sin asignar',
-        {
-          id: '0',
-          nombre: 'Sistema',
-          apellido: '',
-          email: 'sistema@example.com',
-          estado: 'activo',
-          tipo: 'usuario',
-          intentosFallidos: 0,
-          password: 'hashed_password',
-          roles: [{
-            id: '1',
-            nombre: 'Administrador',
-            descripcion: 'Rol con acceso total al sistema',
-            color: '#FF0000',
-            tipo: 'admin',
-            fechaCreacion: new Date('2023-01-01'),
-            activo: true
-          }],
+      const usuarioSistema: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
           fechaCreacion: new Date('2023-01-01'),
-        },
-        `Desasignación de reporte`,
-        'asignacion_reporte'
-      );
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
 
-      const updatedReport = updateReport(currentReporte.id, { activo: !currentReporte.activo });
-      if (updatedReport) {
-        setReporte(updatedReport);
-        toast.success(currentReporte.activo ? 'Reporte reabierto' : 'Reporte marcado como resuelto');
+      const success = await actualizarEstadoResolucionReporte(currentReporte, usuarioSistema);
+      if (success) {
+        setReporte({ ...currentReporte, activo: !currentReporte.activo });
       }
     } catch (error) {
       console.error('Error al actualizar el estado del reporte:', error);
@@ -607,9 +569,32 @@ const DetalleReporte = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={() => {
-                deleteReport(reporte.id);
-                navigate('/admin/reportes');
+              onClick={async () => {
+                const usuarioSistema: Usuario = {
+                  id: '0',
+                  nombre: 'Sistema',
+                  apellido: '',
+                  email: 'sistema@example.com',
+                  estado: 'activo',
+                  tipo: 'usuario',
+                  intentosFallidos: 0,
+                  password: 'hashed_password',
+                  roles: [{
+                    id: '1',
+                    nombre: 'Administrador',
+                    descripcion: 'Rol con acceso total al sistema',
+                    color: '#FF0000',
+                    tipo: 'admin',
+                    fechaCreacion: new Date('2023-01-01'),
+                    activo: true
+                  }],
+                  fechaCreacion: new Date('2023-01-01'),
+                };
+
+                const success = await eliminarReporte(reporte, usuarioSistema);
+                if (success) {
+                  navigate('/admin/reportes');
+                }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

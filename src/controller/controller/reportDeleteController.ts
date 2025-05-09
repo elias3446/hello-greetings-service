@@ -1,7 +1,6 @@
 import { Reporte, Usuario } from '@/types/tipos';
-import { deleteReport } from '../CRUD/reportController';
 import { registrarCambioEstado } from '../CRUD/historialEstadosUsuario';
-import { filterReports } from '../CRUD/reportController';
+import { filterReports, getReports, deleteReport } from '../CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 
 /**
@@ -34,8 +33,8 @@ export const eliminarReporte = async (
     }
 
     // 2. Eliminar el reporte
-    const resultado = deleteReport(reporte.id);
-    if (!resultado) {
+    const success = await deleteReport(reporte.id);
+    if (!success) {
       throw new Error('Error al eliminar el reporte');
     }
 

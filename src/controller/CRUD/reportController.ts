@@ -60,14 +60,6 @@ export const updateReport = (id: string, reportData: Partial<Reporte>): Reporte 
 export const deleteReport = async (id: string): Promise<boolean> => {
   const index = reportes.findIndex((report) => report.id === id);
   if (index !== -1) {
-    await registrarCambioEstado(
-      reportes[index].asignadoA,
-      reportes[index].estado.nombre,
-      'eliminado',
-      reportes[index].asignadoA,
-      'Reporte eliminado del sistema',
-      'otro'
-    );
     reportes.splice(index, 1);
     return true;
   }
