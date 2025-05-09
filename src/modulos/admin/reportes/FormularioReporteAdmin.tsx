@@ -123,6 +123,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
           prioridadId: reporteExistente.prioridad?.id || '',
           asignadoId: reporteExistente.asignadoA?.id || ''
         };
+        setUbicacion(reporteExistente.ubicacion);
         console.log('Nuevos valores del formulario:', newFormValues);
         setFormValues(newFormValues);
         form.reset(newFormValues);
