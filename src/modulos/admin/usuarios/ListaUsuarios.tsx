@@ -199,64 +199,64 @@ const ListaUsuarios: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SearchFilterBar
-        searchTerm={state.searchTerm}
+        <SearchFilterBar
+          searchTerm={state.searchTerm}
         onSearchChange={actions.setSearchTerm}
-        statusFilter={state.statusFilter}
-        onStatusFilterChange={actions.setStatusFilter}
-        roleFilter={state.roleFilter}
-        onRoleFilterChange={actions.setRoleFilter}
-        sortBy={state.sortBy}
-        onSortByChange={actions.setSortBy}
-        sortDirection={state.sortDirection}
-        onSortDirectionChange={handlers.handleToggleSortDirection}
-        currentField={state.currentField}
-        onCurrentFieldChange={actions.setCurrentField}
-        onFilterChange={handlers.handleFilterChange}
-        onExport={handlers.handleExportUsuarios}
-        onNewItem={handlers.handleNuevoUsuario}
-        items={state.usuarios}
-        getFieldValue={getFieldValue}
-        roles={rolesUnicos}
+          statusFilter={state.statusFilter}
+          onStatusFilterChange={actions.setStatusFilter}
+          roleFilter={state.roleFilter}
+          onRoleFilterChange={actions.setRoleFilter}
+          sortBy={state.sortBy}
+          onSortByChange={actions.setSortBy}
+          sortDirection={state.sortDirection}
+          onSortDirectionChange={handlers.handleToggleSortDirection}
+          currentField={state.currentField}
+          onCurrentFieldChange={actions.setCurrentField}
+          onFilterChange={handlers.handleFilterChange}
+          onExport={handlers.handleExportUsuarios}
+          onNewItem={handlers.handleNuevoUsuario}
+          items={state.usuarios}
+          getFieldValue={getFieldValue}
+          roles={rolesUnicos}
         showNewButton={true}
         newButtonLabel="Nuevo usuario"
         showExportButton={true}
-        sortOptions={SORT_OPTIONS}
-        filteredCount={filteredCount}
-        totalCount={totalCount}
-        itemLabel="usuarios"
-        filterOptions={FILTER_OPTIONS}
+          sortOptions={SORT_OPTIONS}
+          filteredCount={filteredCount}
+          totalCount={totalCount}
+          itemLabel="usuarios"
+          filterOptions={FILTER_OPTIONS}
         searchPlaceholder="Buscar usuarios..."
-      />
+        />
 
-      <div className="rounded-md border">
-        <Table>
-          <UsuarioTableHeader />
-          <TableBody>
-            {state.isLoading ? (
-              <LoadingRow />
+        <div className="rounded-md border">
+          <Table>
+            <UsuarioTableHeader />
+            <TableBody>
+              {state.isLoading ? (
+                <LoadingRow />
             ) : state.filteredUsuarios.length === 0 ? (
               <EmptyStateRow />
             ) : (
-              currentUsuarios.map((usuario) => (
-                <UsuarioRow
-                  key={usuario.id}
-                  usuario={usuario}
+                currentUsuarios.map((usuario) => (
+                  <UsuarioRow
+                    key={usuario.id}
+                    usuario={usuario}
                   onEstadoChange={handleEstadoChange}
                   onDelete={handleDeleteUser}
                   onRoleChange={handleRoleChange}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <PaginationComponent
-        currentPage={state.currentPage}
-        totalPages={totalPages}
-        onPageChange={actions.setCurrentPage}
-      />
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        
+          <PaginationComponent
+            currentPage={state.currentPage}
+            totalPages={totalPages}
+            onPageChange={actions.setCurrentPage}
+          />
 
       <AlertDialog open={state.showDeleteDialog} onOpenChange={actions.setShowDeleteDialog}>
         <AlertDialogContent>

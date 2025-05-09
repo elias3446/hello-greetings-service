@@ -42,43 +42,43 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
       if (onRoleChange) {
         await onRoleChange(userId, selectedRoleId);
       } else {
-        // Update the user with the new role
-        const updatedUser = updateUser(userId, {
-          roles: [selectedRole]
-        });
-        
-        if (!updatedUser) {
-          throw new Error('Error al actualizar el rol del usuario');
-        }
+      // Update the user with the new role
+      const updatedUser = updateUser(userId, {
+        roles: [selectedRole]
+      });
+      
+      if (!updatedUser) {
+        throw new Error('Error al actualizar el rol del usuario');
+      }
 
-        // Registrar el cambio en el historial
-        registrarCambioEstado(
-          updatedUser,
-          currentRole?.nombre || 'Sin rol',
-          selectedRole.nombre,
-          {
-            id: '0',
-            nombre: 'Sistema',
-            apellido: '',
-            email: 'sistema@example.com',
-            estado: 'activo',
-            tipo: 'usuario',
-            intentosFallidos: 0,
-            password: 'hashed_password',
-            roles: [{
-              id: '1',
-              nombre: 'Administrador',
-              descripcion: 'Rol con acceso total al sistema',
-              color: '#FF0000',
-              tipo: 'admin',
-              fechaCreacion: new Date('2023-01-01'),
-              activo: true
-            }],
+      // Registrar el cambio en el historial
+      registrarCambioEstado(
+        updatedUser,
+        currentRole?.nombre || 'Sin rol',
+        selectedRole.nombre,
+        {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
             fechaCreacion: new Date('2023-01-01'),
-          },
-          `Cambio de rol de usuario ${updatedUser.nombre} ${updatedUser.apellido}`,
-          'cambio_rol'
-        );
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        },
+        `Cambio de rol de usuario ${updatedUser.nombre} ${updatedUser.apellido}`,
+        'cambio_rol'
+      );
       }
       
       // Update local state to reflect the change immediately

@@ -20,6 +20,8 @@ import { updateUser } from '@/controller/CRUD/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
 import { eliminarReporte } from '@/controller/controller/reportDeleteController';
 import { actualizarEstadoResolucionReporte } from '@/controller/controller/reportResolutionController';
+import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
+import { actualizarEstadoActivoReporte } from '@/controller/controller/reportActiveController';
 
 const DetalleReporte = () => {
   const { id } = useParams<{ id: string }>();
@@ -125,7 +127,7 @@ const DetalleReporte = () => {
         fechaCreacion: new Date('2023-01-01'),
       };
 
-      const success = await actualizarEstadoResolucionReporte(currentReporte, usuarioSistema);
+      const success = await actualizarEstadoActivoReporte(currentReporte, !currentReporte.activo, usuarioSistema);
       if (success) {
         setReporte({ ...currentReporte, activo: !currentReporte.activo });
       }
@@ -139,16 +141,35 @@ const DetalleReporte = () => {
     try {
       if (!reporte) return;
       
-      const reporteActualizado = getReportById(reporte.id);
+      const usuarioSistema: Usuario = {
+        id: '0',
+        nombre: 'Sistema',
+        apellido: '',
+        email: 'sistema@example.com',
+        estado: 'activo',
+        tipo: 'usuario',
+        intentosFallidos: 0,
+        password: 'hashed_password',
+        roles: [{
+          id: '1',
+          nombre: 'Administrador',
+          descripcion: 'Rol con acceso total al sistema',
+          color: '#FF0000',
+          tipo: 'admin',
+          fechaCreacion: new Date('2023-01-01'),
+          activo: true
+        }],
+        fechaCreacion: new Date('2023-01-01'),
+      };
 
-      if (!reporteActualizado) {
-        throw new Error('Error al actualizar el usuario del reporte');
+      const success = await actualizarAsignacionReporte(reporte, newUsuario, usuarioSistema);
+      if (success) {
+        const reporteActualizado = getReportById(reporte.id);
+        if (reporteActualizado) {
+          setReporte(reporteActualizado);
+          setShowRoleDialog(false);
+        }
       }
-
-      setReporte(reporteActualizado);
-      setShowRoleDialog(false);
-      
-      toast.success('Rol asignado correctamente');
     } catch (error) {
       console.error('Error al asignar el usuario:', error);
       toast.error('Error al asignar el usuario');

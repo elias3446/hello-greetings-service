@@ -70,7 +70,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
         console.log('Notificando al componente padre...');
         await onRoleChange(userId, newRoleId);
         console.log('Cerrando diálogo...');
-        setShowRoleDialog(false);
+      setShowRoleDialog(false);
         toast.success('Rol actualizado correctamente');
       } else {
         toast.error('Error al actualizar el rol');
