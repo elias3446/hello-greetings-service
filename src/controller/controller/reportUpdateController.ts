@@ -82,41 +82,48 @@ export const actualizarReporte = async (
     }
 
     // 4. Verificar cambios en la asignación
-    if ('asignadoA' in reporteActualizado && reporteActualizado.asignadoA?.id !== reporte.asignadoA?.id) {
-      const historialActualizado = agregarAsignacion(reporte, reporteActualizado.asignadoA);
-      reporteActualizado.historialAsignaciones = historialActualizado;
+    if ('asignadoA' in reporteActualizado) {
+      const hayCambioAsignacion = 
+        (reporteActualizado.asignadoA?.id !== reporte.asignadoA?.id) || 
+        (reporteActualizado.asignadoA === null && reporte.asignadoA !== null) ||
+        (reporteActualizado.asignadoA !== null && reporte.asignadoA === null);
 
-      await registrarCambioEstadoReporte(
-        reporte,
-        reporte.asignadoA ? `${reporte.asignadoA.nombre} ${reporte.asignadoA.apellido}` : 'Sin asignar',
-        reporteActualizado.asignadoA ? `${reporteActualizado.asignadoA.nombre} ${reporteActualizado.asignadoA.apellido}` : 'Sin asignar',
-        realizadoPor,
-        'Cambio de asignación del reporte',
-        'asignacion_reporte'
-      );
+      if (hayCambioAsignacion) {
+        const historialActualizado = agregarAsignacion(reporte, reporteActualizado.asignadoA);
+        reporteActualizado.historialAsignaciones = historialActualizado;
 
-      // Registrar cambio en historial del usuario anterior
-      if (reporte.asignadoA) {
-        await registrarCambioEstado(
-          reporte.asignadoA,
-          reporte.asignadoA.estado,
-          reporte.asignadoA.estado,
+        await registrarCambioEstadoReporte(
+          reporte,
+          reporte.asignadoA ? `${reporte.asignadoA.nombre} ${reporte.asignadoA.apellido}` : 'Sin asignar',
+          reporteActualizado.asignadoA ? `${reporteActualizado.asignadoA.nombre} ${reporteActualizado.asignadoA.apellido}` : 'Sin asignar',
           realizadoPor,
-          `Reporte ${reporte.id} desasignado`,
-          'otro'
+          'Cambio de asignación del reporte',
+          'asignacion_reporte'
         );
-      }
 
-      // Registrar cambio en historial del nuevo usuario
-      if (reporteActualizado.asignadoA) {
-        await registrarCambioEstado(
-          reporteActualizado.asignadoA,
-          reporteActualizado.asignadoA.estado,
-          reporteActualizado.asignadoA.estado,
-          realizadoPor,
-          `Reporte ${reporte.id} asignado`,
-          'otro'
-        );
+        // Registrar cambio en historial del usuario anterior
+        if (reporte.asignadoA) {
+          await registrarCambioEstado(
+            reporte.asignadoA,
+            reporte.asignadoA.estado,
+            reporte.asignadoA.estado,
+            realizadoPor,
+            `Reporte ${reporte.id} desasignado`,
+            'otro'
+          );
+        }
+
+        // Registrar cambio en historial del nuevo usuario
+        if (reporteActualizado.asignadoA) {
+          await registrarCambioEstado(
+            reporteActualizado.asignadoA,
+            reporteActualizado.asignadoA.estado,
+            reporteActualizado.asignadoA.estado,
+            realizadoPor,
+            `Reporte ${reporte.id} asignado`,
+            'otro'
+          );
+        }
       }
     }
 

@@ -43,10 +43,17 @@ export const updateReport = (id: string, reportData: Partial<Reporte>): Reporte 
   if (index !== -1) {
     const reporte = reportes[index];
     
-    // Si se está actualizando el usuario asignado, actualizar el historial
+    // Solo actualizar el historial de asignaciones si hay un cambio real en el usuario asignado
     if ('asignadoA' in reportData) {
-      const historialActualizado = agregarAsignacion(reporte, reportData.asignadoA);
-      reportData.historialAsignaciones = historialActualizado;
+      const hayCambioAsignacion = 
+        (reportData.asignadoA?.id !== reporte.asignadoA?.id) || 
+        (reportData.asignadoA === null && reporte.asignadoA !== null) ||
+        (reportData.asignadoA !== null && reporte.asignadoA === null);
+
+      if (hayCambioAsignacion) {
+        const historialActualizado = agregarAsignacion(reporte, reportData.asignadoA);
+        reportData.historialAsignaciones = historialActualizado;
+      }
     }
     
     const updatedReport = { ...reporte, ...reportData };
