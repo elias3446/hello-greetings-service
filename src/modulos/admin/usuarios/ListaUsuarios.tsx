@@ -12,10 +12,13 @@ import { actualizarEstadoUsuario } from '@/controller/controller/userStateContro
 import { eliminarUsuario } from '@/controller/controller/userDeleteController';
 import { toast } from '@/components/ui/sonner';
 import { Usuario } from '@/types/tipos';
+import RoleSelector from '@/components/admin/selector/RoleSelector';
+import { Button } from '@/components/ui/button';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   
   useUsuarioData(state, actions);
   useUsuarioFilters(state, actions);
@@ -46,6 +49,79 @@ const ListaUsuarios: React.FC = () => {
     } else {
       setSelectedUsers(new Set());
     }
+  };
+
+  const handleBulkRoleUpdate = async () => {
+    if (!selectedRoleId || selectedUsers.size === 0) {
+      toast.error('Por favor seleccione un rol y al menos un usuario');
+      return;
+    }
+
+    const systemUser: Usuario = {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin' as const,
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const userId of selectedUsers) {
+      try {
+        const usuarioActualizado = actualizarRolUsuario(
+          userId,
+          selectedRoleId,
+          systemUser,
+          'Actualización masiva de roles'
+        );
+
+        if (usuarioActualizado) {
+          successCount++;
+          // Actualizar el estado local
+          actions.setUsuarios(prevUsuarios => 
+            prevUsuarios.map(user => 
+              user.id === userId ? usuarioActualizado : user
+            )
+          );
+          actions.setFilteredUsuarios(prevUsuarios => 
+            prevUsuarios.map(user => 
+              user.id === userId ? usuarioActualizado : user
+            )
+          );
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error(`Error al actualizar el rol del usuario ${userId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se actualizaron ${successCount} usuarios correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} usuarios`);
+    }
+
+    // Limpiar la selección después de la actualización
+    setSelectedUsers(new Set());
+    setSelectedRoleId('');
   };
 
   const handleRoleChange = async (userId: string, newRoleId: string) => {
@@ -249,6 +325,45 @@ const ListaUsuarios: React.FC = () => {
           filterOptions={FILTER_OPTIONS}
         searchPlaceholder="Buscar usuarios..."
         />
+
+        {selectedUsers.size > 0 && (
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">
+                {selectedUsers.size} {selectedUsers.size === 1 ? 'usuario seleccionado' : 'usuarios seleccionados'}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-[200px]">
+                <RoleSelector
+                  userId="bulk-update"
+                  currentRoleId={selectedRoleId}
+                  onRoleChange={async (_, roleId) => {
+                    setSelectedRoleId(roleId);
+                    return Promise.resolve();
+                  }}
+                  autoUpdate={false}
+                />
+              </div>
+              <Button
+                onClick={handleBulkRoleUpdate}
+                disabled={!selectedRoleId}
+                variant="default"
+              >
+                Actualizar Roles
+              </Button>
+              <Button
+                onClick={() => {
+                  setSelectedUsers(new Set());
+                  setSelectedRoleId('');
+                }}
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-md border">
           <Table>
