@@ -329,7 +329,12 @@ const ListaReportesAdmin: React.FC = () => {
           onExport={handleExportReportes}
           onNewItem={() => navigate('/admin/reportes/nuevo')}
           items={reportes}
-          getFieldValue={getFieldValue}
+          getFieldValue={(reporte, field) => {
+            if (field === 'activo') {
+              return reporte.activo ? 'true' : 'false';
+            }
+            return getFieldValue(reporte, field);
+          }}
           showNewButton={true}
           newButtonLabel="Nuevo Reporte"
           showExportButton={true}

@@ -67,6 +67,7 @@ export const useReportesData = (
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
                 reporte.categoria.nombre.toLowerCase().includes(term) ||
+                reporte.activo.toString().toLowerCase().includes(term) ||
                 formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
       );
     }
@@ -74,7 +75,8 @@ export const useReportesData = (
     const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
     const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
     const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
-
+    const filterActives = selectedFilterValues.filter(value => value.startsWith('activo:')).map(value => value.split(':')[1]);
+    
     if (filterValues.length > 0) {
       result = result.filter(reporte => 
         filterValues.includes(getFieldValue(reporte, sortBy))
@@ -92,6 +94,13 @@ export const useReportesData = (
         filterCategories.includes(reporte.categoria.nombre)
       );
     }
+
+    if (filterActives.length > 0) {
+      result = result.filter(reporte => 
+        filterActives.includes(reporte.activo.toString())
+      );
+    }
+
 
     return sortReports(result, sortBy, sortDirection);
   }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);

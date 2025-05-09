@@ -10,6 +10,7 @@ export interface FilterOption {
   label: string;
 }
 
+
 export interface ReporteTableProps {
   reportes: Reporte[];
   isLoading: boolean;
