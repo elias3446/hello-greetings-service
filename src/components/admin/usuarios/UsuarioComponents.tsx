@@ -8,10 +8,17 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Usuario } from '@/types/tipos';
 import { UsuarioRowProps, PaginationProps } from '@/types/usuario';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
+import { Checkbox } from '@/components/ui/checkbox';
 
-export const UsuarioTableHeader: React.FC = () => (
+export const UsuarioTableHeader: React.FC<{ onSelectAll: (checked: boolean) => void }> = ({ onSelectAll }) => (
   <TableHeader>
     <TableRow className="bg-gray-50">
+      <TableHead className="w-[50px]">
+        <Checkbox
+          onCheckedChange={onSelectAll}
+          aria-label="Seleccionar todos"
+        />
+      </TableHead>
       <TableHead className="font-semibold text-gray-600">Nombre</TableHead>
       <TableHead className="font-semibold text-gray-600">Email</TableHead>
       <TableHead className="font-semibold text-gray-600">Rol</TableHead>
@@ -24,7 +31,7 @@ export const UsuarioTableHeader: React.FC = () => (
 
 export const LoadingRow: React.FC = () => (
   <TableRow>
-    <TableCell colSpan={6} className="text-center py-8">
+    <TableCell colSpan={7} className="text-center py-8">
       <div className="flex justify-center">
         <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
       </div>
@@ -34,14 +41,28 @@ export const LoadingRow: React.FC = () => (
 
 export const EmptyStateRow: React.FC = () => (
   <TableRow>
-    <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+    <TableCell colSpan={7} className="text-center py-4 text-gray-500">
       No se encontraron usuarios con los criterios seleccionados
     </TableCell>
   </TableRow>
 );
 
-export const UsuarioRow: React.FC<UsuarioRowProps> = ({ usuario, onEstadoChange, onDelete, onRoleChange }) => (
+export const UsuarioRow: React.FC<UsuarioRowProps & { onSelect: (id: string, checked: boolean) => void; isSelected: boolean }> = ({ 
+  usuario, 
+  onEstadoChange, 
+  onDelete, 
+  onRoleChange,
+  onSelect,
+  isSelected 
+}) => (
   <TableRow key={usuario.id}>
+    <TableCell>
+      <Checkbox
+        checked={isSelected}
+        onCheckedChange={(checked) => onSelect(usuario.id, checked as boolean)}
+        aria-label={`Seleccionar ${usuario.nombre}`}
+      />
+    </TableCell>
     <TableCell>
       <Link to={`/admin/usuarios/${usuario.id}`} className="text-blue-600 hover:underline">
         {usuario.nombre} {usuario.apellido}
@@ -134,7 +155,7 @@ export const PaginationComponent: React.FC<PaginationProps> = ({ currentPage, to
             const showEllipsisAfter = i < array.length - 1 && array[i + 1] !== page + 1;
             
             return (
-              <React.Fragment key={page}>
+              <div key={page} className="flex items-center">
                 {showEllipsisBefore && (
                   <PaginationItem>
                     <span className="flex h-9 w-9 items-center justify-center text-gray-400">...</span>
@@ -155,7 +176,7 @@ export const PaginationComponent: React.FC<PaginationProps> = ({ currentPage, to
                     <span className="flex h-9 w-9 items-center justify-center text-gray-400">...</span>
                   </PaginationItem>
                 )}
-              </React.Fragment>
+              </div>
             );
           })}
           

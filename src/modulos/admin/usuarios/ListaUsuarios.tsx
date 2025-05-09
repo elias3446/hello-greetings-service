@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -15,6 +15,7 @@ import { Usuario } from '@/types/tipos';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   
   useUsuarioData(state, actions);
   useUsuarioFilters(state, actions);
@@ -26,6 +27,26 @@ const ListaUsuarios: React.FC = () => {
   // Count results
   const filteredCount = state.filteredUsuarios.length;
   const totalCount = state.usuarios.length;
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    setSelectedUsers(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(userId);
+      } else {
+        newSelected.delete(userId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(new Set(currentUsuarios.map(user => user.id)));
+    } else {
+      setSelectedUsers(new Set());
+    }
+  };
 
   const handleRoleChange = async (userId: string, newRoleId: string) => {
     try {
@@ -231,20 +252,22 @@ const ListaUsuarios: React.FC = () => {
 
         <div className="rounded-md border">
           <Table>
-            <UsuarioTableHeader />
+            <UsuarioTableHeader onSelectAll={handleSelectAll} />
             <TableBody>
               {state.isLoading ? (
                 <LoadingRow />
-            ) : state.filteredUsuarios.length === 0 ? (
-              <EmptyStateRow />
-            ) : (
+              ) : state.filteredUsuarios.length === 0 ? (
+                <EmptyStateRow />
+              ) : (
                 currentUsuarios.map((usuario) => (
                   <UsuarioRow
                     key={usuario.id}
                     usuario={usuario}
-                  onEstadoChange={handleEstadoChange}
-                  onDelete={handleDeleteUser}
-                  onRoleChange={handleRoleChange}
+                    onEstadoChange={handleEstadoChange}
+                    onDelete={handleDeleteUser}
+                    onRoleChange={handleRoleChange}
+                    onSelect={handleSelectUser}
+                    isSelected={selectedUsers.has(usuario.id)}
                   />
                 ))
               )}
@@ -252,11 +275,11 @@ const ListaUsuarios: React.FC = () => {
           </Table>
         </div>
         
-          <PaginationComponent
-            currentPage={state.currentPage}
-            totalPages={totalPages}
-            onPageChange={actions.setCurrentPage}
-          />
+        <PaginationComponent
+          currentPage={state.currentPage}
+          totalPages={totalPages}
+          onPageChange={actions.setCurrentPage}
+        />
 
       <AlertDialog open={state.showDeleteDialog} onOpenChange={actions.setShowDeleteDialog}>
         <AlertDialogContent>
