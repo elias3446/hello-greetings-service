@@ -83,6 +83,7 @@ const ListaUsuarios: React.FC = () => {
 
     let successCount = 0;
     let errorCount = 0;
+    let skippedCount = 0;
 
     for (const userId of selectedUsers) {
       try {
@@ -90,8 +91,7 @@ const ListaUsuarios: React.FC = () => {
         if (!usuario) continue;
 
         if (usuario.estado === 'bloqueado') {
-          toast.error(`No se puede cambiar el estado del usuario ${usuario.nombre} ${usuario.apellido} porque está bloqueado`);
-          errorCount++;
+          skippedCount++;
           continue;
         }
 
@@ -130,6 +130,9 @@ const ListaUsuarios: React.FC = () => {
     if (errorCount > 0) {
       toast.error(`Hubo errores al actualizar ${errorCount} usuarios`);
     }
+    if (skippedCount > 0) {
+      toast.info(`${skippedCount} usuarios bloqueados fueron omitidos`);
+    }
 
     // Limpiar la selección después de la actualización
     setSelectedUsers(new Set());
@@ -165,9 +168,18 @@ const ListaUsuarios: React.FC = () => {
 
     let successCount = 0;
     let errorCount = 0;
+    let skippedCount = 0;
 
     for (const userId of selectedUsers) {
       try {
+        const usuario = state.usuarios.find(u => u.id === userId);
+        if (!usuario) continue;
+
+        if (usuario.estado === 'bloqueado') {
+          skippedCount++;
+          continue;
+        }
+
         const usuarioActualizado = actualizarRolUsuario(
           userId,
           selectedRoleId,
@@ -202,6 +214,9 @@ const ListaUsuarios: React.FC = () => {
     }
     if (errorCount > 0) {
       toast.error(`Hubo errores al actualizar ${errorCount} usuarios`);
+    }
+    if (skippedCount > 0) {
+      toast.info(`${skippedCount} usuarios bloqueados fueron omitidos`);
     }
 
     // Limpiar la selección después de la actualización

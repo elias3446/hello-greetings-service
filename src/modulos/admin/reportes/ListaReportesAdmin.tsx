@@ -24,6 +24,7 @@ import { getEstados } from '@/controller/CRUD/estadoController';
 import { usuarios } from '@/data/usuarios';
 import { getSystemUser } from '@/utils/userUtils';
 import { Pencil, Trash2 } from 'lucide-react';
+import { actualizarEstadoActivoReporte } from '@/controller/controller/reportActiveController';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -71,6 +72,9 @@ const ListaReportesAdmin: React.FC = () => {
   const [selectedReportes, setSelectedReportes] = useState<Set<string>>(new Set());
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>('');
   const [selectedEstado, setSelectedEstado] = useState<EstadoReporte>(getEstados()[0]);
+  const [selectedUsuarioId, setSelectedUsuarioId] = useState<string>('');
+  const [selectedActivo, setSelectedActivo] = useState<boolean>(true);
+  const [reportesAEliminar, setReportesAEliminar] = useState<Reporte[]>([]);
 
   const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
   const { currentPage, setCurrentPage, totalPages, currentItems } = usePagination(filteredData, ITEMS_PER_PAGE);
@@ -271,6 +275,162 @@ const ListaReportesAdmin: React.FC = () => {
     setSelectedEstado(getEstados()[0]);
   };
 
+  const handleBulkAsignacionUpdate = async () => {
+    if (selectedReportes.size === 0) {
+      toast.error('Por favor seleccione al menos un reporte');
+      return;
+    }
+
+    const systemUser: Usuario = {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+    let skippedCount = 0;
+
+    for (const reporteId of selectedReportes) {
+      try {
+        const reporte = reportes.find(r => r.id === reporteId);
+        if (!reporte) continue;
+
+        if (!reporte.activo) {
+          skippedCount++;
+          continue;
+        }
+
+        const nuevoUsuario = selectedUsuarioId === 'none' ? null : usuarios.find(u => u.id === selectedUsuarioId);
+        if (!nuevoUsuario && selectedUsuarioId !== 'none') continue;
+
+        const success = await actualizarAsignacionReporte(reporte, nuevoUsuario || systemUser, systemUser);
+        if (success) {
+          successCount++;
+          setReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, asignadoA: nuevoUsuario || undefined } : r
+            )
+          );
+          setFilteredReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, asignadoA: nuevoUsuario || undefined } : r
+            )
+          );
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error(`Error al actualizar la asignación del reporte ${reporteId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se actualizaron ${successCount} reportes correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+    if (skippedCount > 0) {
+      toast.info(`${skippedCount} reportes inactivos fueron omitidos`);
+    }
+
+    setSelectedReportes(new Set());
+    setSelectedUsuarioId('');
+  };
+
+  const handleBulkActivoUpdate = async () => {
+    if (selectedReportes.size === 0) {
+      toast.error('Por favor seleccione al menos un reporte');
+      return;
+    }
+
+    const systemUser: Usuario = {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const reporteId of selectedReportes) {
+      try {
+        const reporte = reportes.find(r => r.id === reporteId);
+        if (!reporte) continue;
+
+        const success = await actualizarEstadoActivoReporte(reporte, selectedActivo, systemUser);
+        if (success) {
+          successCount++;
+          setReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, activo: selectedActivo } : r
+            )
+          );
+          setFilteredReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, activo: selectedActivo } : r
+            )
+          );
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error(`Error al actualizar el estado activo del reporte ${reporteId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se ${selectedActivo ? 'activaron' : 'desactivaron'} ${successCount} reportes correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+
+    setSelectedReportes(new Set());
+    setSelectedActivo(true);
+  };
+
+  const handleBulkDelete = () => {
+    const reportesSeleccionados = reportes.filter(reporte => 
+      selectedReportes.has(reporte.id) && reporte.activo
+    );
+    setReportesAEliminar(reportesSeleccionados);
+    setShowDeleteDialog(true);
+  };
+
   const handleDeleteReporte = (reporte: Reporte) => {
     setReporteAEliminar(reporte);
     setShowDeleteDialog(true);
@@ -278,41 +438,105 @@ const ListaReportesAdmin: React.FC = () => {
 
   const confirmarEliminacion = async () => {
     try {
-      if (!reporteAEliminar) return;
+      if (reportesAEliminar.length > 0) {
+        let successCount = 0;
+        let errorCount = 0;
+        let skippedCount = 0;
 
-      const systemUser: Usuario = {
-        id: '0',
-        nombre: 'Sistema',
-        apellido: '',
-        email: 'sistema@example.com',
-        estado: 'activo',
-        tipo: 'usuario',
-        intentosFallidos: 0,
-        password: 'hashed_password',
-        roles: [{
-          id: '1',
-          nombre: 'Administrador',
-          descripcion: 'Rol con acceso total al sistema',
-          color: '#FF0000',
-          tipo: 'admin',
+        for (const reporte of reportesAEliminar) {
+          try {
+            if (!reporte.activo) {
+              skippedCount++;
+              continue;
+            }
+
+            const success = await eliminarReporte(reporte, {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            });
+
+            if (success) {
+              successCount++;
+              setReportes(prevReportes => 
+                prevReportes.filter(r => r.id !== reporte.id)
+              );
+              setFilteredReportes(prevReportes => 
+                prevReportes.filter(r => r.id !== reporte.id)
+              );
+            } else {
+              errorCount++;
+            }
+          } catch (error) {
+            console.error(`Error al eliminar el reporte ${reporte.id}:`, error);
+            errorCount++;
+          }
+        }
+
+        if (successCount > 0) {
+          toast.success(`Se eliminaron ${successCount} reportes correctamente`);
+        }
+        if (errorCount > 0) {
+          toast.error(`Hubo errores al eliminar ${errorCount} reportes`);
+        }
+        if (skippedCount > 0) {
+          toast.info(`${skippedCount} reportes inactivos fueron omitidos`);
+        }
+      } else if (reporteAEliminar) {
+        const success = await eliminarReporte(reporteAEliminar, {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
           fechaCreacion: new Date('2023-01-01'),
-          activo: true
-        }],
-        fechaCreacion: new Date('2023-01-01'),
-      };
+        });
 
-      const success = await eliminarReporte(reporteAEliminar, systemUser);
-      if (success) {
-        setReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
-        setFilteredReportes(prevReportes => prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id));
-        toast.success('Reporte eliminado correctamente');
+        if (success) {
+          setReportes(prevReportes => 
+            prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id)
+          );
+          setFilteredReportes(prevReportes => 
+            prevReportes.filter(reporte => reporte.id !== reporteAEliminar.id)
+          );
+          toast.success('Reporte eliminado correctamente');
+        }
       }
     } catch (error) {
-      console.error('Error al eliminar el reporte:', error);
-      toast.error('Error al eliminar el reporte');
+      console.error('Error al eliminar los reportes:', error);
+      toast.error('Error al eliminar los reportes');
     } finally {
       setShowDeleteDialog(false);
       setReporteAEliminar(null);
+      setReportesAEliminar([]);
+      setSelectedReportes(new Set());
     }
   };
 
@@ -365,73 +589,148 @@ const ListaReportesAdmin: React.FC = () => {
         />
 
         {selectedReportes.size > 0 && (
-          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
-            <div className="flex-1">
+          <div className="space-y-4 p-4 bg-gray-50 rounded-md border">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">
                 {selectedReportes.size} {selectedReportes.size === 1 ? 'reporte seleccionado' : 'reportes seleccionados'}
               </span>
-            </div>
-            <div className="flex items-center gap-4">
-            <div className="w-[200px]">
-              <Select
-                value={selectedCategoriaId}
-                onValueChange={setSelectedCategoriaId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getCategories().map(categoria => (
-                    <SelectItem key={categoria.id} value={categoria.id}>
-                      {categoria.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
               <Button
-              onClick={handleBulkCategoriaUpdate}
-              disabled={!selectedCategoriaId}
-              variant="default"
-            >
-              Actualizar Categorías
-            </Button>
-            <div className="w-[200px]">
-              <Select
-                value={selectedEstado.id}
-                onValueChange={(value) => {
-                  const estado = getEstados().find(e => e.id === value);
-                  if (estado) setSelectedEstado(estado);
+                onClick={() => {
+                  setSelectedReportes(new Set());
+                  setSelectedCategoriaId('');
+                  setSelectedEstado(getEstados()[0]);
+                  setSelectedUsuarioId('');
+                  setSelectedActivo(true);
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getEstados().map(estado => (
-                    <SelectItem key={estado.id} value={estado.id}>
-                      {estado.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={handleBulkEstadoUpdate}
-              variant="default"
-            >
-              Actualizar Estados
-            </Button>
-            <Button
-              onClick={() => {
-                setSelectedReportes(new Set());
-                setSelectedCategoriaId('');
-                setSelectedEstado(getEstados()[0]);
-              }}
-              variant="outline"
+                variant="outline"
+                size="sm"
               >
                 Cancelar
               </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <div className="w-full">
+                  <Select
+                    value={selectedCategoriaId}
+                    onValueChange={setSelectedCategoriaId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getCategories().map(categoria => (
+                        <SelectItem key={categoria.id} value={categoria.id}>
+                          {categoria.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleBulkCategoriaUpdate}
+                  disabled={!selectedCategoriaId}
+                  variant="default"
+                  className="w-full"
+                >
+                  Actualizar Categorías
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="w-full">
+                  <Select
+                    value={selectedEstado.id}
+                    onValueChange={(value) => {
+                      const estado = getEstados().find(e => e.id === value);
+                      if (estado) setSelectedEstado(estado);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getEstados().map(estado => (
+                        <SelectItem key={estado.id} value={estado.id}>
+                          {estado.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleBulkEstadoUpdate}
+                  variant="default"
+                  className="w-full"
+                >
+                  Actualizar Estados
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="w-full">
+                  <Select
+                    value={selectedUsuarioId}
+                    onValueChange={setSelectedUsuarioId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar usuario" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No asignar</SelectItem>
+                      {usuarios.map(usuario => (
+                        <SelectItem key={usuario.id} value={usuario.id}>
+                          {usuario.nombre} {usuario.apellido}
+                          {usuario.estado === 'inactivo' && (
+                            <span className="ml-2 px-2 py-0.5 rounded bg-gray-200 text-xs text-gray-600">Inactivo</span>
+                          )}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleBulkAsignacionUpdate}
+                  variant="default"
+                  className="w-full"
+                >
+                  Actualizar Asignaciones
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="w-full">
+                  <Select
+                    value={selectedActivo ? 'activo' : 'inactivo'}
+                    onValueChange={(value) => setSelectedActivo(value === 'activo')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar estado activo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="activo">Activo</SelectItem>
+                      <SelectItem value="inactivo">Inactivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleBulkActivoUpdate}
+                  variant="default"
+                  className="w-full"
+                >
+                  Actualizar Estado Activo
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  onClick={handleBulkDelete}
+                  variant="destructive"
+                  className="w-full h-[72px]"
+                >
+                  Eliminar Seleccionados
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -627,8 +926,16 @@ const ListaReportesAdmin: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
-              <span className="font-semibold">{reporteAEliminar?.titulo}</span>.
+              {reportesAEliminar.length > 0 ? (
+                <>
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente {reportesAEliminar.length} reportes activos seleccionados.
+                </>
+              ) : (
+                <>
+                  Esta acción no se puede deshacer. Se eliminará permanentemente el reporte{' '}
+                  <span className="font-semibold">{reporteAEliminar?.titulo}</span>.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
