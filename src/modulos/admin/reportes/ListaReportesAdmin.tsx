@@ -142,17 +142,23 @@ const ListaReportesAdmin: React.FC = () => {
 
     let successCount = 0;
     let errorCount = 0;
+    let skippedCount = 0;
 
     for (const reporteId of selectedReportes) {
       try {
         const reporte = reportes.find(r => r.id === reporteId);
         if (!reporte) continue;
 
+        if (!reporte.activo) {
+          skippedCount++;
+          continue;
+        }
+
         const success = await actualizarEstadoReporte(reporte, selectedEstado, systemUser);
-      if (success) {
+        if (success) {
           successCount++;
-        setReportes(prevReportes => 
-          prevReportes.map(r => 
+          setReportes(prevReportes => 
+            prevReportes.map(r => 
               r.id === reporteId ? { ...r, estado: selectedEstado } : r
             )
           );
@@ -175,6 +181,9 @@ const ListaReportesAdmin: React.FC = () => {
     }
     if (errorCount > 0) {
       toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+    if (skippedCount > 0) {
+      toast.info(`${skippedCount} reportes inactivos fueron omitidos`);
     }
 
     setSelectedReportes(new Set());
@@ -210,11 +219,17 @@ const ListaReportesAdmin: React.FC = () => {
 
     let successCount = 0;
     let errorCount = 0;
+    let skippedCount = 0;
 
     for (const reporteId of selectedReportes) {
       try {
         const reporte = reportes.find(r => r.id === reporteId);
         if (!reporte) continue;
+
+        if (!reporte.activo) {
+          skippedCount++;
+          continue;
+        }
 
         const nuevaCategoria = getCategories().find(c => c.id === selectedCategoriaId);
         if (!nuevaCategoria) continue;
@@ -235,7 +250,7 @@ const ListaReportesAdmin: React.FC = () => {
         } else {
           errorCount++;
         }
-    } catch (error) {
+      } catch (error) {
         console.error(`Error al actualizar la categoría del reporte ${reporteId}:`, error);
         errorCount++;
       }
@@ -246,6 +261,9 @@ const ListaReportesAdmin: React.FC = () => {
     }
     if (errorCount > 0) {
       toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+    if (skippedCount > 0) {
+      toast.info(`${skippedCount} reportes inactivos fueron omitidos`);
     }
 
     setSelectedReportes(new Set());
@@ -483,8 +501,9 @@ const ListaReportesAdmin: React.FC = () => {
                           setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, categoria: nuevaCategoria } : r));
                         }
                       }}
+                      disabled={!reporte.activo}
                     >
-                      <SelectTrigger className="w-full bg-white border-none focus:ring-0 focus:outline-none">
+                      <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <SelectValue>{reporte.categoria.nombre}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -506,8 +525,9 @@ const ListaReportesAdmin: React.FC = () => {
                           setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, estado: nuevoEstado } : r));
                         }
                       }}
+                      disabled={!reporte.activo}
                     >
-                      <SelectTrigger className="w-full bg-white border-none focus:ring-0 focus:outline-none">
+                      <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <SelectValue>{reporte.estado.nombre}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -532,8 +552,9 @@ const ListaReportesAdmin: React.FC = () => {
                         await actualizarAsignacionReporte(reporte, nuevoUsuario, getSystemUser());
                         setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, asignadoA: nuevoUsuario || undefined } : r));
                       }}
+                      disabled={!reporte.activo}
                     >
-                      <SelectTrigger className="w-full bg-white border-none focus:ring-0 focus:outline-none">
+                      <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <SelectValue>{reporte.asignadoA ? `${reporte.asignadoA.nombre} ${reporte.asignadoA.apellido}` : 'No asignado'}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -561,6 +582,8 @@ const ListaReportesAdmin: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDeleteReporte(reporte)}
+                      disabled={!reporte.activo}
+                      className={!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}
                     >
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
