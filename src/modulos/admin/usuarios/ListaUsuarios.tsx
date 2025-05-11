@@ -21,6 +21,7 @@ const ListaUsuarios: React.FC = () => {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
+  const [usuariosAEliminar, setUsuariosAEliminar] = useState<Usuario[]>([]);
   
   useUsuarioData(state, actions);
   useUsuarioFilters(state, actions);
@@ -332,49 +333,106 @@ const ListaUsuarios: React.FC = () => {
     actions.setShowDeleteDialog(true);
   };
 
+  const handleBulkDelete = () => {
+    const usuariosSeleccionados = state.usuarios.filter(user => selectedUsers.has(user.id));
+    setUsuariosAEliminar(usuariosSeleccionados);
+    actions.setShowDeleteDialog(true);
+  };
+
   const confirmarEliminacion = async () => {
     try {
-      if (!state.usuarioAEliminar) return;
+      if (usuariosAEliminar.length > 0) {
+        let successCount = 0;
+        let errorCount = 0;
 
-      const resultado = await eliminarUsuario(
-        state.usuarioAEliminar,
-        {
-          id: '0',
-          nombre: 'Sistema',
-          apellido: '',
-          email: 'sistema@example.com',
-          estado: 'activo',
-          tipo: 'usuario',
-          intentosFallidos: 0,
-          password: 'hashed_password',
-          roles: [{
-            id: '1',
-            nombre: 'Administrador',
-            descripcion: 'Rol con acceso total al sistema',
-            color: '#FF0000',
-            tipo: 'admin',
-            fechaCreacion: new Date('2023-01-01'),
-            activo: true
-          }],
-          fechaCreacion: new Date('2023-01-01'),
+        for (const usuario of usuariosAEliminar) {
+          const resultado = await eliminarUsuario(
+            usuario,
+            {
+              id: '0',
+              nombre: 'Sistema',
+              apellido: '',
+              email: 'sistema@example.com',
+              estado: 'activo',
+              tipo: 'usuario',
+              intentosFallidos: 0,
+              password: 'hashed_password',
+              roles: [{
+                id: '1',
+                nombre: 'Administrador',
+                descripcion: 'Rol con acceso total al sistema',
+                color: '#FF0000',
+                tipo: 'admin',
+                fechaCreacion: new Date('2023-01-01'),
+                activo: true
+              }],
+              fechaCreacion: new Date('2023-01-01'),
+            }
+          );
+
+          if (resultado) {
+            successCount++;
+            // Actualizar el estado local
+            actions.setUsuarios(prevUsuarios => 
+              prevUsuarios.filter(user => user.id !== usuario.id)
+            );
+            actions.setFilteredUsuarios(prevUsuarios => 
+              prevUsuarios.filter(user => user.id !== usuario.id)
+            );
+          } else {
+            errorCount++;
+          }
         }
-      );
 
-      if (resultado) {
-        // Actualizar el estado local
-        actions.setUsuarios(prevUsuarios => 
-          prevUsuarios.filter(user => user.id !== state.usuarioAEliminar?.id)
+        if (successCount > 0) {
+          toast.success(`Se eliminaron ${successCount} usuarios correctamente`);
+        }
+        if (errorCount > 0) {
+          toast.error(`Hubo errores al eliminar ${errorCount} usuarios`);
+        }
+      } else if (state.usuarioAEliminar) {
+        const resultado = await eliminarUsuario(
+          state.usuarioAEliminar,
+          {
+            id: '0',
+            nombre: 'Sistema',
+            apellido: '',
+            email: 'sistema@example.com',
+            estado: 'activo',
+            tipo: 'usuario',
+            intentosFallidos: 0,
+            password: 'hashed_password',
+            roles: [{
+              id: '1',
+              nombre: 'Administrador',
+              descripcion: 'Rol con acceso total al sistema',
+              color: '#FF0000',
+              tipo: 'admin',
+              fechaCreacion: new Date('2023-01-01'),
+              activo: true
+            }],
+            fechaCreacion: new Date('2023-01-01'),
+          }
         );
-        actions.setFilteredUsuarios(prevUsuarios => 
-          prevUsuarios.filter(user => user.id !== state.usuarioAEliminar?.id)
-        );
+
+        if (resultado) {
+          // Actualizar el estado local
+          actions.setUsuarios(prevUsuarios => 
+            prevUsuarios.filter(user => user.id !== state.usuarioAEliminar?.id)
+          );
+          actions.setFilteredUsuarios(prevUsuarios => 
+            prevUsuarios.filter(user => user.id !== state.usuarioAEliminar?.id)
+          );
+        }
       }
     } catch (error) {
-      console.error('Error al eliminar el usuario:', error);
-      toast.error('Error al eliminar el usuario');
+      console.error('Error al eliminar los usuarios:', error);
+      toast.error('Error al eliminar los usuarios');
     } finally {
       actions.setShowDeleteDialog(false);
       actions.setUsuarioAEliminar(null);
+      setUsuariosAEliminar([]);
+      setSelectedUsers(new Set());
     }
   };
 
@@ -457,6 +515,12 @@ const ListaUsuarios: React.FC = () => {
                 Actualizar Estados
               </Button>
               <Button
+                onClick={handleBulkDelete}
+                variant="destructive"
+              >
+                Eliminar Seleccionados
+              </Button>
+              <Button
                 onClick={() => {
                   setSelectedUsers(new Set());
                   setSelectedRoleId('');
@@ -506,8 +570,16 @@ const ListaUsuarios: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el usuario{' '}
-              <span className="font-semibold">{state.usuarioAEliminar?.nombre} {state.usuarioAEliminar?.apellido}</span>.
+              {usuariosAEliminar.length > 0 ? (
+                <>
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente {usuariosAEliminar.length} usuarios seleccionados.
+                </>
+              ) : (
+                <>
+                  Esta acción no se puede deshacer. Se eliminará permanentemente el usuario{' '}
+                  <span className="font-semibold">{state.usuarioAEliminar?.nombre} {state.usuarioAEliminar?.apellido}</span>.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
