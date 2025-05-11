@@ -1,4 +1,3 @@
-
 import { Categoria } from '../../types/tipos';
 import { categorias } from '../../data/categorias';
 import { reportes } from '../../data/reportes';
@@ -45,7 +44,7 @@ export const deleteCategory = (id: string): boolean => {
 
 // Obtener el número de reportes por categoría
 export const getReportesPorCategoria = (categoriaId: string): number => {
-  return reportes.filter(reporte => reporte.categoria.id === categoriaId).length;
+  return reportes.filter(reporte => reporte.categoria?.id === categoriaId).length;
 };
 
 // Filtrar categorías por criterios

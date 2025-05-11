@@ -94,7 +94,7 @@ export const filterReports = (criteria: {
   }
   
   if (criteria.categoryId) {
-    filteredReports = filteredReports.filter(report => report.categoria.id === criteria.categoryId);
+    filteredReports = filteredReports.filter(report => report.categoria?.id === criteria.categoryId);
   }
   
   if (criteria.statusId) {

@@ -796,10 +796,10 @@ const ListaReportesAdmin: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Select
-                      value={reporte.categoria.id}
+                      value={reporte.categoria?.id || 'none'}
                       onValueChange={async (value) => {
-                        const nuevaCategoria = getCategories().find(c => c.id === value);
-                        if (nuevaCategoria) {
+                        const nuevaCategoria = value === 'none' ? undefined : getCategories().find(c => c.id === value);
+                        if (nuevaCategoria || value === 'none') {
                           await actualizarCategoriaReporte(reporte, nuevaCategoria, getSystemUser());
                           setReportes(prev => prev.map(r => r.id === reporte.id ? { ...r, categoria: nuevaCategoria } : r));
                         }
@@ -807,9 +807,10 @@ const ListaReportesAdmin: React.FC = () => {
                       disabled={!reporte.activo}
                     >
                       <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        <SelectValue>{reporte.categoria.nombre}</SelectValue>
+                        <SelectValue>{reporte.categoria?.nombre || 'Sin categoría'}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="none">Sin categoría</SelectItem>
                         {getCategories().map(categoria => (
                           <SelectItem key={categoria.id} value={categoria.id}>
                             {categoria.nombre}

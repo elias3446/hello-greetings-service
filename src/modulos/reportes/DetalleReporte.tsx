@@ -262,9 +262,13 @@ const DetalleReporte = () => {
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Categoría</h4>
                         <div className="flex items-center gap-2">
-                          <Badge style={{ backgroundColor: reporte.categoria.color, color: "white" }}>
-                            {reporte.categoria.nombre}
-                          </Badge>
+                          {reporte.categoria ? (
+                            <Badge style={{ backgroundColor: reporte.categoria.color, color: "white" }}>
+                              {reporte.categoria.nombre}
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">Sin categoría</Badge>
+                          )}
                         </div>
                       </div>
                       

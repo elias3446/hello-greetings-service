@@ -30,6 +30,8 @@ import { toast } from 'sonner';
 import FilterByValues from '@/components/common/FilterByValues';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
+import { actualizarEstadoCategoria } from '@/controller/controller/actualizarEstadoCategoria';
+import { getSystemUser } from '@/utils/userUtils';
 
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
@@ -203,14 +205,19 @@ const ListaCategorias: React.FC = () => {
   };
 
   // New function to toggle category status
-  const handleEstadoChange = (categoriaId: string) => {
+  const handleEstadoChange = async (categoriaId: string) => {
     const categoria = categorias.find(cat => cat.id === categoriaId);
     if (categoria) {
       const nuevoEstado = !categoria.activo;
       
-      const updatedCategory = updateCategory(categoriaId, { activo: nuevoEstado });
+      const resultado = await actualizarEstadoCategoria(
+        categoria,
+        nuevoEstado,
+        getSystemUser(),
+        `Cambio de estado a ${nuevoEstado ? 'Activo' : 'Inactivo'}`
+      );
       
-      if (!updatedCategory) {
+      if (!resultado) {
         toast.error('Error al actualizar el estado de la categoría');
         return;
       }
@@ -221,8 +228,6 @@ const ListaCategorias: React.FC = () => {
         }
         return cat;
       }));
-      
-      toast.success(`Estado de la categoría actualizado a ${nuevoEstado ? 'Activo' : 'Inactivo'}`);
     }
   };
 

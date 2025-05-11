@@ -12,7 +12,7 @@ import { toast } from '@/components/ui/sonner';
  */
 export const actualizarCategoriaReporte = async (
   reporte: Reporte,
-  nuevaCategoria: Categoria,
+  nuevaCategoria: Categoria | undefined,
   realizadoPor: Usuario
 ): Promise<boolean> => {
   try {
@@ -25,8 +25,8 @@ export const actualizarCategoriaReporte = async (
     // 1. Registrar el cambio en el historial de estados del reporte
     await registrarCambioEstadoReporte(
       reporte,
-      reporte.categoria.nombre,
-      nuevaCategoria.nombre,
+      reporte.categoria?.nombre || 'Sin categoría',
+      nuevaCategoria?.nombre || 'Sin categoría',
       realizadoPor,
       'Cambio de categoría del reporte',
       'otro'

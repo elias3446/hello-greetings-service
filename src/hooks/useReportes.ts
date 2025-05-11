@@ -66,7 +66,7 @@ export const useReportesData = (
                 getFullName(reporte).toLowerCase().includes(term) ||
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
-                reporte.categoria.nombre.toLowerCase().includes(term) ||
+                (reporte.categoria?.nombre || 'Sin categoría').toLowerCase().includes(term) ||
                 reporte.activo.toString().toLowerCase().includes(term) ||
                 formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
       );
@@ -91,7 +91,7 @@ export const useReportesData = (
 
     if (filterCategories.length > 0) {
       result = result.filter(reporte => 
-        filterCategories.includes(reporte.categoria.nombre)
+        filterCategories.includes(reporte.categoria?.nombre || 'Sin categoría')
       );
     }
 
