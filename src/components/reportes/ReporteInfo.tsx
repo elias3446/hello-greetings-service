@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +22,11 @@ const ReporteInfo = ({ reporte }: ReporteInfoProps) => {
         <div className="space-y-3">
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-1">Categoría</h4>
-            <p className="font-medium">{reporte.categoria.nombre}</p>
+            {reporte.categoria ? (
+              <p className="font-medium">{reporte.categoria.nombre}</p>
+            ) : (
+              <p className="font-medium text-muted-foreground">Sin categoría</p>
+            )}
           </div>
           
           <div>

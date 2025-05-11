@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCategories } from '@/controller/CRUD/categoryController';
@@ -56,7 +55,7 @@ const DashboardCategorias = () => {
 
     // Reportes por categoría
     const reportesPorCat = categoriasData.map(categoria => {
-      const reportesCat = reportesData.filter(reporte => reporte.categoria.id === categoria.id);
+      const reportesCat = reportesData.filter(reporte => reporte.categoria && reporte.categoria.id === categoria.id);
       
       return {
         name: categoria.nombre,
@@ -73,10 +72,10 @@ const DashboardCategorias = () => {
     // Reportes por categoría y estado (dinámico)
     const reportesPorCategoriaEstadoTemp = categoriasData
       .filter(categoria => 
-        reportesData.some(reporte => reporte.categoria.id === categoria.id)
+        reportesData.some(reporte => reporte.categoria && reporte.categoria.id === categoria.id)
       )
       .map(categoria => {
-        const reportesCat = reportesData.filter(reporte => reporte.categoria.id === categoria.id);
+        const reportesCat = reportesData.filter(reporte => reporte.categoria && reporte.categoria.id === categoria.id);
         
         // Crear un objeto para contabilizar por cada tipo de estado
         const estadosConteo: EstadoAgrupado = {};

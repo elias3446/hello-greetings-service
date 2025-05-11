@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getReports } from '@/controller/CRUD/reportController';
@@ -55,15 +54,17 @@ const DashboardReportes = () => {
 
     // Reportes por categoría
     const categorias = reportesData.reduce((acc: { [key: string]: { name: string, value: number, color: string } }, reporte) => {
-      const categoriaId = reporte.categoria.id;
-      if (!acc[categoriaId]) {
-        acc[categoriaId] = { 
-          name: reporte.categoria.nombre, 
-          value: 0,
-          color: reporte.categoria.color 
-        };
+      if (reporte.categoria) {
+        const categoriaId = reporte.categoria.id;
+        if (!acc[categoriaId]) {
+          acc[categoriaId] = { 
+            name: reporte.categoria.nombre, 
+            value: 0,
+            color: reporte.categoria.color 
+          };
+        }
+        acc[categoriaId].value += 1;
       }
-      acc[categoriaId].value += 1;
       return acc;
     }, {});
 
@@ -282,7 +283,9 @@ const DashboardReportes = () => {
                 {reportesRecientes.map((reporte) => (
                   <tr key={reporte.id} className="border-b hover:bg-muted/50">
                     <td className="px-4 py-3 font-medium">{reporte.titulo}</td>
-                    <td className="px-4 py-3">{reporte.categoria.nombre}</td>
+                    <td className="px-4 py-3">
+                      {reporte.categoria ? reporte.categoria.nombre : 'Sin categoría'}
+                    </td>
                     <td className="px-4 py-3">
                       <span 
                         className="inline-block px-2 py-1 rounded-full text-xs" 

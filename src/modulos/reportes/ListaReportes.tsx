@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -114,9 +113,15 @@ const ListaReportes = () => {
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="bg-gray-100">
-                        {reporte.categoria.nombre}
-                      </Badge>
+                      {reporte.categoria ? (
+                        <Badge variant="outline" className="bg-gray-100">
+                          {reporte.categoria.nombre}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-gray-100">
+                          Sin categoría
+                        </Badge>
+                      )}
                       <Badge
                         style={{
                           backgroundColor: reporte.estado.color,
