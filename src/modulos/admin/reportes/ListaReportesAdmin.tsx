@@ -589,8 +589,8 @@ const ListaReportesAdmin: React.FC = () => {
         />
 
         {selectedReportes.size > 0 && (
-          <div className="space-y-4 p-4 bg-gray-50 rounded-md border">
-            <div className="flex items-center justify-between">
+          <div className="space-y-2 p-3 bg-gray-50 rounded-md border">
+            <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700">
                 {selectedReportes.size} {selectedReportes.size === 1 ? 'reporte seleccionado' : 'reportes seleccionados'}
               </span>
@@ -608,9 +608,9 @@ const ListaReportesAdmin: React.FC = () => {
                 Cancelar
               </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <div className="w-full">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex items-center gap-1">
+                <div className="w-[160px]">
                   <Select
                     value={selectedCategoriaId}
                     onValueChange={setSelectedCategoriaId}
@@ -631,14 +631,14 @@ const ListaReportesAdmin: React.FC = () => {
                   onClick={handleBulkCategoriaUpdate}
                   disabled={!selectedCategoriaId}
                   variant="default"
-                  className="w-full"
+                  size="sm"
                 >
                   Actualizar Categorías
                 </Button>
               </div>
 
-              <div className="space-y-2">
-                <div className="w-full">
+              <div className="flex items-center gap-1">
+                <div className="w-[160px]">
                   <Select
                     value={selectedEstado.id}
                     onValueChange={(value) => {
@@ -661,14 +661,15 @@ const ListaReportesAdmin: React.FC = () => {
                 <Button
                   onClick={handleBulkEstadoUpdate}
                   variant="default"
-                  className="w-full"
+                  size="sm"
+                  disabled={!selectedEstado.id}
                 >
                   Actualizar Estados
                 </Button>
               </div>
 
-              <div className="space-y-2">
-                <div className="w-full">
+              <div className="flex items-center gap-1">
+                <div className="w-[160px]">
                   <Select
                     value={selectedUsuarioId}
                     onValueChange={setSelectedUsuarioId}
@@ -692,14 +693,15 @@ const ListaReportesAdmin: React.FC = () => {
                 <Button
                   onClick={handleBulkAsignacionUpdate}
                   variant="default"
-                  className="w-full"
+                  size="sm"
+                  disabled={!selectedUsuarioId}
                 >
                   Actualizar Asignaciones
                 </Button>
               </div>
 
-              <div className="space-y-2">
-                <div className="w-full">
+              <div className="flex items-center gap-1">
+                <div className="w-[160px]">
                   <Select
                     value={selectedActivo ? 'activo' : 'inactivo'}
                     onValueChange={(value) => setSelectedActivo(value === 'activo')}
@@ -716,17 +718,19 @@ const ListaReportesAdmin: React.FC = () => {
                 <Button
                   onClick={handleBulkActivoUpdate}
                   variant="default"
-                  className="w-full"
+                  size="sm"
+                  disabled={selectedActivo === undefined}
                 >
                   Actualizar Estado Activo
                 </Button>
               </div>
 
-              <div className="space-y-2">
+              <div className="flex items-center gap-1">
                 <Button
                   onClick={handleBulkDelete}
                   variant="destructive"
-                  className="w-full h-[72px]"
+                  size="sm"
+                  className="w-full"
                 >
                   Eliminar Seleccionados
                 </Button>
@@ -895,9 +899,6 @@ const ListaReportesAdmin: React.FC = () => {
         </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          Mostrando {currentItems.length} de {filteredData.length} reportes
-        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
