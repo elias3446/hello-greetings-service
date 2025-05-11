@@ -193,4 +193,18 @@ export interface HistorialEstadoReporte {
   tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'asignacion_reporte' | 'cambio_rol' | 'otro';
 }
 
+/**
+ * Interfaz que representa un registro en el historial de cambios de estado de una categoría
+ */
+export interface HistorialEstadoCategoria {
+  id: number | string;
+  idCategoria: Categoria;
+  estadoAnterior: string;
+  estadoNuevo: string;
+  fechaHoraCambio: Date;
+  realizadoPor: Usuario;
+  motivoCambio?: string;
+  tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'otro';
+}
+
 export type TipoEntidad = 'usuarios' | 'reportes' | 'categorias' | 'roles' | 'estados';

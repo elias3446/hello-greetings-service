@@ -1,4 +1,4 @@
-import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte } from '@/types/tipos';
+import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte, HistorialEstadoCategoria } from '@/types/tipos';
 import { usuarios } from './usuarios';
 import { reportes } from './reportes';
 import { categorias } from './categorias';
@@ -669,5 +669,118 @@ export const historialEstadosReporteEjemplo: HistorialEstadoReporte[] = [
     },
     motivoCambio: 'Reporte resuelto satisfactoriamente',
     tipoAccion: 'cambio_estado'
+  }
+];
+
+export const historialEstadosCategoria: HistorialEstadoCategoria[] = [
+  {
+    id: '1',
+    idCategoria: {
+      id: '1',
+      nombre: 'Incendio',
+      descripcion: 'Incendio en la calle Falsa 123',
+      color: '#FF0000',
+      fechaCreacion: new Date('2023-01-01'),
+      activo: true,
+      icono: 'fas fa-fire'
+    },
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T10:00:00'),
+    realizadoPor: {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    tipoAccion: 'creacion',
+  },
+  {
+    id: '2',
+    idCategoria: {
+      id: '1',
+      nombre: 'Incendio',
+      descripcion: 'Incendio en la calle Falsa 123',
+      color: '#FF0000',
+      fechaCreacion: new Date('2023-01-01'),
+      activo: false,
+      icono: 'fas fa-fire'
+    },
+    estadoAnterior: 'activo',
+    estadoNuevo: 'inactivo',
+    fechaHoraCambio: new Date('2023-02-15T15:30:00'),
+    realizadoPor: {
+      id: '2',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    motivoCambio: 'Categoría obsoleta',
+    tipoAccion: 'cambio_estado',
+  },
+  {
+    id: '3',
+    idCategoria: {
+      id: '1',
+      nombre: 'Incendio',
+      descripcion: 'Incendio en la calle Falsa 123',
+      color: '#FF0000',
+      fechaCreacion: new Date('2023-01-01'),
+      activo: true,
+      icono: 'fas fa-fire'
+    },
+    estadoAnterior: 'inactivo',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-03-01T09:15:00'),
+    realizadoPor: {
+      id: '2',
+      nombre: 'María',
+      apellido: 'González',
+      email: 'maria.gonzalez@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    },
+    motivoCambio: 'Categoría reactivada por demanda',
+    tipoAccion: 'cambio_estado',
   }
 ];
