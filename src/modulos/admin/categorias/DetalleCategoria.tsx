@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -16,6 +15,7 @@ import { filterReports } from '@/controller/CRUD/reportController';
 import { actividadesCategoria } from '@/data/actividades';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import ActividadItem from '@/components/layout/ActividadItem';
+import { getHistorialEstadosCategoria } from '@/controller/CRUD/historialEstadosCategoria';
 
 const DetalleCategoria = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +28,7 @@ const DetalleCategoria = () => {
   const [estadisticasEstados, setEstadisticasEstados] = useState<{[key: string]: number}>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState("info");
+  const [historialEstados, setHistorialEstados] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -62,6 +63,10 @@ const DetalleCategoria = () => {
         });
         
         setEstadisticasEstados(estadisticas);
+
+        // Obtener historial de estados
+        const historial = getHistorialEstadosCategoria(id);
+        setHistorialEstados(historial);
       } else {
         toast.error('Categoría no encontrada');
         navigate('/admin/categorias');
@@ -434,25 +439,41 @@ const DetalleCategoria = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
-                      <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
-                    </div>
-                    <div className="space-y-1">
-                      <Badge>Creado</Badge>
-                      <p className="text-sm">{new Date(categoria.fechaCreacion).toLocaleDateString('es-ES')}</p>
-                    </div>
-                  </div>
-                  
-                  {categoria.fechaActualizacion && (
-                    <div className="flex items-start gap-3">
-                      <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
-                        <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
+                  {historialEstados.length > 0 ? (
+                    historialEstados.map((historial, index) => (
+                      <div key={historial.id} className="flex items-start gap-3">
+                        <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
+                          <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>
+                        </div>
+                        <div className="space-y-1">
+                          <Badge>{historial.tipoAccion === 'cambio_estado' ? 'Cambio de estado' : historial.tipoAccion}</Badge>
+                          <p className="text-sm">
+                            {historial.estadoAnterior ? `De: ${historial.estadoAnterior}` : 'Creado'} 
+                            {historial.estadoNuevo ? ` → ${historial.estadoNuevo}` : ''}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(historial.fechaHoraCambio).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                          {historial.motivoCambio && (
+                            <p className="text-xs text-muted-foreground italic">
+                              Motivo: {historial.motivoCambio}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Por: {historial.realizadoPor.nombre} {historial.realizadoPor.apellido}
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <Badge>Actualizado</Badge>
-                        <p className="text-sm">{new Date(categoria.fechaActualizacion).toLocaleDateString('es-ES')}</p>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">No hay historial de cambios registrado</p>
                     </div>
                   )}
                 </div>
