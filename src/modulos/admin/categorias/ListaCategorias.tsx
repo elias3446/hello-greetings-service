@@ -43,6 +43,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
@@ -60,6 +68,8 @@ const ListaCategorias: React.FC = () => {
   const categoriasPerPage = 10;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState<string | null>(null);
+  const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -292,6 +302,52 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
+  const handleBulkUpdate = async (nuevoEstado: boolean) => {
+    if (selectedCategorias.size === 0) return;
+
+    setIsUpdating(true);
+    try {
+      const categoriasSeleccionadas = categorias.filter(cat => selectedCategorias.has(cat.id));
+      const resultados = await Promise.all(
+        categoriasSeleccionadas.map(categoria =>
+          actualizarEstadoCategoria(
+            categoria,
+            nuevoEstado,
+            getSystemUser(),
+            `Actualización masiva de estado a ${nuevoEstado ? 'Activo' : 'Inactivo'}`
+          )
+        )
+      );
+
+      const exitosos = resultados.filter(Boolean).length;
+      const fallidos = resultados.length - exitosos;
+
+      if (exitosos > 0) {
+        toast.success(`${exitosos} categorías actualizadas correctamente`);
+        // Actualizar la lista de categorías
+        setCategorias(prevCategorias =>
+          prevCategorias.map(cat => {
+            if (selectedCategorias.has(cat.id)) {
+              return { ...cat, activo: nuevoEstado };
+            }
+            return cat;
+          })
+        );
+      }
+
+      if (fallidos > 0) {
+        toast.error(`${fallidos} categorías no pudieron ser actualizadas`);
+      }
+
+      setSelectedCategorias(new Set());
+      setShowBulkUpdateDialog(false);
+    } catch (error) {
+      toast.error('Error al actualizar las categorías');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -330,6 +386,13 @@ const ListaCategorias: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowBulkUpdateDialog(true)}
+                disabled={isUpdating}
+              >
+                Actualizar Estado
+              </Button>
               <Button
                 onClick={() => setSelectedCategorias(new Set())}
                 variant="outline"
@@ -538,6 +601,41 @@ const ListaCategorias: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showBulkUpdateDialog} onOpenChange={setShowBulkUpdateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Actualizar Estado de Categorías</DialogTitle>
+            <DialogDescription>
+              ¿Qué estado deseas asignar a las {selectedCategorias.size} categorías seleccionadas?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkUpdateDialog(false)}
+              disabled={isUpdating}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => handleBulkUpdate(true)}
+              disabled={isUpdating}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Activar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleBulkUpdate(false)}
+              disabled={isUpdating}
+            >
+              Desactivar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
