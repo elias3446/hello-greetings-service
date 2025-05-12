@@ -26,6 +26,7 @@ import { getSystemUser } from '@/utils/userUtils';
 import { Pencil, Trash2 } from 'lucide-react';
 import { actualizarEstadoActivoReporte } from '@/controller/controller/reportActiveController';
 import { prioridades } from '@/data/categorias';
+import { actualizarPrioridadReporte } from '@/controller/controller/reportPriorityController';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -77,6 +78,7 @@ const ListaReportesAdmin: React.FC = () => {
   const [selectedUsuarioId, setSelectedUsuarioId] = useState<string>('');
   const [selectedActivo, setSelectedActivo] = useState<boolean>(true);
   const [reportesAEliminar, setReportesAEliminar] = useState<Reporte[]>([]);
+  const [selectedPrioridadId, setSelectedPrioridadId] = useState<string>('');
 
   const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
   const { currentPage, setCurrentPage, totalPages, currentItems } = usePagination(filteredData, ITEMS_PER_PAGE);
@@ -425,6 +427,86 @@ const ListaReportesAdmin: React.FC = () => {
     setSelectedActivo(true);
   };
 
+  const handleBulkPrioridadUpdate = async () => {
+    if (selectedReportes.size === 0) {
+      toast.error('Por favor seleccione al menos un reporte');
+      return;
+    }
+
+    const systemUser: Usuario = {
+      id: '0',
+      nombre: 'Sistema',
+      apellido: '',
+      email: 'sistema@example.com',
+      estado: 'activo',
+      tipo: 'usuario',
+      intentosFallidos: 0,
+      password: 'hashed_password',
+      roles: [{
+        id: '1',
+        nombre: 'Administrador',
+        descripcion: 'Rol con acceso total al sistema',
+        color: '#FF0000',
+        tipo: 'admin',
+        fechaCreacion: new Date('2023-01-01'),
+        activo: true
+      }],
+      fechaCreacion: new Date('2023-01-01'),
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+    let skippedCount = 0;
+
+    for (const reporteId of selectedReportes) {
+      try {
+        const reporte = reportes.find(r => r.id === reporteId);
+        if (!reporte) continue;
+
+        if (!reporte.activo) {
+          skippedCount++;
+          continue;
+        }
+
+        const nuevaPrioridad = selectedPrioridadId === 'none' ? undefined : prioridades.find(p => p.id === selectedPrioridadId);
+        if (!nuevaPrioridad && selectedPrioridadId !== 'none') continue;
+
+        const success = await actualizarPrioridadReporte(reporte, nuevaPrioridad, systemUser);
+        if (success) {
+          successCount++;
+          setReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, prioridad: nuevaPrioridad } : r
+            )
+          );
+          setFilteredReportes(prevReportes => 
+            prevReportes.map(r => 
+              r.id === reporteId ? { ...r, prioridad: nuevaPrioridad } : r
+            )
+          );
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error(`Error al actualizar la prioridad del reporte ${reporteId}:`, error);
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`Se actualizaron ${successCount} reportes correctamente`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Hubo errores al actualizar ${errorCount} reportes`);
+    }
+    if (skippedCount > 0) {
+      toast.info(`${skippedCount} reportes inactivos fueron omitidos`);
+    }
+
+    setSelectedReportes(new Set());
+    setSelectedPrioridadId('');
+  };
+
   const handleBulkDelete = () => {
     const reportesSeleccionados = reportes.filter(reporte => 
       selectedReportes.has(reporte.id) && reporte.activo
@@ -602,6 +684,7 @@ const ListaReportesAdmin: React.FC = () => {
                   setSelectedCategoriaId('');
                   setSelectedEstado(getEstados()[0]);
                   setSelectedUsuarioId('');
+                  setSelectedPrioridadId('');
                   setSelectedActivo(true);
                 }}
                 variant="outline"
@@ -699,6 +782,35 @@ const ListaReportesAdmin: React.FC = () => {
                   disabled={!selectedUsuarioId}
                 >
                   Actualizar Asignaciones
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <div className="w-[160px]">
+                  <Select
+                    value={selectedPrioridadId}
+                    onValueChange={setSelectedPrioridadId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar prioridad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sin prioridad</SelectItem>
+                      {prioridades.map(prioridad => (
+                        <SelectItem key={prioridad.id} value={prioridad.id}>
+                          {prioridad.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleBulkPrioridadUpdate}
+                  variant="default"
+                  size="sm"
+                  disabled={!selectedPrioridadId}
+                >
+                  Actualizar Prioridades
                 </Button>
               </div>
 
