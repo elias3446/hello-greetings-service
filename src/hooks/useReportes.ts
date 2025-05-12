@@ -55,62 +55,72 @@ export const useReportesData = (
   sortDirection: 'asc' | 'desc',
   selectedFilterValues: any[]
 ) => {
-  return React.useMemo(() => {
+  const filteredReportes = React.useMemo(() => {
     let result = [...reportes];
 
+    // Aplicar búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
         reporte => reporte.titulo.toLowerCase().includes(term) ||
                 reporte.ubicacion.direccion.toLowerCase().includes(term) ||
-                getFullName(reporte).toLowerCase().includes(term) ||
+                reporte.asignadoA?.nombre.toLowerCase().includes(term) ||
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
-                (reporte.categoria?.nombre || 'Sin categoría').toLowerCase().includes(term) ||
-                (reporte.prioridad?.nombre || 'Sin prioridad').toLowerCase().includes(term) ||
-                reporte.activo.toString().toLowerCase().includes(term) ||
-                formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
+                reporte.categoria.nombre.toLowerCase().includes(term) ||
+                reporte.prioridad?.nombre.toLowerCase().includes(term) ||
+                reporte.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term)
       );
     }
 
-    const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
-    const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
-    const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
-    const filterActives = selectedFilterValues.filter(value => value.startsWith('activo:')).map(value => value.split(':')[1]);
-    const filterPriorities = selectedFilterValues.filter(value => value.startsWith('prioridad:')).map(value => value.split(':')[1]);
-
-    if (filterValues.length > 0) {
-      result = result.filter(reporte => 
-        filterValues.includes(getFieldValue(reporte, sortBy))
-      );
+    // Aplicar filtros
+    if (selectedFilterValues.length > 0) {
+      result = result.filter(reporte => {
+        return selectedFilterValues.every(filterValue => {
+          if (filterValue.includes(':')) {
+            const [field, value] = filterValue.split(':');
+            switch (field) {
+              case 'estado':
+                return reporte.estado.nombre === value;
+              case 'categoria':
+                return reporte.categoria?.nombre === value;
+              case 'prioridad':
+                return (reporte.prioridad?.nombre || 'Sin prioridad') === value;
+              case 'activo':
+                return String(reporte.activo) === value;
+              default:
+                return true;
+            }
+          }
+          return true;
+        });
+      });
     }
 
-    if (filterStates.length > 0) {
-      result = result.filter(reporte => 
-        filterStates.includes(reporte.estado.nombre)
-      );
+    // Ordenar resultados
+    if (sortBy) {
+      result.sort((a, b) => {
+        let aValue = getFieldValue(a, sortBy);
+        let bValue = getFieldValue(b, sortBy);
+
+        // Manejar valores nulos o indefinidos
+        if (aValue === null || aValue === undefined) aValue = '';
+        if (bValue === null || bValue === undefined) bValue = '';
+
+        // Convertir a string para comparación
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
     }
 
-    if (filterCategories.length > 0) {
-      result = result.filter(reporte => 
-        filterCategories.includes(reporte.categoria?.nombre || 'Sin categoría')
-      );
-    }
+    return result;
+  }, [reportes, searchTerm, selectedFilterValues, sortBy, sortDirection]);
 
-    if (filterActives.length > 0) {
-      result = result.filter(reporte => 
-        filterActives.includes(reporte.activo.toString())
-      );
-    }
-
-    if (filterPriorities.length > 0) {
-      result = result.filter(reporte => 
-        filterPriorities.includes(reporte.prioridad?.nombre || 'Sin prioridad')
-      );
-    }
-
-    return sortReports(result, sortBy, sortDirection);
-  }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);
+  return filteredReportes;
 };
 
 export const usePagination = (items: Reporte[], itemsPerPage: number) => {

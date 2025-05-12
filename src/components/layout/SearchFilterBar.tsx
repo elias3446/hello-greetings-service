@@ -56,6 +56,7 @@ interface SearchFilterBarProps {
     label: string;
   }[];
   searchPlaceholder?: string;
+  initialFilters?: string[];
 }
 
 const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
@@ -85,37 +86,60 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   totalCount = items.length,
   itemLabel = 'elementos',
   filterOptions,
-  searchPlaceholder = "Buscar..."
+  searchPlaceholder = "Buscar...",
+  initialFilters = []
 }) => {
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [selectedValues, setSelectedValues] = useState<string[]>(initialFilters);
   const [showAll, setShowAll] = useState(true);
   const [filterState, setFilterState] = useState<{
     values: string[];
     filters: string[];
   }>({
     values: [],
-    filters: []
+    filters: initialFilters
   });
 
   // Efecto para sincronizar los filtros
   useEffect(() => {
+    console.log('SelectedValues changed:', selectedValues);
     const values = selectedValues.filter(v => !v.includes(':'));
     const filters = selectedValues.filter(v => v.includes(':'));
+    console.log('Setting filter state:', { values, filters });
     setFilterState({ values, filters });
     onFilterChange(selectedValues);
   }, [selectedValues]);
 
+  // Efecto para manejar filtros iniciales
+  useEffect(() => {
+    if (initialFilters.length > 0) {
+      console.log('Initial filters detected:', initialFilters);
+      setSelectedValues(initialFilters);
+      setFilterState(prev => ({
+        ...prev,
+        filters: initialFilters
+      }));
+    }
+  }, [initialFilters]);
+
   const handleFilterChange = (option: { value: string; label: string }, value: string, checked: boolean) => {
-    setSelectedValues(prev => {
-      if (checked) {
-        // Al seleccionar un filtro específico
-        const newValues = prev.filter(v => !v.startsWith(option.value + ':'));
-        return [...newValues, `${option.value}:${value}`];
-      } else {
-        // Al deseleccionar un filtro
-        return prev.filter(v => v !== `${option.value}:${value}`);
-      }
-    });
+    console.log('Handling filter change:', { option, value, checked });
+    if (checked) {
+      // Al seleccionar un filtro específico
+      setSelectedValues(prev => {
+        // Remover cualquier otro filtro de la misma opción
+        const filtered = prev.filter(v => !v.startsWith(option.value + ':'));
+        const newValues = [...filtered, `${option.value}:${value}`];
+        console.log('New selected values:', newValues);
+        return newValues;
+      });
+    } else {
+      // Al deseleccionar
+      setSelectedValues(prev => {
+        const newValues = prev.filter(v => v !== `${option.value}:${value}`);
+        console.log('New selected values after deselection:', newValues);
+        return newValues;
+      });
+    }
   };
 
   const handleValueChange = (value: string, checked: boolean) => {
@@ -284,9 +308,19 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                 Filtros {filterState.filters.length > 0 && <Badge variant="secondary" className="h-5 px-1">!</Badge>}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end">
               {filterOptions.map((option) => {
                 const hasFilters = filterState.filters.some(f => f.startsWith(option.value + ':'));
+                const selectedValue = filterState.filters.find(f => f.startsWith(option.value + ':'))?.split(':')[1];
+                
+                console.log('Rendering filter section:', {
+                  option: option.value,
+                  hasFilters,
+                  selectedValue,
+                  filters: filterState.filters,
+                  selectedValues
+                });
+                
                 return (
                   <div key={option.value} className="p-2">
                     <h4 className="mb-2 text-sm font-medium">{option.label}</h4>
@@ -294,7 +328,6 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                       <DropdownMenuCheckboxItem 
                         checked={!hasFilters}
                         onCheckedChange={() => {
-                          // Remover todos los filtros de esta opción
                           setSelectedValues(prev => 
                             prev.filter(v => !v.startsWith(option.value + ':'))
                           );
@@ -305,15 +338,29 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                       {items
                         .map(item => getFieldValue(item, option.value))
                         .filter((value, index, self) => self.indexOf(value) === index)
-                        .map(value => (
-                          <DropdownMenuCheckboxItem 
-                            key={value}
-                            checked={filterState.filters.includes(`${option.value}:${value}`)}
-                            onCheckedChange={(checked) => handleFilterChange(option, value, checked)}
-                          >
-                            {value}
-                          </DropdownMenuCheckboxItem>
-                        ))
+                        .map(value => {
+                          const isSelected = selectedValue === value;
+                          console.log('Rendering filter option:', {
+                            option: option.value,
+                            value,
+                            selectedValue,
+                            isSelected,
+                            filters: filterState.filters,
+                            selectedValues
+                          });
+                          return (
+                            <DropdownMenuCheckboxItem 
+                              key={value}
+                              checked={isSelected}
+                              onCheckedChange={(checked) => {
+                                console.log('Changing filter:', { option: option.value, value, checked });
+                                handleFilterChange(option, value, checked);
+                              }}
+                            >
+                              {value}
+                            </DropdownMenuCheckboxItem>
+                          );
+                        })
                       }
                     </div>
                   </div>
@@ -329,10 +376,8 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                       size="sm" 
                       className="w-full" 
                       onClick={() => {
-                        // Limpiar todos los filtros
-                        setSelectedValues(prev => 
-                          prev.filter(v => !v.includes(':'))
-                        );
+                        setSelectedValues([]);
+                        setFilterState({ values: [], filters: [] });
                       }}
                     >
                       Limpiar filtros

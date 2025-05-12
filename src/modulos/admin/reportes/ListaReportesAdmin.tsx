@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Reporte, Usuario, Categoria, EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
@@ -46,6 +46,8 @@ const FILTER_OPTIONS: FilterOption[] = [
 
 const ListaReportesAdmin: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { state } = location;
   const {
     reportes,
     setReportes,
@@ -89,12 +91,41 @@ const ListaReportesAdmin: React.FC = () => {
       const data = getReports();
       setReportes(data);
       setFilteredReportes(data);
+
+      // Aplicar filtros iniciales si existen
+      if (state?.initialFilters) {
+        const { categoria } = state.initialFilters;
+        if (categoria && categoria.length > 0) {
+          const categoriaSeleccionada = getCategories().find(c => c.id === categoria[0]);
+          if (categoriaSeleccionada) {
+            // Forzar la actualización de los filtros
+            const filterValue = `categoria:${categoriaSeleccionada.nombre}`;
+            console.log('Setting initial filter:', filterValue);
+            
+            // Asegurar que el filtro se aplique antes de actualizar el estado
+            setSelectedFilterValues([filterValue]);
+            setCategoriaFilter(categoriaSeleccionada.nombre);
+            
+            // Asegurar que el filtro se aplique inmediatamente
+            const filteredData = data.filter(reporte => 
+              reporte.categoria?.nombre === categoriaSeleccionada.nombre
+            );
+            setFilteredReportes(filteredData);
+
+            // Forzar la actualización del estado de los filtros
+            setTimeout(() => {
+              console.log('Forcing filter update with:', filterValue);
+              setSelectedFilterValues([filterValue]);
+            }, 100);
+          }
+        }
+      }
     } catch (error) {
       toast.error("Error al cargar reportes");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [state?.initialFilters]);
 
   React.useEffect(() => {
     setFilteredReportes(filteredData);
@@ -629,7 +660,19 @@ const ListaReportesAdmin: React.FC = () => {
   };
 
   const handleFilterChange = (values: any[]) => {
+    console.log('Filter values changed:', values);
+    // Asegurar que los valores se actualicen correctamente
     setSelectedFilterValues(values);
+    
+    // Actualizar el filtro de categoría si existe
+    const categoriaFilter = values.find(v => v.startsWith('categoria:'));
+    if (categoriaFilter) {
+      const categoriaNombre = categoriaFilter.split(':')[1];
+      console.log('Setting category filter:', categoriaNombre);
+      setCategoriaFilter(categoriaNombre);
+    } else {
+      setCategoriaFilter(null);
+    }
   };
 
   const handleExportReportes = () => {
@@ -659,17 +702,32 @@ const ListaReportesAdmin: React.FC = () => {
             if (field === 'activo') {
               return reporte.activo ? 'true' : 'false';
             }
+            if (field === 'estado') {
+              return reporte.estado.nombre;
+            }
+            if (field === 'categoria') {
+              return reporte.categoria?.nombre || 'Sin categoría';
+            }
+            if (field === 'prioridad') {
+              return reporte.prioridad?.nombre || 'Sin prioridad';
+            }
             return getFieldValue(reporte, field);
           }}
           showNewButton={true}
           newButtonLabel="Nuevo Reporte"
           showExportButton={true}
-        sortOptions={SORT_OPTIONS}
+          sortOptions={SORT_OPTIONS}
           filteredCount={filteredData.length}
           totalCount={reportes.length}
           itemLabel="reportes"
-        filterOptions={FILTER_OPTIONS}
-        searchPlaceholder="Buscar reportes..."
+          filterOptions={[
+            { value: 'estado', label: 'Estado' },
+            { value: 'categoria', label: 'Categoría' },
+            { value: 'prioridad', label: 'Prioridad' },
+            { value: 'activo', label: 'Estado' }
+          ]}
+          searchPlaceholder="Buscar reportes..."
+          initialFilters={selectedFilterValues}
         />
 
         {selectedReportes.size > 0 && (

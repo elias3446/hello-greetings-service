@@ -16,6 +16,9 @@ import { actividadesCategoria } from '@/data/actividades';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import ActividadItem from '@/components/layout/ActividadItem';
 import { getHistorialEstadosCategoria } from '@/controller/CRUD/historialEstadosCategoria';
+import { eliminarReporte } from '@/controller/controller/reportDeleteController';
+import { getSystemUser } from '@/utils/userUtils';
+import { deleteCategoryAndUpdateHistory } from '@/controller/controller/categoryDeleteController';
 
 const DetalleCategoria = () => {
   const { id } = useParams<{ id: string }>();
@@ -75,10 +78,24 @@ const DetalleCategoria = () => {
     }
   }, [id, navigate]);
 
-  const handleEliminar = () => {
-    // Aquí iría la lógica para eliminar la categoría
-    toast.success('Categoría eliminada correctamente');
-    navigate('/admin/categorias');
+  const handleEliminar = async () => {
+    try {
+      const systemUser = getSystemUser();
+      const resultado = await deleteCategoryAndUpdateHistory(id!, systemUser);
+      
+      if (resultado.success) {
+        toast.success(resultado.message);
+        if (resultado.affectedReports && resultado.affectedReports > 0) {
+          toast.info(`${resultado.affectedReports} reportes fueron actualizados a "Sin categoría"`);
+        }
+        navigate('/admin/categorias');
+      } else {
+        toast.error(resultado.message);
+      }
+    } catch (error) {
+      console.error('Error al eliminar la categoría:', error);
+      toast.error('Error al eliminar la categoría');
+    }
   };
 
   const handleMarkActiva = () => {
@@ -87,6 +104,17 @@ const DetalleCategoria = () => {
 
   const handleMarkInactiva = () => {
     toast.success('Categoría marcada como inactiva');
+  };
+
+  const handleVerReportes = () => {
+    navigate('/admin/reportes', { 
+      state: { 
+        categoryFilter: id,
+        initialFilters: {
+          categoria: [id]
+        }
+      }
+    });
   };
 
   if (cargando) {
@@ -268,7 +296,7 @@ const DetalleCategoria = () => {
                             <Button 
                               variant="ghost" 
                               className="text-blue-600"
-                              onClick={() => navigate('/admin/reportes', { state: { categoryFilter: id } })}
+                              onClick={handleVerReportes}
                             >
                               Ver todos los reportes ({contadorReportes})
                             </Button>
@@ -365,7 +393,7 @@ const DetalleCategoria = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => navigate('/admin/reportes', { state: { categoryFilter: id } })}
+                  onClick={handleVerReportes}
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   Ver reportes asociados
