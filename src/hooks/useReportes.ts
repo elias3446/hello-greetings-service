@@ -75,44 +75,41 @@ export const useReportesData = (
 
     // Aplicar filtros
     if (selectedFilterValues.length > 0) {
-      // Separar los valores de filtro y los valores normales
-      const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
-      const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
-      const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
-      const filterPriorities = selectedFilterValues.filter(value => value.startsWith('prioridad:')).map(value => value.split(':')[1]);
-      const filterActivo = selectedFilterValues.filter(value => value.startsWith('activo:')).map(value => value.split(':')[1]);
+      // Separar los valores normales y los filtros
+      const normalValues = selectedFilterValues.filter(value => !value.includes(':'));
+      const filterValues = selectedFilterValues.filter(value => value.includes(':'));
 
       console.log('Applying filters:', {
+        normalValues,
         filterValues,
-        filterStates,
-        filterCategories,
-        filterPriorities,
-        filterActivo
+        sortBy
       });
 
       result = result.filter(reporte => {
-        // Verificar filtros específicos
-        if (filterStates.length > 0 && !filterStates.includes(reporte.estado.nombre)) {
-          return false;
-        }
-
-        if (filterCategories.length > 0 && !filterCategories.includes(reporte.categoria?.nombre)) {
-          return false;
-        }
-
-        if (filterPriorities.length > 0 && !filterPriorities.includes(reporte.prioridad?.nombre || 'Sin prioridad')) {
-          return false;
-        }
-
-        if (filterActivo.length > 0 && !filterActivo.includes(String(reporte.activo))) {
-          return false;
-        }
-
-        // Verificar valores normales
-        if (filterValues.length > 0) {
+        // Verificar valores normales (si hay alguno seleccionado)
+        if (normalValues.length > 0) {
           const reporteValue = getFieldValue(reporte, sortBy);
-          if (!filterValues.includes(reporteValue)) {
+          if (!normalValues.includes(reporteValue)) {
             return false;
+          }
+        }
+
+        // Verificar filtros específicos
+        for (const filter of filterValues) {
+          const [type, value] = filter.split(':');
+          switch (type) {
+            case 'estado':
+              if (reporte.estado.nombre !== value) return false;
+              break;
+            case 'categoria':
+              if (reporte.categoria?.nombre !== value) return false;
+              break;
+            case 'prioridad':
+              if ((reporte.prioridad?.nombre || 'Sin prioridad') !== value) return false;
+              break;
+            case 'activo':
+              if (String(reporte.activo) !== value) return false;
+              break;
           }
         }
 
