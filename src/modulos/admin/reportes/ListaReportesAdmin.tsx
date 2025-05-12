@@ -664,14 +664,58 @@ const ListaReportesAdmin: React.FC = () => {
     // Asegurar que los valores se actualicen correctamente
     setSelectedFilterValues(values);
     
-    // Actualizar el filtro de categoría si existe
-    const categoriaFilter = values.find(v => v.startsWith('categoria:'));
+    // Separar los valores de filtro y los valores normales
+    const filterValues = values.filter(v => v.includes(':'));
+    const normalValues = values.filter(v => !v.includes(':'));
+
+    console.log('Processing filters:', { filterValues, normalValues });
+
+    // Aplicar los filtros a los reportes
+    const filteredReportes = reportes.filter(reporte => {
+      // Verificar filtros específicos
+      for (const filter of filterValues) {
+        const [type, value] = filter.split(':');
+        switch (type) {
+          case 'categoria':
+            if (reporte.categoria?.nombre !== value) return false;
+            break;
+          case 'estado':
+            if (reporte.estado.nombre !== value) return false;
+            break;
+          case 'prioridad':
+            if (reporte.prioridad?.nombre !== value) return false;
+            break;
+          case 'activo':
+            if (reporte.activo !== (value === 'true')) return false;
+            break;
+        }
+      }
+
+      // Verificar valores normales
+      if (normalValues.length > 0) {
+        const reporteValue = getFieldValue(reporte, sortBy);
+        if (!normalValues.includes(reporteValue)) return false;
+      }
+
+      return true;
+    });
+
+    console.log('Filtered reportes:', filteredReportes);
+    setFilteredReportes(filteredReportes);
+
+    // Actualizar los filtros específicos para la UI
+    const categoriaFilter = filterValues.find(v => v.startsWith('categoria:'));
     if (categoriaFilter) {
-      const categoriaNombre = categoriaFilter.split(':')[1];
-      console.log('Setting category filter:', categoriaNombre);
-      setCategoriaFilter(categoriaNombre);
+      setCategoriaFilter(categoriaFilter.split(':')[1]);
     } else {
       setCategoriaFilter(null);
+    }
+
+    const estadoFilter = filterValues.find(v => v.startsWith('estado:'));
+    if (estadoFilter) {
+      setEstadoFilter(estadoFilter.split(':')[1]);
+    } else {
+      setEstadoFilter(null);
     }
   };
 

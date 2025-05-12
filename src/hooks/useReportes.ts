@@ -75,25 +75,48 @@ export const useReportesData = (
 
     // Aplicar filtros
     if (selectedFilterValues.length > 0) {
+      // Separar los valores de filtro y los valores normales
+      const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
+      const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
+      const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
+      const filterPriorities = selectedFilterValues.filter(value => value.startsWith('prioridad:')).map(value => value.split(':')[1]);
+      const filterActivo = selectedFilterValues.filter(value => value.startsWith('activo:')).map(value => value.split(':')[1]);
+
+      console.log('Applying filters:', {
+        filterValues,
+        filterStates,
+        filterCategories,
+        filterPriorities,
+        filterActivo
+      });
+
       result = result.filter(reporte => {
-        return selectedFilterValues.every(filterValue => {
-          if (filterValue.includes(':')) {
-            const [field, value] = filterValue.split(':');
-            switch (field) {
-              case 'estado':
-                return reporte.estado.nombre === value;
-              case 'categoria':
-                return reporte.categoria?.nombre === value;
-              case 'prioridad':
-                return (reporte.prioridad?.nombre || 'Sin prioridad') === value;
-              case 'activo':
-                return String(reporte.activo) === value;
-              default:
-                return true;
-            }
+        // Verificar filtros específicos
+        if (filterStates.length > 0 && !filterStates.includes(reporte.estado.nombre)) {
+          return false;
+        }
+
+        if (filterCategories.length > 0 && !filterCategories.includes(reporte.categoria?.nombre)) {
+          return false;
+        }
+
+        if (filterPriorities.length > 0 && !filterPriorities.includes(reporte.prioridad?.nombre || 'Sin prioridad')) {
+          return false;
+        }
+
+        if (filterActivo.length > 0 && !filterActivo.includes(String(reporte.activo))) {
+          return false;
+        }
+
+        // Verificar valores normales
+        if (filterValues.length > 0) {
+          const reporteValue = getFieldValue(reporte, sortBy);
+          if (!filterValues.includes(reporteValue)) {
+            return false;
           }
-          return true;
-        });
+        }
+
+        return true;
       });
     }
 

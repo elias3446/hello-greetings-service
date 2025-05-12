@@ -121,6 +121,36 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
     }
   }, [initialFilters]);
 
+  const handleValueChange = (value: string, checked: boolean) => {
+    console.log('Handling value change:', { value, checked });
+    if (value === 'Todos') {
+      if (checked) {
+        // Mantener solo los filtros al seleccionar "Todos"
+        const newValues = selectedValues.filter(v => v.includes(':'));
+        console.log('Setting all values:', newValues);
+        setSelectedValues(newValues);
+        setShowAll(true);
+        onFilterChange(newValues);
+      }
+      return;
+    }
+
+    setSelectedValues(prev => {
+      let newValues;
+      if (checked) {
+        // Agregar nuevo valor manteniendo los filtros
+        newValues = [...prev.filter(v => v.includes(':')), value];
+      } else {
+        // Remover valor manteniendo los filtros
+        newValues = prev.filter(v => v.includes(':') || v !== value);
+      }
+      console.log('New values after change:', newValues);
+      onFilterChange(newValues);
+      return newValues;
+    });
+    setShowAll(false);
+  };
+
   const handleFilterChange = (option: { value: string; label: string }, value: string, checked: boolean) => {
     console.log('Handling filter change:', { option, value, checked });
     if (checked) {
@@ -140,28 +170,6 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         return newValues;
       });
     }
-  };
-
-  const handleValueChange = (value: string, checked: boolean) => {
-    if (value === 'Todos') {
-      if (checked) {
-        // Mantener solo los filtros al seleccionar "Todos"
-        setSelectedValues(prev => prev.filter(v => v.includes(':')));
-        setShowAll(true);
-      }
-      return;
-    }
-
-    setSelectedValues(prev => {
-      if (checked) {
-        // Agregar nuevo valor manteniendo los filtros
-        return [...prev.filter(v => v.includes(':')), value];
-      } else {
-        // Remover valor manteniendo los filtros
-        return prev.filter(v => v.includes(':') || v !== value);
-      }
-    });
-    setShowAll(false);
   };
 
   const clearFilters = () => {
@@ -262,15 +270,23 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                     {items
                       .map(item => getFieldValue(item, sortBy))
                       .filter((value, index, self) => self.indexOf(value) === index)
-                      .map(value => (
-                        <DropdownMenuCheckboxItem 
-                          key={value}
-                          checked={filterState.values.includes(value)}
-                          onCheckedChange={(checked) => handleValueChange(value, checked)}
-                        >
-                          {value}
-                        </DropdownMenuCheckboxItem>
-                      ))
+                      .map(value => {
+                        const isSelected = selectedValues.includes(value);
+                        console.log('Rendering value option:', {
+                          value,
+                          isSelected,
+                          selectedValues
+                        });
+                        return (
+                          <DropdownMenuCheckboxItem 
+                            key={value}
+                            checked={isSelected}
+                            onCheckedChange={(checked) => handleValueChange(value, checked)}
+                          >
+                            {value}
+                          </DropdownMenuCheckboxItem>
+                        );
+                      })
                     }
                   </div>
                 </div>
