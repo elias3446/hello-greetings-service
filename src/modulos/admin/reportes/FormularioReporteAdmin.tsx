@@ -41,6 +41,7 @@ import { Switch } from '@/components/ui/switch';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { actualizarReporte } from '@/controller/controller/reportUpdateController';
 import ImageUploader from '@/components/ui/ImageUploader';
+import { crearReporteCompleto } from '@/controller/controller/reporteCreateController';
 
 interface FormularioReporteAdminProps {
   modo: 'crear' | 'editar';
@@ -202,9 +203,34 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
       };
 
       if (modo === 'crear') {
-        const nuevoReporte = createReport(reporteData);
-        toast.success('Reporte creado correctamente');
-        navigate(`/admin/reportes/${nuevoReporte.id}`);
+        const usuarioSistema: Usuario = {
+          id: '1',
+          nombre: 'Admin',
+          apellido: 'Sistema',
+          email: 'admin@sistema.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        };
+
+        const resultado = await crearReporteCompleto(reporteData, usuarioSistema, 'Creación de nuevo reporte');
+        if (resultado.success && resultado.reporte) {
+          toast.success('Reporte creado correctamente');
+          navigate(`/admin/reportes/${resultado.reporte.id}`);
+        } else {
+          toast.error(resultado.message || 'Error al crear el reporte');
+        }
       } else if (modo === 'editar' && id) {
         const reporteActual = getReportById(id);
         if (!reporteActual) {

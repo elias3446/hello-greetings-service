@@ -32,13 +32,14 @@ const SORT_OPTIONS: SortOption[] = [
   { value: 'titulo', label: 'Título' },
   { value: 'ubicacion', label: 'Ubicación' },
   { value: 'asignadoA', label: 'Asignado a' },
-  { value: 'fechaCreacion', label: 'Fecha creación' }
+  { value: 'fechaCreacion', label: 'Fecha creación' },
 ];
 
 const FILTER_OPTIONS: FilterOption[] = [
   { value: 'estado', label: 'Estado' },
   { value: 'categoria', label: 'Categoría' },
-  { value: 'activo', label: 'Activo' }
+  { value: 'activo', label: 'Activo' },
+  { value: 'prioridad', label: 'Prioridad' }
 ];
 
 const ListaReportesAdmin: React.FC = () => {

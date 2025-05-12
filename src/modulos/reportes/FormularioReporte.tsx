@@ -29,8 +29,9 @@ import { getCategories } from '@/controller/CRUD/categoryController';
 import { categorias } from '@/data/categorias';
 import { estadosReporte } from '@/data/estadosReporte';
 import MapaSeleccionUbicacion from '@/components/reportes/MapaSeleccionUbicacion';
-import type { Reporte, Ubicacion } from '@/types/tipos';
+import type { Reporte, Ubicacion, Usuario } from '@/types/tipos';
 import ImageUploader from '@/components/ui/ImageUploader';
+import { crearReporteCompleto } from '@/controller/controller/reporteCreateController';
 
 interface FormularioReporteProps {
   modo: 'crear' | 'editar';
@@ -152,9 +153,34 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
       };
 
       if (modo === 'crear') {
-        const nuevoReporte = createReport(reporteData);
-        toast.success('Reporte creado correctamente');
-        navigate(`/reportes/${nuevoReporte.id}`);
+        const usuarioSistema: Usuario = {
+          id: '0',
+          nombre: 'Sistema',
+          apellido: '',
+          email: 'sistema@example.com',
+          estado: 'activo',
+          tipo: 'usuario',
+          intentosFallidos: 0,
+          password: 'hashed_password',
+          roles: [{
+            id: '1',
+            nombre: 'Administrador',
+            descripcion: 'Rol con acceso total al sistema',
+            color: '#FF0000',
+            tipo: 'admin',
+            fechaCreacion: new Date('2023-01-01'),
+            activo: true
+          }],
+          fechaCreacion: new Date('2023-01-01'),
+        };
+
+        const resultado = await crearReporteCompleto(reporteData, usuarioSistema, 'Creación de nuevo reporte');
+        if (resultado.success && resultado.reporte) {
+          toast.success('Reporte creado correctamente');
+          navigate(`/reportes/${resultado.reporte.id}`);
+        } else {
+          toast.error(resultado.message || 'Error al crear el reporte');
+        }
       } else if (modo === 'editar' && id) {
         updateReport(id, reporteData);
         toast.success('Reporte actualizado correctamente');

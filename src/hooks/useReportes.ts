@@ -67,6 +67,7 @@ export const useReportesData = (
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
                 (reporte.categoria?.nombre || 'Sin categoría').toLowerCase().includes(term) ||
+                (reporte.prioridad?.nombre || 'Sin prioridad').toLowerCase().includes(term) ||
                 reporte.activo.toString().toLowerCase().includes(term) ||
                 formatDate(reporte.fechaCreacion).toLowerCase().includes(term)
       );
@@ -76,7 +77,8 @@ export const useReportesData = (
     const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
     const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
     const filterActives = selectedFilterValues.filter(value => value.startsWith('activo:')).map(value => value.split(':')[1]);
-    
+    const filterPriorities = selectedFilterValues.filter(value => value.startsWith('prioridad:')).map(value => value.split(':')[1]);
+
     if (filterValues.length > 0) {
       result = result.filter(reporte => 
         filterValues.includes(getFieldValue(reporte, sortBy))
@@ -101,6 +103,11 @@ export const useReportesData = (
       );
     }
 
+    if (filterPriorities.length > 0) {
+      result = result.filter(reporte => 
+        filterPriorities.includes(reporte.prioridad?.nombre || 'Sin prioridad')
+      );
+    }
 
     return sortReports(result, sortBy, sortDirection);
   }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);

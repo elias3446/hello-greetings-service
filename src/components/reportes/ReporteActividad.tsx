@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { actividadesReporte } from '@/data/actividades';
+import { getActividadesReporte } from '@/controller/CRUD/actividadReporteController';
 import { usuarios } from '@/data/usuarios';
 import type { Reporte } from '@/types/tipos';
 import { CircleDot } from 'lucide-react';
@@ -11,8 +11,13 @@ export interface ReporteActividadProps {
 }
 
 export const ReporteActividad = ({ reporte }: ReporteActividadProps) => {
-  // Filtrar las actividades para mostrar solo las del reporte actual
-  const actividadesDelReporte = actividadesReporte.filter(actividad => actividad.reporteId === reporte.id);
+  // Obtener actividades tanto de los datos estáticos como del controlador
+  const actividadesEstaticas = actividadesReporte.filter(actividad => actividad.reporteId === reporte.id);
+  const actividadesDinamicas = getActividadesReporte(reporte.id);
+  
+  // Combinar y ordenar todas las actividades por fecha
+  const todasLasActividades = [...actividadesEstaticas, ...actividadesDinamicas]
+    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 
   return (
     <Card>
@@ -20,9 +25,9 @@ export const ReporteActividad = ({ reporte }: ReporteActividadProps) => {
         <CardTitle>Actividad del Reporte</CardTitle>
       </CardHeader>
       <CardContent>
-        {actividadesDelReporte.length > 0 ? (
+        {todasLasActividades.length > 0 ? (
           <div className="space-y-4">
-            {actividadesDelReporte.map((actividad) => {
+            {todasLasActividades.map((actividad) => {
               // Buscar el usuario correspondiente por usuarioId
               const usuario = usuarios.find(u => u.id === actividad.usuarioId);
               
