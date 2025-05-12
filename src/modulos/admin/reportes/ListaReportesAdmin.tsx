@@ -25,6 +25,7 @@ import { usuarios } from '@/data/usuarios';
 import { getSystemUser } from '@/utils/userUtils';
 import { Pencil, Trash2 } from 'lucide-react';
 import { actualizarEstadoActivoReporte } from '@/controller/controller/reportActiveController';
+import { prioridades } from '@/data/categorias';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,8 +39,8 @@ const SORT_OPTIONS: SortOption[] = [
 const FILTER_OPTIONS: FilterOption[] = [
   { value: 'estado', label: 'Estado' },
   { value: 'categoria', label: 'Categoría' },
-  { value: 'activo', label: 'Activo' },
-  { value: 'prioridad', label: 'Prioridad' }
+  { value: 'prioridad', label: 'Prioridad' },
+  { value: 'activo', label: 'Estado' }
 ];
 
 const ListaReportesAdmin: React.FC = () => {

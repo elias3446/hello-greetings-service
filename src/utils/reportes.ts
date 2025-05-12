@@ -27,6 +27,8 @@ export const getFieldValue = (reporte: Reporte, field: string): string => {
       return reporte.estado.nombre;
     case 'categoria':
       return reporte.categoria?.nombre || 'Sin categoría';
+    case 'prioridad':
+      return reporte.prioridad?.nombre || 'Sin prioridad';
     case 'activo':
       return reporte.activo ? 'Sí' : 'No';
     default:
