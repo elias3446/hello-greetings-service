@@ -71,7 +71,9 @@ const DashboardCategorias = () => {
           color: categoria.color
         };
       })
-    ].sort((a, b) => b.value - a.value);
+    ]
+    .filter(item => item.value > 0) // Solo mostrar categorías con reportes
+    .sort((a, b) => b.value - a.value);
 
     setReportesPorCategoria(reportesPorCat);
 
@@ -129,6 +131,23 @@ const DashboardCategorias = () => {
         .filter(key => key !== 'name' && key !== 'color')
         .reduce((sum, key) => sum + item[key], 0);
       return totalReportes > 0;
+    })
+    .map(item => {
+      // Filtrar estados con valor 0
+      const filteredItem = {
+        name: item.name,
+        color: item.color
+      };
+      
+      Object.keys(item)
+        .filter(key => key !== 'name' && key !== 'color')
+        .forEach(key => {
+          if (item[key] > 0) {
+            filteredItem[key] = item[key];
+          }
+        });
+      
+      return filteredItem;
     })
     .sort((a, b) => {
       // Calcular total de reportes por categoría para ordenamiento
