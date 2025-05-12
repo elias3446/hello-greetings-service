@@ -19,6 +19,7 @@ import { getHistorialEstadosCategoria } from '@/controller/CRUD/historialEstados
 import { eliminarReporte } from '@/controller/controller/reportDeleteController';
 import { getSystemUser } from '@/utils/userUtils';
 import { deleteCategoryAndUpdateHistory } from '@/controller/controller/categoryDeleteController';
+import { actualizarEstadoCategoria } from '@/controller/controller/actualizarEstadoCategoria';
 
 const DetalleCategoria = () => {
   const { id } = useParams<{ id: string }>();
@@ -78,6 +79,33 @@ const DetalleCategoria = () => {
     }
   }, [id, navigate]);
 
+  const actualizarDatosCategoria = () => {
+    if (!id) return;
+
+    // Obtener reportes asociados a esta categoría
+    const reportes = filterReports({ categoryId: id });
+    setReportesAsociados(reportes.slice(0, 3)); // Mostrar los primeros 3 reportes
+    setContadorReportes(reportes.length);
+    
+    // Calcular estadísticas por estado
+    const estados = getEstados();
+    const estadisticas: {[key: string]: number} = {};
+    
+    // Inicializar contador para cada estado
+    estados.forEach(estado => {
+      estadisticas[estado.id] = 0;
+    });
+    
+    // Contar reportes por estado
+    reportes.forEach(reporte => {
+      if (estadisticas[reporte.estado.id] !== undefined) {
+        estadisticas[reporte.estado.id]++;
+      }
+    });
+    
+    setEstadisticasEstados(estadisticas);
+  };
+
   const handleEliminar = async () => {
     try {
       const systemUser = getSystemUser();
@@ -98,12 +126,54 @@ const DetalleCategoria = () => {
     }
   };
 
-  const handleMarkActiva = () => {
-    toast.success('Categoría marcada como activa');
+  const handleMarkInactiva = async () => {
+    try {
+      const systemUser = getSystemUser();
+      const success = await actualizarEstadoCategoria(
+        categoria,
+        false,
+        systemUser,
+        'Desactivación manual por administrador'
+      );
+
+      if (success) {
+        setCategoria(prev => ({ ...prev, activo: false }));
+        // Actualizar el historial después del cambio
+        const historial = getHistorialEstadosCategoria(id!);
+        setHistorialEstados(historial);
+        // Actualizar estadísticas y reportes
+        actualizarDatosCategoria();
+        toast.success('Categoría desactivada correctamente');
+      }
+    } catch (error) {
+      console.error('Error al desactivar la categoría:', error);
+      toast.error('Error al desactivar la categoría');
+    }
   };
 
-  const handleMarkInactiva = () => {
-    toast.success('Categoría marcada como inactiva');
+  const handleMarkActiva = async () => {
+    try {
+      const systemUser = getSystemUser();
+      const success = await actualizarEstadoCategoria(
+        categoria,
+        true,
+        systemUser,
+        'Activación manual por administrador'
+      );
+
+      if (success) {
+        setCategoria(prev => ({ ...prev, activo: true }));
+        // Actualizar el historial después del cambio
+        const historial = getHistorialEstadosCategoria(id!);
+        setHistorialEstados(historial);
+        // Actualizar estadísticas y reportes
+        actualizarDatosCategoria();
+        toast.success('Categoría activada correctamente');
+      }
+    } catch (error) {
+      console.error('Error al activar la categoría:', error);
+      toast.error('Error al activar la categoría');
+    }
   };
 
   const handleVerReportes = () => {
@@ -380,12 +450,20 @@ const DetalleCategoria = () => {
                   Editar categoría
                 </Button>
                 {categoria.activo ? (
-                  <Button variant="outline" className="w-full justify-start" onClick={handleMarkInactiva}>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start" 
+                    onClick={handleMarkInactiva}
+                  >
                     <AlertTriangle className="mr-2 h-4 w-4" />
                     Desactivar categoría
                   </Button>
                 ) : (
-                  <Button variant="outline" className="w-full justify-start" onClick={handleMarkActiva}>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start" 
+                    onClick={handleMarkActiva}
+                  >
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Activar categoría
                   </Button>
