@@ -27,12 +27,30 @@ export const deleteCategoryAndUpdateHistory = (
       };
     }
 
-    // Actualizar el historial de estados para cada reporte asociado
+    // Actualizar el historial de estados y la categoría para cada reporte asociado
     reportesAsociados.forEach(reporte => {
+      // Actualizar la categoría del reporte a "Sin categoria"
+      const index = reportes.findIndex(r => r.id === reporte.id);
+      if (index !== -1) {
+        reportes[index] = {
+          ...reportes[index],
+          categoria: {
+            id: 'sin-categoria',
+            nombre: 'Sin categoria',
+            descripcion: 'Reporte sin categoría asignada',
+            color: '#808080',
+            icono: 'folder-question',
+            fechaCreacion: new Date(),
+            activo: true
+          }
+        };
+      }
+
+      // Registrar el cambio en el historial
       registrarCambioEstadoReporte(
-        reporte,
-        reporte.estado.nombre,
-        'sin_categoria', // Nuevo estado para reportes sin categoría
+        reportes[index],
+        reporte.categoria?.nombre || 'sin categoria',
+        'sin categoria',
         usuario,
         'Categoría eliminada del sistema',
         'cambio_estado'

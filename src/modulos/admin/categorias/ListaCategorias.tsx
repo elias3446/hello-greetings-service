@@ -32,6 +32,17 @@ import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { actualizarEstadoCategoria } from '@/controller/controller/actualizarEstadoCategoria';
 import { getSystemUser } from '@/utils/userUtils';
+import { deleteCategoryAndUpdateHistory } from '@/controller/controller/categoryDeleteController';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
@@ -47,6 +58,8 @@ const ListaCategorias: React.FC = () => {
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const [selectedCategorias, setSelectedCategorias] = useState<Set<string>>(new Set());
   const categoriasPerPage = 10;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState<string | null>(null);
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -231,6 +244,30 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
+  const handleDeleteClick = (categoriaId: string) => {
+    setCategoriaAEliminar(categoriaId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteCategoria = async (categoriaId: string) => {
+    try {
+      const resultado = await deleteCategoryAndUpdateHistory(categoriaId, getSystemUser());
+      
+      if (resultado.success) {
+        toast.success(resultado.message);
+        // Actualizar la lista de categorías
+        setCategorias(prevCategorias => prevCategorias.filter(cat => cat.id !== categoriaId));
+      } else {
+        toast.error(resultado.message);
+      }
+    } catch (error) {
+      toast.error('Error al eliminar la categoría');
+    } finally {
+      setShowDeleteDialog(false);
+      setCategoriaAEliminar(null);
+    }
+  };
+
   // Contar los resultados después de aplicar los filtros
   const filteredCount = filteredCategorias.length;
   const totalCount = categorias.length;
@@ -389,6 +426,7 @@ const ListaCategorias: React.FC = () => {
                             variant="ghost"
                             size="icon"
                             className="text-red-500 hover:text-red-600"
+                            onClick={() => handleDeleteClick(categoria.id)}
                           >
                             <Trash2Icon className="h-4 w-4" />
                           </Button>
@@ -472,6 +510,34 @@ const ListaCategorias: React.FC = () => {
           </div>
         )}
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente la categoría{' '}
+              <span className="font-semibold">
+                {categorias.find(cat => cat.id === categoriaAEliminar)?.nombre}
+              </span>
+              {categoriaAEliminar && getReportesPorCategoria(categoriaAEliminar) > 0 && (
+                <span>
+                  {' '}y se actualizarán {getReportesPorCategoria(categoriaAEliminar)} reportes asociados.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => categoriaAEliminar && handleDeleteCategoria(categoriaAEliminar)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

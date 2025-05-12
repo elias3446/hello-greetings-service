@@ -53,63 +53,89 @@ const DashboardCategorias = () => {
     });
     setTiposEstado(tiposEstadoTemp);
 
-    // Reportes por categoría
-    const reportesPorCat = categoriasData.map(categoria => {
-      const reportesCat = reportesData.filter(reporte => reporte.categoria && reporte.categoria.id === categoria.id);
-      
-      return {
-        name: categoria.nombre,
-        value: reportesCat.length,
-        color: categoria.color
-      };
-    }).sort((a, b) => b.value - a.value);
-
-    setReportesPorCategoria(reportesPorCat);
-
-    // Las 5 categorías más usadas
-    setCategoriasMasUsadas(reportesPorCat.slice(0, 5));
-
-    // Reportes por categoría y estado (dinámico)
-    const reportesPorCategoriaEstadoTemp = categoriasData
-      .filter(categoria => 
-        reportesData.some(reporte => reporte.categoria && reporte.categoria.id === categoria.id)
-      )
-      .map(categoria => {
+    // Reportes por categoría (incluyendo sin categoría)
+    const reportesPorCat = [
+      // Reportes sin categoría
+      {
+        name: 'Sin categoría',
+        value: reportesData.filter(reporte => !reporte.categoria).length,
+        color: '#808080' // Color gris para sin categoría
+      },
+      // Reportes por categoría normal
+      ...categoriasData.map(categoria => {
         const reportesCat = reportesData.filter(reporte => reporte.categoria && reporte.categoria.id === categoria.id);
         
-        // Crear un objeto para contabilizar por cada tipo de estado
-        const estadosConteo: EstadoAgrupado = {};
-        
-        // Inicializar todos los tipos de estado en 0
-        Object.keys(tiposEstadoTemp).forEach(tipo => {
-          estadosConteo[tiposEstadoTemp[tipo].nombre] = 0;
-        });
-        
-        // Contar reportes por cada tipo de estado para esta categoría
-        reportesCat.forEach(reporte => {
-          const estadoNombre = tiposEstadoTemp[reporte.estado.tipo]?.nombre || reporte.estado.nombre;
-          estadosConteo[estadoNombre] = (estadosConteo[estadoNombre] || 0) + 1;
-        });
-
         return {
           name: categoria.nombre,
-          ...estadosConteo,
+          value: reportesCat.length,
           color: categoria.color
         };
       })
-      .sort((a, b) => {
-        // Calcular total de reportes por categoría para ordenamiento
-        const totalA = Object.keys(a)
-          .filter(key => key !== 'name' && key !== 'color')
-          .reduce((sum, key) => sum + a[key], 0);
+    ].sort((a, b) => b.value - a.value);
+
+    setReportesPorCategoria(reportesPorCat);
+
+    // Las 5 categorías más usadas (incluyendo sin categoría si aplica)
+    setCategoriasMasUsadas(reportesPorCat.slice(0, 5));
+
+    // Reportes por categoría y estado (incluyendo sin categoría)
+    const reportesPorCategoriaEstadoTemp = [
+      // Reportes sin categoría
+      {
+        name: 'Sin categoría',
+        color: '#808080',
+        ...Object.fromEntries(
+          Object.keys(tiposEstadoTemp).map(tipo => [
+            tiposEstadoTemp[tipo].nombre,
+            reportesData.filter(reporte => 
+              !reporte.categoria && 
+              tiposEstadoTemp[reporte.estado.tipo]?.nombre === tiposEstadoTemp[tipo].nombre
+            ).length
+          ])
+        )
+      },
+      // Reportes por categoría normal
+      ...categoriasData
+        .filter(categoria => 
+          reportesData.some(reporte => reporte.categoria && reporte.categoria.id === categoria.id)
+        )
+        .map(categoria => {
+          const reportesCat = reportesData.filter(reporte => reporte.categoria && reporte.categoria.id === categoria.id);
           
-        const totalB = Object.keys(b)
-          .filter(key => key !== 'name' && key !== 'color')
-          .reduce((sum, key) => sum + b[key], 0);
+          // Crear un objeto para contabilizar por cada tipo de estado
+          const estadosConteo: EstadoAgrupado = {};
           
-        return totalB - totalA;
-      })
-      .slice(0, 5);
+          // Inicializar todos los tipos de estado en 0
+          Object.keys(tiposEstadoTemp).forEach(tipo => {
+            estadosConteo[tiposEstadoTemp[tipo].nombre] = 0;
+          });
+          
+          // Contar reportes por cada tipo de estado para esta categoría
+          reportesCat.forEach(reporte => {
+            const estadoNombre = tiposEstadoTemp[reporte.estado.tipo]?.nombre || reporte.estado.nombre;
+            estadosConteo[estadoNombre] = (estadosConteo[estadoNombre] || 0) + 1;
+          });
+
+          return {
+            name: categoria.nombre,
+            ...estadosConteo,
+            color: categoria.color
+          };
+        })
+    ]
+    .sort((a, b) => {
+      // Calcular total de reportes por categoría para ordenamiento
+      const totalA = Object.keys(a)
+        .filter(key => key !== 'name' && key !== 'color')
+        .reduce((sum, key) => sum + a[key], 0);
+        
+      const totalB = Object.keys(b)
+        .filter(key => key !== 'name' && key !== 'color')
+        .reduce((sum, key) => sum + b[key], 0);
+        
+      return totalB - totalA;
+    })
+    .slice(0, 5);
 
     setReportesPorCategoriaEstado(reportesPorCategoriaEstadoTemp);
 
