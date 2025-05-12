@@ -23,6 +23,8 @@ export const useReportesFiltering = (
         return reporte.estado.nombre;
       case 'categoria':
         return reporte.categoria.nombre;
+      case 'prioridad':
+        return reporte.prioridad?.nombre || 'Sin prioridad';
       default:
         return '';
     }
@@ -40,6 +42,7 @@ export const useReportesFiltering = (
                 reporte.estado.nombre.toLowerCase().includes(term) ||
                 reporte.estado.id.toString().toLowerCase().includes(term) ||
                 reporte.categoria.nombre.toLowerCase().includes(term) ||
+                reporte.prioridad?.nombre.toLowerCase().includes(term) ||
                 reporte.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term)
       );
     }
@@ -47,7 +50,7 @@ export const useReportesFiltering = (
     const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
     const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
     const filterCategories = selectedFilterValues.filter(value => value.startsWith('categoria:')).map(value => value.split(':')[1]);
-
+    const filterPriorities = selectedFilterValues.filter(value => value.startsWith('prioridad:')).map(value => value.split(':')[1]);
     if (filterValues.length > 0) {
       result = result.filter(reporte => 
         filterValues.includes(getFieldValue(reporte, sortBy))
@@ -63,6 +66,12 @@ export const useReportesFiltering = (
     if (filterCategories.length > 0) {
       result = result.filter(reporte => 
         filterCategories.includes(reporte.categoria.nombre)
+      );
+    }
+
+    if (filterPriorities.length > 0) {
+      result = result.filter(reporte => 
+        filterPriorities.includes(reporte.prioridad?.nombre || 'Sin prioridad')
       );
     }
 
