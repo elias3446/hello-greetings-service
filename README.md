@@ -66,6 +66,8 @@ Simply open [Lovable](https://lovable.dev/projects/857f57b3-21f1-46bb-aeda-939b1
 
 ## Can I connect a custom domain to my Lovable project?
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/elias3446/hello-greetings-service)
+
 Yes, you can!
 
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
