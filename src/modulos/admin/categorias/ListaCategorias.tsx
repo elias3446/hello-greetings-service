@@ -13,7 +13,8 @@ import {
   ArrowDownIcon, 
   ArrowUpIcon, 
   DownloadIcon,
-  CheckIcon
+  CheckIcon,
+  X
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -51,6 +52,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
@@ -67,9 +75,11 @@ const ListaCategorias: React.FC = () => {
   const [selectedCategorias, setSelectedCategorias] = useState<Set<string>>(new Set());
   const categoriasPerPage = 10;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [categoriaAEliminar, setCategoriaAEliminar] = useState<string | null>(null);
+  const [categoriasAEliminar, setCategoriasAEliminar] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -254,51 +264,51 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
-  const handleDeleteClick = (categoriaId: string) => {
-    setCategoriaAEliminar(categoriaId);
+  const handleBulkDelete = () => {
+    setCategoriasAEliminar(Array.from(selectedCategorias));
     setShowDeleteDialog(true);
   };
 
-  const handleDeleteCategoria = async (categoriaId: string) => {
+  const handleDeleteCategorias = async () => {
+    if (categoriasAEliminar.length === 0) return;
+
+    setIsDeleting(true);
     try {
-      const resultado = await deleteCategoryAndUpdateHistory(categoriaId, getSystemUser());
-      
-      if (resultado.success) {
-        toast.success(resultado.message);
-        // Actualizar la lista de categorías
-        setCategorias(prevCategorias => prevCategorias.filter(cat => cat.id !== categoriaId));
-      } else {
-        toast.error(resultado.message);
+      let successCount = 0;
+      let errorCount = 0;
+      let totalAffectedReports = 0;
+
+      for (const categoriaId of categoriasAEliminar) {
+        const resultado = await deleteCategoryAndUpdateHistory(categoriaId, getSystemUser());
+        
+        if (resultado.success) {
+          successCount++;
+          totalAffectedReports += resultado.affectedReports || 0;
+          // Actualizar la lista de categorías
+          setCategorias(prevCategorias => prevCategorias.filter(cat => cat.id !== categoriaId));
+        } else {
+          errorCount++;
+        }
       }
-    } catch (error) {
-      toast.error('Error al eliminar la categoría');
-    } finally {
-      setShowDeleteDialog(false);
-      setCategoriaAEliminar(null);
-    }
-  };
 
-  // Contar los resultados después de aplicar los filtros
-  const filteredCount = filteredCategorias.length;
-  const totalCount = categorias.length;
-
-  const handleSelectCategoria = (categoriaId: string, checked: boolean) => {
-    setSelectedCategorias(prev => {
-      const newSelected = new Set(prev);
-      if (checked) {
-        newSelected.add(categoriaId);
-      } else {
-        newSelected.delete(categoriaId);
+      if (successCount > 0) {
+        toast.success(`Se eliminaron ${successCount} categorías correctamente`);
+        if (totalAffectedReports > 0) {
+          toast.info(`${totalAffectedReports} reportes fueron actualizados a "Sin categoría"`);
+        }
       }
-      return newSelected;
-    });
-  };
+      if (errorCount > 0) {
+        toast.error(`Hubo errores al eliminar ${errorCount} categorías`);
+      }
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCategorias(new Set(currentCategorias.map(categoria => categoria.id)));
-    } else {
       setSelectedCategorias(new Set());
+    } catch (error) {
+      console.error('Error al eliminar las categorías:', error);
+      toast.error('Error al eliminar las categorías');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setCategoriasAEliminar([]);
     }
   };
 
@@ -348,6 +358,81 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
+  const handleBulkEstadoUpdate = async () => {
+    if (selectedCategorias.size === 0) return;
+
+    setIsUpdating(true);
+    try {
+      const categoriasSeleccionadas = categorias.filter(cat => selectedCategorias.has(cat.id));
+      const resultados = await Promise.all(
+        categoriasSeleccionadas.map(categoria =>
+          actualizarEstadoCategoria(
+            categoria,
+            selectedEstado === 'activo',
+            getSystemUser(),
+            `Actualización masiva de estado a ${selectedEstado === 'activo' ? 'Activo' : 'Inactivo'}`
+          )
+        )
+      );
+
+      const exitosos = resultados.filter(Boolean).length;
+      const fallidos = resultados.length - exitosos;
+
+      if (exitosos > 0) {
+        toast.success(`${exitosos} categorías actualizadas correctamente`);
+        // Actualizar la lista de categorías
+        setCategorias(prevCategorias =>
+          prevCategorias.map(cat => {
+            if (selectedCategorias.has(cat.id)) {
+              return { ...cat, activo: selectedEstado === 'activo' };
+            }
+            return cat;
+          })
+        );
+      }
+
+      if (fallidos > 0) {
+        toast.error(`${fallidos} categorías no pudieron ser actualizadas`);
+      }
+
+      setSelectedCategorias(new Set());
+      setShowBulkUpdateDialog(false);
+    } catch (error) {
+      toast.error('Error al actualizar las categorías');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Contar los resultados después de aplicar los filtros
+  const filteredCount = filteredCategorias.length;
+  const totalCount = categorias.length;
+
+  const handleSelectCategoria = (categoriaId: string, checked: boolean) => {
+    setSelectedCategorias(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(categoriaId);
+      } else {
+        newSelected.delete(categoriaId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedCategorias(new Set(currentCategorias.map(categoria => categoria.id)));
+    } else {
+      setSelectedCategorias(new Set());
+    }
+  };
+
+  const handleDeleteClick = (categoriaId: string) => {
+    setCategoriasAEliminar([categoriaId]);
+    setShowDeleteDialog(true);
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -372,8 +457,8 @@ const ListaCategorias: React.FC = () => {
           getFieldValue={getFieldValue}
           newButtonLabel="Nueva Categoría"
           sortOptions={sortOptions}
-          filteredCount={filteredCategorias.length}
-          totalCount={categorias.length}
+          filteredCount={filteredCount}
+          totalCount={totalCount}
           itemLabel="categorías"
           filterOptions={filterOptions}
         />
@@ -386,12 +471,32 @@ const ListaCategorias: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
+              <div className="w-[200px]">
+                <Select
+                  value={selectedEstado}
+                  onValueChange={(value: 'activo' | 'inactivo') => setSelectedEstado(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inactivo">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
-                variant="outline"
-                onClick={() => setShowBulkUpdateDialog(true)}
-                disabled={isUpdating}
+                onClick={handleBulkEstadoUpdate}
+                variant="default"
               >
-                Actualizar Estado
+                Actualizar Estados
+              </Button>
+              <Button
+                onClick={handleBulkDelete}
+                variant="destructive"
+                disabled={isDeleting}
+              >
+                Eliminar Seleccionadas
               </Button>
               <Button
                 onClick={() => setSelectedCategorias(new Set())}
@@ -579,63 +684,22 @@ const ListaCategorias: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente la categoría{' '}
-              <span className="font-semibold">
-                {categorias.find(cat => cat.id === categoriaAEliminar)?.nombre}
-              </span>
-              {categoriaAEliminar && getReportesPorCategoria(categoriaAEliminar) > 0 && (
-                <span>
-                  {' '}y se actualizarán {getReportesPorCategoria(categoriaAEliminar)} reportes asociados.
-                </span>
-              )}
+              Esta acción no se puede deshacer. Se eliminarán permanentemente {categoriasAEliminar.length} categorías seleccionadas.
+              Los reportes asociados serán actualizados a "Sin categoría".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={() => categoriaAEliminar && handleDeleteCategoria(categoriaAEliminar)}
+              onClick={handleDeleteCategorias}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
             >
-              Eliminar
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Dialog open={showBulkUpdateDialog} onOpenChange={setShowBulkUpdateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Actualizar Estado de Categorías</DialogTitle>
-            <DialogDescription>
-              ¿Qué estado deseas asignar a las {selectedCategorias.size} categorías seleccionadas?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setShowBulkUpdateDialog(false)}
-              disabled={isUpdating}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => handleBulkUpdate(true)}
-              disabled={isUpdating}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Activar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleBulkUpdate(false)}
-              disabled={isUpdating}
-            >
-              Desactivar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

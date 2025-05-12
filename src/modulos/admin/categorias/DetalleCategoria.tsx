@@ -128,23 +128,6 @@ const DetalleCategoria = () => {
               <span className="mx-2">/</span>
               <span>Detalle</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">{categoria.nombre}</h2>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline"
-              onClick={() => navigate(`/admin/categorias/${id}/editar`)}
-              className="flex items-center"
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Editar Categoría
-            </Button>
-            <Button
-              variant={categoria.activo ? "destructive" : "default"}
-              onClick={() => categoria.activo ? handleMarkInactiva() : handleMarkActiva()}
-            >
-              {categoria.activo ? 'Desactivar' : 'Activar'}
-            </Button>
           </div>
         </div>
 
@@ -440,7 +423,9 @@ const DetalleCategoria = () => {
               <CardContent>
                 <div className="space-y-4">
                   {historialEstados.length > 0 ? (
-                    historialEstados.map((historial, index) => (
+                    [...historialEstados]
+                      .sort((a, b) => new Date(b.fechaHoraCambio).getTime() - new Date(a.fechaHoraCambio).getTime())
+                      .map((historial, index) => (
                       <div key={historial.id} className="flex items-start gap-3">
                         <div className="min-w-[2px] h-full bg-muted-foreground/30 relative">
                           <div className="absolute top-0 left-0 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"></div>

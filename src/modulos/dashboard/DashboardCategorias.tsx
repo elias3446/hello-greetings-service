@@ -58,7 +58,7 @@ const DashboardCategorias = () => {
       // Reportes sin categoría
       {
         name: 'Sin categoría',
-        value: reportesData.filter(reporte => !reporte.categoria).length,
+        value: reportesData.filter(reporte => !reporte.categoria || reporte.categoria.id === 'sin-categoria').length,
         color: '#808080' // Color gris para sin categoría
       },
       // Reportes por categoría normal
@@ -88,7 +88,7 @@ const DashboardCategorias = () => {
           Object.keys(tiposEstadoTemp).map(tipo => [
             tiposEstadoTemp[tipo].nombre,
             reportesData.filter(reporte => 
-              !reporte.categoria && 
+              (!reporte.categoria || reporte.categoria.id === 'sin-categoria') && 
               tiposEstadoTemp[reporte.estado.tipo]?.nombre === tiposEstadoTemp[tipo].nombre
             ).length
           ])
@@ -123,6 +123,13 @@ const DashboardCategorias = () => {
           };
         })
     ]
+    .filter(item => {
+      // Filtrar categorías que tienen al menos un reporte
+      const totalReportes = Object.keys(item)
+        .filter(key => key !== 'name' && key !== 'color')
+        .reduce((sum, key) => sum + item[key], 0);
+      return totalReportes > 0;
+    })
     .sort((a, b) => {
       // Calcular total de reportes por categoría para ordenamiento
       const totalA = Object.keys(a)
