@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -18,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { createCategory, updateCategory, getCategoryById } from '@/controller/CRUD/categoryController';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
+import { IconSelector } from '@/components/ui/icon-selector';
 
 interface FormularioCategoriaProps {
   modo: 'crear' | 'editar';
@@ -232,18 +232,13 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Icono</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecciona un icono" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="category">Categoría</SelectItem>
-                                <SelectItem value="folder">Carpeta</SelectItem>
-                                <SelectItem value="folder-plus">Carpeta Plus</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <IconSelector
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />

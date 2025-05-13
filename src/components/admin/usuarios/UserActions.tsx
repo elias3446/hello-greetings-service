@@ -130,8 +130,8 @@ export const UserActions: React.FC<UserActionsProps> = ({
     <>
       <div className="space-y-4">
         <Button variant="outline" className="w-full justify-start" onClick={handleEdit}>
-          <Edit className="mr-2 h-4 w-4" />
-          Editar usuario
+            <Edit className="mr-2 h-4 w-4" />
+            Editar usuario
         </Button>
         <Button
           variant="outline"
