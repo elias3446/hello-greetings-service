@@ -1,42 +1,65 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Edit, X, Mail } from 'lucide-react';
 import { FormHeaderProps, UserProfileProps } from '@/types/user';
 
-export const FormHeader = ({ modo, handleCancel, handleSubmit, isSubmitting }: FormHeaderProps) => (
-  <div className="flex items-center justify-between">
-    <div className="space-y-1">
-      <div className="text-sm text-muted-foreground flex items-center">
-        <Link to="/admin/usuarios" className="hover:underline flex items-center">
-          <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-          Usuarios
-        </Link>
-        <span className="mx-2">/</span>
-        <span>{modo === 'crear' ? 'Crear' : 'Editar'}</span>
+export const FormHeader = ({ 
+  modo, 
+  handleCancel, 
+  handleSubmit, 
+  isSubmitting,
+  backLink,
+  backText
+}: FormHeaderProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Obtener la ruta anterior del state o usar la ruta por defecto
+  const previousPath = location.state?.from || backLink || '/admin/usuarios';
+  const displayText = backText || 'Usuarios';
+
+  const handleBack = () => {
+    navigate(previousPath);
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="space-y-1">
+        <div className="text-sm text-muted-foreground flex items-center">
+          <button 
+            onClick={handleBack}
+            className="hover:underline flex items-center"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+            {displayText}
+          </button>
+          <span className="mx-2">/</span>
+          <span>{modo === 'crear' ? 'Crear' : 'Editar'}</span>
+        </div>
+      </div>
+      <div>
+        <Button 
+          variant="outline" 
+          className="mr-2"
+          onClick={handleCancel}
+          disabled={isSubmitting}
+        >
+          <X className="h-4 w-4 mr-2" /> Cancelar
+        </Button>
+        <Button 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          <Edit className="h-4 w-4 mr-2" /> 
+          {isSubmitting ? 'Procesando...' : modo === 'crear' ? 'Crear Usuario' : 'Guardar Cambios'}
+        </Button>
       </div>
     </div>
-    <div>
-      <Button 
-        variant="outline" 
-        className="mr-2"
-        onClick={handleCancel}
-        disabled={isSubmitting}
-      >
-        <X className="h-4 w-4 mr-2" /> Cancelar
-      </Button>
-      <Button 
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-      >
-        <Edit className="h-4 w-4 mr-2" /> 
-        {isSubmitting ? 'Procesando...' : modo === 'crear' ? 'Crear Usuario' : 'Guardar Cambios'}
-      </Button>
-    </div>
-  </div>
-);
+  );
+};
 
 export const UserProfile = ({ form }: UserProfileProps) => {
   const getInitials = () => {

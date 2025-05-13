@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
@@ -11,6 +11,7 @@ import { InfoCard, TipsCard } from '@/components/forms/UserFormCards';
 
 const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
   const { id } = useParams();
+  const location = useLocation();
   const {
     form,
     showCancelDialog,
@@ -65,7 +66,8 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
         onClose={() => setShowCancelDialog(false)}
         onConfirm={() => {
           setShowCancelDialog(false);
-          navigate('/admin/usuarios');
+          const previousPath = location.state?.from || '/admin/usuarios';
+          navigate(previousPath);
         }}
         title="¿Cancelar cambios?"
         description="Tienes cambios sin guardar. ¿Estás seguro que deseas salir sin guardar?"

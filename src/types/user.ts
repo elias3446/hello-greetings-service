@@ -63,6 +63,8 @@ export interface FormHeaderProps {
   handleCancel: () => void;
   handleSubmit: () => void;
   isSubmitting: boolean;
+  backLink?: string;
+  backText?: string;
 }
 
 export interface UserProfileProps {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Edit, Shield, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -27,6 +27,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [currentUsuario, setCurrentUsuario] = useState<Usuario>(usuario);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Actualizar el usuario local cuando cambia el prop
   React.useEffect(() => {
@@ -119,14 +120,18 @@ export const UserActions: React.FC<UserActionsProps> = ({
     }
   };
 
+  const handleEdit = () => {
+    navigate(`/admin/usuarios/${currentUsuario.id}/editar`, {
+      state: { from: location.pathname }
+    });
+  };
+
   return (
     <>
       <div className="space-y-4">
-        <Button variant="outline" className="w-full justify-start" asChild>
-          <Link to={`/admin/usuarios/${currentUsuario.id}/editar`}>
-            <Edit className="mr-2 h-4 w-4" />
-            Editar usuario
-          </Link>
+        <Button variant="outline" className="w-full justify-start" onClick={handleEdit}>
+          <Edit className="mr-2 h-4 w-4" />
+          Editar usuario
         </Button>
         <Button
           variant="outline"

@@ -15,6 +15,7 @@ import { Usuario } from '@/types/tipos';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
@@ -22,6 +23,9 @@ const ListaUsuarios: React.FC = () => {
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
   const [usuariosAEliminar, setUsuariosAEliminar] = useState<Usuario[]>([]);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
   
   useUsuarioData(state, actions);
   useUsuarioFilters(state, actions);
@@ -451,6 +455,12 @@ const ListaUsuarios: React.FC = () => {
     }
   };
 
+  const handleNuevoUsuario = () => {
+    navigate('/admin/usuarios/nuevo', { 
+      state: { from: location.pathname } 
+    });
+  };
+
   return (
     <div className="space-y-6">
         <SearchFilterBar
@@ -468,7 +478,7 @@ const ListaUsuarios: React.FC = () => {
           onCurrentFieldChange={actions.setCurrentField}
           onFilterChange={handlers.handleFilterChange}
           onExport={handlers.handleExportUsuarios}
-          onNewItem={handlers.handleNuevoUsuario}
+          onNewItem={handleNuevoUsuario}
           items={state.usuarios}
           getFieldValue={getFieldValue}
           roles={rolesUnicos}

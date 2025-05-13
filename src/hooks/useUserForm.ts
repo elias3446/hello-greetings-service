@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
 import { createUser, updateUser, getUserById } from '@/controller/CRUD/userController';
 import { roles } from '@/data/roles';
@@ -14,6 +14,7 @@ import { actualizarUsuario } from '@/controller/controller/userUpdateController'
 
 export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showCancelDialog, setShowCancelDialog] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const usuarioExistente = id ? getUserById(id) : undefined;
@@ -92,7 +93,9 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
         await handleCreateUser(userData);
       }
 
-      navigate('/admin/usuarios');
+      // Usar la ruta anterior si existe, o la ruta por defecto
+      const previousPath = location.state?.from || '/admin/usuarios';
+      navigate(previousPath);
     } catch (error) {
       toast.error("Error al procesar el usuario");
       console.error('Error:', error);
@@ -118,7 +121,8 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
     const hayCambios = hasUserChanges(usuarioAnterior, formData);
     if (!hayCambios) {
       toast.info("No hay cambios para guardar");
-      navigate('/admin/usuarios');
+      const previousPath = location.state?.from || '/admin/usuarios';
+      navigate(previousPath);
       return;
     }
 
@@ -148,7 +152,8 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
     );
 
     if (resultado) {
-      navigate('/admin/usuarios');
+      const previousPath = location.state?.from || '/admin/usuarios';
+      navigate(previousPath);
     }
   };
 
@@ -166,7 +171,8 @@ export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
     if (form.formState.isDirty) {
       setShowCancelDialog(true);
     } else {
-      navigate('/admin/usuarios');
+      const previousPath = location.state?.from || '/admin/usuarios';
+      navigate(previousPath);
     }
   };
 

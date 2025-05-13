@@ -93,9 +93,6 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
               <span className="mx-2">/</span>
               <span>{modo === 'crear' ? 'Crear' : 'Editar'}</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">
-              {modo === 'crear' ? 'Crear Nueva Categoría' : 'Editar Categoría'}
-            </h2>
           </div>
           <div>
             <Button 
