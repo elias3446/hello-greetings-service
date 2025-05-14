@@ -206,24 +206,19 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                 <TabsContent value="visual">
                   <Form {...form}>
                     <form className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="color"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Color</FormLabel>
-                            <FormControl>
-                              <ColorPicker 
-                                color={field.value}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Este color se utilizará para identificar visualmente el estado en la interfaz
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+          control={form.control}
+          name="color"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Color</FormLabel>
+              <FormControl>
+                <Input type="color" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
 <FormField
                         control={form.control}
