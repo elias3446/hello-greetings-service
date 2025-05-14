@@ -54,17 +54,15 @@ const DashboardReportes = () => {
 
     // Reportes por categoría
     const categorias = reportesData.reduce((acc: { [key: string]: { name: string, value: number, color: string } }, reporte) => {
-      if (reporte.categoria) {
-        const categoriaId = reporte.categoria.id;
-        if (!acc[categoriaId]) {
-          acc[categoriaId] = { 
-            name: reporte.categoria.nombre, 
-            value: 0,
-            color: reporte.categoria.color 
-          };
-        }
-        acc[categoriaId].value += 1;
+      const categoriaId = reporte.categoria?.id || 'sin-categoria';
+      if (!acc[categoriaId]) {
+        acc[categoriaId] = { 
+          name: reporte.categoria?.nombre || 'Sin Categoría', 
+          value: 0,
+          color: reporte.categoria?.color || '#9CA3AF' // Color gris para reportes sin categoría
+        };
       }
+      acc[categoriaId].value += 1;
       return acc;
     }, {});
 

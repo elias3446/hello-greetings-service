@@ -69,45 +69,51 @@ const DashboardUsuarios = () => {
     <div className="space-y-6">
       {/* Tarjetas de contadores */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-l-4" style={{ borderLeftColor: '#10b981' }}>
-          <CardContent className="flex justify-between items-center py-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Usuarios Activos</p>
-              <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'activo').length}</p>
-            </div>
-            <UserCheck className="h-8 w-8 text-[#10b981]" />
-          </CardContent>
-        </Card>
+        {usuarios.filter(u => u.estado === 'activo').length > 0 && (
+          <Card className="border-l-4" style={{ borderLeftColor: '#10b981' }}>
+            <CardContent className="flex justify-between items-center py-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Usuarios Activos</p>
+                <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'activo').length}</p>
+              </div>
+              <UserCheck className="h-8 w-8 text-[#10b981]" />
+            </CardContent>
+          </Card>
+        )}
         
-        <Card className="border-l-4" style={{ borderLeftColor: '#f43f5e' }}>
-          <CardContent className="flex justify-between items-center py-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Usuarios Inactivos</p>
-              <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'inactivo').length}</p>
-            </div>
-            <UserMinus className="h-8 w-8 text-[#f43f5e]" />
-          </CardContent>
-        </Card>
+        {usuarios.filter(u => u.estado === 'inactivo').length > 0 && (
+          <Card className="border-l-4" style={{ borderLeftColor: '#f43f5e' }}>
+            <CardContent className="flex justify-between items-center py-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Usuarios Inactivos</p>
+                <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'inactivo').length}</p>
+              </div>
+              <UserMinus className="h-8 w-8 text-[#f43f5e]" />
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border-l-4" style={{ borderLeftColor: '#f59e0b' }}>
-          <CardContent className="flex justify-between items-center py-6">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Usuarios Bloqueados</p>
-              <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'bloqueado').length}</p>
-            </div>
-            <UserMinus className="h-8 w-8 text-[#f59e0b]" />
-          </CardContent>
-        </Card>
+        {usuarios.filter(u => u.estado === 'bloqueado').length > 0 && (
+          <Card className="border-l-4" style={{ borderLeftColor: '#f59e0b' }}>
+            <CardContent className="flex justify-between items-center py-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Usuarios Bloqueados</p>
+                <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'bloqueado').length}</p>
+              </div>
+              <UserMinus className="h-8 w-8 text-[#f59e0b]" />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Gráficos de usuarios por rol y por estado */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Usuarios por Rol</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {usuariosPorRol.length > 0 ? (
+        {usuariosPorRol.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Usuarios por Rol</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={usuariosPorRol}
@@ -130,20 +136,16 @@ const DashboardUsuarios = () => {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No hay datos disponibles</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Usuarios por Estado</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {usuariosPorEstado.length > 0 ? (
+        {usuariosPorEstado.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Usuarios por Estado</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -164,57 +166,55 @@ const DashboardUsuarios = () => {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No hay datos disponibles</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Lista de usuarios */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Últimos Usuarios</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {usuarios
-              .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
-              .slice(0, 5)
-              .map((usuario) => (
-                <div key={usuario.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback>
-                        {usuario.nombre.charAt(0) + usuario.apellido.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{usuario.nombre} {usuario.apellido}</p>
-                      <p className="text-sm text-muted-foreground">{usuario.email}</p>
+      {usuarios.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Últimos Usuarios</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {usuarios
+                .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
+                .slice(0, 5)
+                .map((usuario) => (
+                  <div key={usuario.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>
+                          {usuario.nombre.charAt(0) + usuario.apellido.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{usuario.nombre} {usuario.apellido}</p>
+                        <p className="text-sm text-muted-foreground">{usuario.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {usuario.roles.map((rol) => (
+                        <span
+                          key={rol.id}
+                          className="px-2 py-1 rounded-full text-xs"
+                          style={{
+                            backgroundColor: `${rol.color}20`,
+                            color: rol.color
+                          }}
+                        >
+                          {rol.nombre}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {usuario.roles.map((rol) => (
-                      <span
-                        key={rol.id}
-                        className="px-2 py-1 rounded-full text-xs"
-                        style={{
-                          backgroundColor: `${rol.color}20`,
-                          color: rol.color
-                        }}
-                      >
-                        {rol.nombre}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </CardContent>
-      </Card>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
