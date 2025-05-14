@@ -1,115 +1,93 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { 
-  User, 
-  FileText, 
-  List, 
-  Shield, 
-  Activity,
-  Upload,
-  Menu
-} from 'lucide-react';
-import { Outlet } from 'react-router-dom';
+import { User, FileText, List, Shield, Activity, Upload, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Definición de ítems del menú de navegación
+const navItems = [
+  { value: 'usuarios', label: 'Usuarios', icon: User, path: '/admin/usuarios' },
+  { value: 'reportes', label: 'Reportes', icon: FileText, path: '/admin/reportes' },
+  { value: 'categorias', label: 'Categorías', icon: List, path: '/admin/categorias' },
+  { value: 'roles', label: 'Roles', icon: Shield, path: '/admin/roles' },
+  { value: 'estados', label: 'Estados', icon: Activity, path: '/admin/estados' },
+  { value: 'cargaMasiva', label: 'Carga Masiva', icon: Upload, path: '/admin/cargaMasiva' }
+];
 
 const MenuAdmin = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [activeTab, setActiveTab] = useState('usuarios');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Determinar la pestaña activa basada en la ruta actual
-  const getActiveTab = () => {
-    const path = location.pathname;
-    if (path.includes('/admin/usuarios')) return 'usuarios';
-    if (path.includes('/admin/reportes')) return 'reportes';
-    if (path.includes('/admin/categorias')) return 'categorias';
-    if (path.includes('/admin/roles')) return 'roles';
-    if (path.includes('/admin/estados')) return 'estados';
-    if (path.includes('/admin/cargaMasiva')) return 'cargaMasiva';
-    return 'usuarios'; // Por defecto
-  };
+  // Actualiza la pestaña activa al detectar un cambio en la ruta
+  useEffect(() => {
+    const current = navItems.find(item => location.pathname.includes(item.path));
+    setActiveTab(current?.value || 'usuarios');
+  }, [location.pathname]);
 
-  const handleTabChange = (value: string) => {
-    setIsMenuOpen(false);
-    // Navegar a la ruta base de cada sección
-    switch (value) {
-      case 'usuarios':
-        navigate('/admin/usuarios');
-        break;
-      case 'reportes':
-        navigate('/admin/reportes');
-        break;
-      case 'categorias':
-        navigate('/admin/categorias');
-        break;
-      case 'roles':
-        navigate('/admin/roles');
-        break;
-      case 'estados':
-        navigate('/admin/estados');
-        break;
-      case 'cargaMasiva':
-        navigate('/admin/cargaMasiva');
-        break;
-      default:
-        navigate('/admin/usuarios');
+  const handleTabChange = (tab: string) => {
+    const selected = navItems.find(item => item.value === tab);
+    if (selected) {
+      setIsMenuOpen(false);
+      navigate(selected.path);
     }
   };
 
-  const navItems = [
-    { value: 'usuarios', label: 'Usuarios', icon: User },
-    { value: 'reportes', label: 'Reportes', icon: FileText },
-    { value: 'categorias', label: 'Categorías', icon: List },
-    { value: 'roles', label: 'Roles', icon: Shield },
-    { value: 'estados', label: 'Estados', icon: Activity },
-    { value: 'cargaMasiva', label: 'Carga Masiva', icon: Upload }
-  ];
+  const renderNavButton = (item: typeof navItems[number], isMobile = false) => {
+    const isActive = activeTab === item.value;
+    const Icon = item.icon;
+
+    const baseClass = isMobile
+      ? `w-full py-2.5 px-3 flex items-center rounded-md ${
+          isActive
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+        }`
+      : `nav-link px-2 py-1.5 whitespace-nowrap text-sm lg:text-base ${
+          isActive
+            ? 'text-primary border-b-2 border-primary'
+            : 'text-muted-foreground hover:text-foreground'
+        }`;
+
+    return (
+      <button
+        key={item.value}
+        onClick={() => handleTabChange(item.value)}
+        className={baseClass}
+      >
+        <Icon className={isMobile ? 'h-5 w-5' : 'h-4 w-4 inline-block'} />
+        <span className={isMobile ? 'ml-2' : 'ml-1.5'}>{item.label}</span>
+      </button>
+    );
+  };
 
   const getActiveTitle = () => {
-    const activeItem = navItems.find(item => item.value === getActiveTab());
-    return activeItem ? activeItem.label : 'Administración';
+    return navItems.find(item => item.value === activeTab)?.label || 'Administración';
   };
 
   return (
     <Layout>
       <div className="w-full">
-        {/* Static admin navigation under the main NavBar */}
+        {/* Barra de navegación fija debajo del navbar principal */}
         <div className="sticky top-14 sm:top-16 bg-background z-20 border-b shadow-sm">
           <div className="w-full px-2 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between h-12 sm:h-14">
-              {/* Page Title - Only visible on mobile */}
+              {/* Título en móviles */}
               <div className="flex items-center [@media(min-width:910px)]:hidden">
                 <h1 className="text-lg sm:text-xl font-semibold text-foreground">
                   {getActiveTitle()}
                 </h1>
               </div>
 
-              {/* Desktop Navigation */}
+              {/* Navegación en escritorio */}
               <div className="hidden [@media(min-width:910px)]:flex items-center justify-center flex-1">
                 <div className="flex items-center space-x-1 lg:space-x-2">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = getActiveTab() === item.value;
-                    return (
-                      <button
-                        key={item.value}
-                        onClick={() => handleTabChange(item.value)}
-                        className={`nav-link px-2 py-1.5 whitespace-nowrap text-sm lg:text-base ${
-                          isActive 
-                            ? 'text-primary border-b-2 border-primary' 
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        <Icon className="h-4 w-4 inline-block" />
-                        <span className="ml-1.5">{item.label}</span>
-                      </button>
-                    );
-                  })}
+                  {navItems.map(item => renderNavButton(item))}
                 </div>
               </div>
 
-              {/* Mobile Menu Button */}
+              {/* Botón del menú móvil */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -122,36 +100,19 @@ const MenuAdmin = () => {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
-          <div 
+          {/* Navegación móvil */}
+          <div
             className={`[@media(min-width:910px)]:hidden transition-all duration-200 ease-in-out ${
               isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
             }`}
           >
             <div className="px-3 py-2 space-y-1 bg-background">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = getActiveTab() === item.value;
-                return (
-                  <button
-                    key={item.value}
-                    onClick={() => handleTabChange(item.value)}
-                    className={`w-full py-2.5 px-3 flex items-center rounded-md ${
-                      isActive 
-                        ? 'bg-primary/10 text-primary' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="ml-2">{item.label}</span>
-                  </button>
-                );
-              })}
+              {navItems.map(item => renderNavButton(item, true))}
             </div>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Contenido principal dinámico */}
         <div className="w-full py-5">
           <Outlet />
         </div>
