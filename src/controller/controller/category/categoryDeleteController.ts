@@ -1,7 +1,7 @@
-import { deleteCategory } from '../CRUD/categoryController';
-import { registrarCambioEstadoReporte } from '../CRUD/historialEstadosReporte';
-import { Reporte, Usuario } from '../../types/tipos';
-import { reportes } from '../../data/reportes';
+import { deleteCategory } from '@/controller/CRUD/categoryController';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { Reporte, Usuario } from '@/types/tipos';
+import { reportes } from '@/data/reportes';
 
 /**
  * Elimina una categoría y actualiza el historial de estados de los reportes asociados

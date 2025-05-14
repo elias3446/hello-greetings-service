@@ -31,7 +31,7 @@ import { estadosReporte } from '@/data/estadosReporte';
 import MapaSeleccionUbicacion from '@/components/reportes/MapaSeleccionUbicacion';
 import type { Reporte, Ubicacion, Usuario } from '@/types/tipos';
 import ImageUploader from '@/components/ui/ImageUploader';
-import { crearReporteCompleto } from '@/controller/controller/reporteCreateController';
+import { crearReporteCompleto } from '@/controller/controller/report/reporteCreateController';
 
 interface FormularioReporteProps {
   modo: 'crear' | 'editar';
@@ -150,6 +150,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
         imagenes: imagenes.map(img => URL.createObjectURL(img)),
         activo: true,
         historialAsignaciones: [],
+        historialEstados: [],
       };
 
       if (modo === 'crear') {

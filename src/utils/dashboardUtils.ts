@@ -1,4 +1,3 @@
-
 import { Categoria, EstadoReporte } from '@/types/tipos';
 import { getCategories } from '@/controller/CRUD/categoryController';
 import { getReports } from '@/controller/CRUD/reportController';
@@ -66,7 +65,8 @@ export const getReportesPorCategoriaEstado = (tiposEstado: TipoEstado): Categori
       
       // Count reports by status type for this category
       reportesCat.forEach(reporte => {
-        const estadoNombre = tiposEstado[reporte.estado.tipo]?.nombre || reporte.estado.nombre;
+        const estadoKey = reporte.estado.nombre.toLowerCase().replace(/ /g, '_');
+        const estadoNombre = tiposEstado[estadoKey]?.nombre || reporte.estado.nombre;
         estadosConteo[estadoNombre] = (estadosConteo[estadoNombre] || 0) + 1;
       });
 
@@ -97,8 +97,9 @@ export const getTiposEstado = (): TipoEstado => {
   
   const tiposEstadoTemp: TipoEstado = {};
   estadosData.forEach(estado => {
-    if (!tiposEstadoTemp[estado.tipo]) {
-      tiposEstadoTemp[estado.tipo] = {
+    const estadoKey = estado.nombre.toLowerCase().replace(/ /g, '_');
+    if (!tiposEstadoTemp[estadoKey]) {
+      tiposEstadoTemp[estadoKey] = {
         nombre: estado.nombre,
         color: estado.color
       };

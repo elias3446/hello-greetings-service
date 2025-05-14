@@ -16,10 +16,10 @@ import { actividadesCategoria } from '@/data/actividades';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import ActividadItem from '@/components/layout/ActividadItem';
 import { getHistorialEstadosCategoria } from '@/controller/CRUD/historialEstadosCategoria';
-import { eliminarReporte } from '@/controller/controller/reportDeleteController';
+import { eliminarReporte } from '@/controller/controller/report/reportDeleteController';
 import { getSystemUser } from '@/utils/userUtils';
-import { deleteCategoryAndUpdateHistory } from '@/controller/controller/categoryDeleteController';
-import { actualizarEstadoCategoria } from '@/controller/controller/actualizarEstadoCategoria';
+import { deleteCategoryAndUpdateHistory } from '@/controller/controller/category/categoryDeleteController';
+import { actualizarEstadoCategoria } from '@/controller/controller/category/actualizarEstadoCategoria';
 import { Icons } from '@/components/Icons';
 
 const DetalleCategoria = () => {

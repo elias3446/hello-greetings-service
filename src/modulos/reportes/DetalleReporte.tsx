@@ -18,10 +18,10 @@ import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, 
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
 import { updateUser } from '@/controller/CRUD/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { eliminarReporte } from '@/controller/controller/reportDeleteController';
-import { actualizarEstadoResolucionReporte } from '@/controller/controller/reportResolutionController';
-import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
-import { actualizarEstadoActivoReporte } from '@/controller/controller/reportActiveController';
+import { eliminarReporte } from '@/controller/controller/report/reportDeleteController';
+import { actualizarEstadoResolucionReporte } from '@/controller/controller/report/reportResolutionController';
+import { actualizarAsignacionReporte } from '@/controller/controller/report/reportAssignmentController';
+import { actualizarEstadoActivoReporte } from '@/controller/controller/report/reportActiveController';
 
 const DetalleReporte = () => {
   const { id } = useParams<{ id: string }>();

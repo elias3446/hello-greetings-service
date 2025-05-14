@@ -248,9 +248,6 @@ const ListaEstados: React.FC = () => {
     setCurrentField('nombre');
   };
 
-  // Obtener tipos de estado únicos para el filtro
-  const tiposEstado = [...new Set(estados.map(estado => estado.tipo))];
-
   // Contar los resultados después de aplicar los filtros
   const filteredCount = filteredEstados.length;
   const totalCount = estados.length;

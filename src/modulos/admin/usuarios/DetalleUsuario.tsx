@@ -12,7 +12,7 @@ import { UserHistory } from '@/components/admin/usuarios/UserHistory';
 import { UserReports } from '@/components/admin/usuarios/UserReports';
 import ActividadItem from '@/components/layout/ActividadItem';
 import { obtenerHistorialUsuario } from '@/controller/CRUD/historialUsuario';
-import { actualizarEstadoUsuario } from '@/controller/controller/userStateController';
+import { actualizarEstadoUsuario } from '@/controller/controller/user/userStateController';
 import { toast } from '@/components/ui/sonner';
 import { updateUser } from '@/controller/CRUD/userController';
 import { filterReports } from '@/controller/CRUD/reportController';

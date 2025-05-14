@@ -16,17 +16,17 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getCategories } from '@/controller/CRUD/categoryController';
-import { actualizarCategoriaReporte } from '@/controller/controller/reportCategoryController';
-import { actualizarEstadoReporte } from '@/controller/controller/reportStateController';
-import { actualizarAsignacionReporte } from '@/controller/controller/reportAssignmentController';
-import { eliminarReporte } from '@/controller/controller/reportDeleteController';
+import { actualizarCategoriaReporte } from '@/controller/controller/report/reportCategoryController';
+import { actualizarEstadoReporte } from '@/controller/controller/report/reportStateController';
+import { actualizarAsignacionReporte } from '@/controller/controller/report/reportAssignmentController';
+import { eliminarReporte } from '@/controller/controller/report/reportDeleteController';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import { usuarios } from '@/data/usuarios';
 import { getSystemUser } from '@/utils/userUtils';
 import { Pencil, Trash2 } from 'lucide-react';
-import { actualizarEstadoActivoReporte } from '@/controller/controller/reportActiveController';
+import { actualizarEstadoActivoReporte } from '@/controller/controller/report/reportActiveController';
 import { prioridades } from '@/data/categorias';
-import { actualizarPrioridadReporte } from '@/controller/controller/reportPriorityController';
+import { actualizarPrioridadReporte } from '@/controller/controller/report/reportPriorityController';
 
 const ITEMS_PER_PAGE = 10;
 

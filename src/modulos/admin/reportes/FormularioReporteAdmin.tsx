@@ -39,9 +39,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { actualizarReporte } from '@/controller/controller/reportUpdateController';
+import { actualizarReporte } from '@/controller/controller/report/reportUpdateController';
 import ImageUploader from '@/components/ui/ImageUploader';
-import { crearReporteCompleto } from '@/controller/controller/reporteCreateController';
+import { crearReporteCompleto } from '@/controller/controller/report/reporteCreateController';
 
 interface FormularioReporteAdminProps {
   modo: 'crear' | 'editar';
@@ -200,6 +200,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
         imagenes: imagenes.map(img => URL.createObjectURL(img)),
         activo: values.activo,
         historialAsignaciones: [],
+        historialEstados: [],
       };
 
       if (modo === 'crear') {

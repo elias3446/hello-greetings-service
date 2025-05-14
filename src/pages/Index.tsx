@@ -42,7 +42,7 @@ const Index = () => {
       if (reportesFiltrados.length > 0) {
         acc[estado.id] = {
           nombre: estado.nombre,
-          tipo: estado.tipo,
+          tipo: estado.nombre.toLowerCase().replace(/ /g, '_'),
           color: estado.color,
           reportes: reportesFiltrados
         };
@@ -95,7 +95,7 @@ const Index = () => {
 
           {Object.entries(reportesPorEstado).map(([estadoId, estado]) => {
             const estadoOriginal = estadosReporte.find(e => e.id === estadoId);
-            const tipo = estadoOriginal?.tipo || 'default';
+            const tipo = estadoOriginal?.nombre.toLowerCase().replace(/ /g, '_') || 'default';
             
             const iconoInfo = iconosPorTipo[tipo] || { 
               icono: FileText, 

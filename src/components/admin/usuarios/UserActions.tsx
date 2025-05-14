@@ -5,9 +5,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Edit, Shield, CheckCircle, AlertTriangle } from 'lucide-react';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { Usuario } from '@/types/tipos';
-import { actualizarRolUsuario } from '@/controller/controller/userRoleController';
+import { actualizarRolUsuario } from '@/controller/controller/user/userRoleController';
 import { toast } from '@/components/ui/sonner';
-import { eliminarUsuario } from '@/controller/controller/userDeleteController';
+import { eliminarUsuario } from '@/controller/controller/user/userDeleteController';
 import { useNavigate } from 'react-router-dom';
 
 interface UserActionsProps {

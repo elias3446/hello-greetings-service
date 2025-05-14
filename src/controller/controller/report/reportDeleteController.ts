@@ -1,6 +1,6 @@
 import { Reporte, Usuario } from '@/types/tipos';
-import { registrarCambioEstado } from '../CRUD/historialEstadosUsuario';
-import { filterReports, getReports, deleteReport } from '../CRUD/reportController';
+import { registrarCambioEstado } from '../../CRUD/historialEstadosUsuario';
+import { filterReports, getReports, deleteReport } from '../../CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 
 /**

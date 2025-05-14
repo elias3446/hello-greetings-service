@@ -1,8 +1,8 @@
 import { Reporte, Usuario, ActividadReporte } from '@/types/tipos';
-import { createReport } from '../CRUD/reportController';
-import { registrarCambioEstado } from '../CRUD/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '../CRUD/historialEstadosReporte';
-import { registrarActividadReporte } from '../CRUD/actividadReporteController';
+import { createReport } from '../../CRUD/reportController';
+import { registrarCambioEstado } from '../../CRUD/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '../../CRUD/historialEstadosReporte';
+import { registrarActividadReporte } from '../../CRUD/actividadReporteController';
 
 /**
  * Crea un nuevo reporte y actualiza todos los historiales relacionados

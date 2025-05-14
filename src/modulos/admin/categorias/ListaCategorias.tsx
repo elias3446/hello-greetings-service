@@ -31,9 +31,9 @@ import { toast } from 'sonner';
 import FilterByValues from '@/components/common/FilterByValues';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
-import { actualizarEstadoCategoria } from '@/controller/controller/actualizarEstadoCategoria';
+import { actualizarEstadoCategoria } from '@/controller/controller/category/actualizarEstadoCategoria';
 import { getSystemUser } from '@/utils/userUtils';
-import { deleteCategoryAndUpdateHistory } from '@/controller/controller/categoryDeleteController';
+import { deleteCategoryAndUpdateHistory } from '@/controller/controller/category/categoryDeleteController';
 import { 
   AlertDialog,
   AlertDialogAction,

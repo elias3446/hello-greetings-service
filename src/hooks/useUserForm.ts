@@ -9,8 +9,8 @@ import { DEFAULT_FORM_VALUES, formSchema } from '@/utils/userConstants';
 import { hasUserChanges, getSystemUser, handleUserStateChange } from '@/utils/userUtils';
 import { Usuario } from '@/types/tipos';
 import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { crearUsuario } from '@/controller/controller/newUser';
-import { actualizarUsuario } from '@/controller/controller/userUpdateController';
+import { crearUsuario } from '@/controller/controller/user/newUser';
+import { actualizarUsuario } from '@/controller/controller/user/userUpdateController';
 
 export const useUserForm = (modo: FormMode, id?: string): UserFormState => {
   const navigate = useNavigate();

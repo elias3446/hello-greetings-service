@@ -1,10 +1,10 @@
 import { Categoria, Usuario } from '@/types/tipos';
-import { updateCategory } from '../CRUD/categoryController';
-import { registrarCambioEstadoCategoria } from '../CRUD/historialEstadosCategoria';
-import { registrarCambioEstadoReporte } from '../CRUD/historialEstadosReporte';
-import { filterReports } from '../CRUD/reportController';
+import { updateCategory } from '../../CRUD/categoryController';
+import { registrarCambioEstadoCategoria } from '../../CRUD/historialEstadosCategoria';
+import { registrarCambioEstadoReporte } from '../../CRUD/historialEstadosReporte';
+import { filterReports } from '../../CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
-import { updateReport } from '../CRUD/reportController';
+import { updateReport } from '../../CRUD/reportController';
 
 /**
  * Actualiza el estado de una categoría y registra los cambios en los historiales correspondientes

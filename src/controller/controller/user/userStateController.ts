@@ -1,8 +1,8 @@
 import { Usuario, Reporte } from '@/types/tipos';
-import { updateUser } from '../CRUD/userController';
-import { registrarCambioEstado } from '../CRUD/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '../CRUD/historialEstadosReporte';
-import { filterReports, updateReport } from '../CRUD/reportController';
+import { updateUser } from '@/controller/CRUD/userController';
+import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { filterReports, updateReport } from '@/controller/CRUD/reportController';
 import { toast } from '@/components/ui/sonner';
 
 type EstadoUsuario = 'activo' | 'inactivo' | 'bloqueado';

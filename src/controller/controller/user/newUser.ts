@@ -1,8 +1,8 @@
 import { Usuario } from "@/types/tipos";
-import { registrarCambioHistorial } from "../CRUD/historialUsuario";
-import { registrarCambioEstado } from "../CRUD/historialEstadosUsuario";
+import { registrarCambioHistorial } from "@/controller/CRUD/historialUsuario";
+import { registrarCambioEstado } from "@/controller/CRUD/historialEstadosUsuario";
 import { getSystemUser } from "@/utils/userUtils";
-import { createUser } from "../CRUD/userController";
+import { createUser } from "@/controller/CRUD/userController";
 
 /**
  * Función para crear un nuevo usuario en el sistema

@@ -7,9 +7,9 @@ import { UsuarioTableHeader, LoadingRow, EmptyStateRow, UsuarioRow, PaginationCo
 import { getFieldValue } from '@/utils/usuarioUtils';
 import { SORT_OPTIONS, FILTER_OPTIONS, ITEMS_PER_PAGE } from '@/utils/userListConstants';
 import { calculatePagination, getUniqueRoles } from '@/utils/userListUtils';
-import { actualizarRolUsuario } from '@/controller/controller/userRoleController';
-import { actualizarEstadoUsuario } from '@/controller/controller/userStateController';
-import { eliminarUsuario } from '@/controller/controller/userDeleteController';
+import { actualizarRolUsuario } from '@/controller/controller/user/userRoleController';
+import { actualizarEstadoUsuario } from '@/controller/controller/user/userStateController';
+import { eliminarUsuario } from '@/controller/controller/user/userDeleteController';
 import { toast } from '@/components/ui/sonner';
 import { Usuario } from '@/types/tipos';
 import RoleSelector from '@/components/admin/selector/RoleSelector';

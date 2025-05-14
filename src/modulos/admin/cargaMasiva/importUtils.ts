@@ -3,7 +3,7 @@ import { createReport } from '@/controller/CRUD/reportController';
 import { createCategory } from '@/controller/CRUD/categoryController';
 import { createRole } from '@/controller/CRUD/roleController';
 import { createEstado } from '@/controller/CRUD/estadoController';
-import { crearUsuario } from '@/controller/controller/newUser';
+import { crearUsuario } from '@/controller/controller/user/newUser';
 import { TipoEntidad } from '@/types/tipos';
 
 // Definición de campos por tipo de entidad
