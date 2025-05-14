@@ -223,7 +223,7 @@ const DashboardEstados = () => {
                           <div>
                             <p className="font-medium">{reporte.titulo}</p>
                             <p className="text-sm text-muted-foreground">
-                              Categoría: {reporte.categoria.nombre} | 
+                              Categoría: {reporte.categoria?.nombre || 'Sin categoría'} | 
                               Prioridad: {reporte.prioridad?.nombre || 'Sin prioridad'} | 
                               Fecha: {new Date(reporte.fechaCreacion).toLocaleDateString()}
                             </p>
