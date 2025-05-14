@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
@@ -8,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Edit, X, Shield, Check, AlertTriangle, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Edit, X, Shield, Check, AlertTriangle, Clock, CheckCircle, XCircle, AlertCircle, icons } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -16,7 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { createEstado, getEstadoById, updateEstado } from '@/controller/CRUD/estadoController';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
-import IconSelector from '@/components/admin/estados/IconSelector';
+import { IconPicker } from "@/components/IconPicker";
 import Layout from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
@@ -45,8 +44,12 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const estadoExistente = id ? getEstadoById(id) : undefined;
-  
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(estadoExistente?.icono || 'alert-triangle');
+
+  const SelectedIcon = selectedIcon ? icons[selectedIcon] : null;
+
   const form = useForm({
     defaultValues: {
       nombre: estadoExistente?.nombre || '',
@@ -276,10 +279,37 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                               Selecciona un icono para representar este estado. El icono seleccionado también definirá el tipo del estado.
                             </FormDescription>
                             <FormControl>
-                              <IconSelector 
-                                selectedIcon={field.value}
-                                onChange={field.onChange}
-                              />
+                              <div className="flex flex-col items-center space-y-4">
+                                {selectedIcon && SelectedIcon ? (
+                                  <div className="p-4 rounded-lg bg-gray-50 border flex flex-col items-center">
+                                    <SelectedIcon size={48} className="text-blue-500" />
+                                    <span className="mt-2 text-sm font-medium">{selectedIcon}</span>
+                                  </div>
+                                ) : (
+                                  <div className="p-4 rounded-lg bg-gray-50 border flex items-center justify-center w-24 h-24 text-gray-300">
+                                    Sin selección
+                                  </div>
+                                )}
+                                
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  onClick={() => setIsOpen(true)}
+                                  className="w-full"
+                                >
+                                  {selectedIcon ? "Cambiar icono" : "Seleccionar icono"}
+                                </Button>
+                                
+                                <IconPicker
+                                  open={isOpen}
+                                  onOpenChange={setIsOpen}
+                                  onSelect={(iconName) => {
+                                    setSelectedIcon(iconName);
+                                    field.onChange(iconName);
+                                    setIsOpen(false);
+                                  }}
+                                />
+                              </div>
                             </FormControl>
                           </FormItem>
                         )}
