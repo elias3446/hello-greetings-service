@@ -70,7 +70,7 @@ const MenuAdmin = () => {
     <Layout>
       <div className="w-full">
         {/* Barra de navegación fija debajo del navbar principal */}
-        <div className="sticky top-14 sm:top-16 bg-background z-20 border-b shadow-sm">
+        <div className="sticky top-14 sm:top-16 bg-background z-20">
           <div className="w-full px-2 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between h-12 sm:h-14">
               {/* Título en móviles */}

@@ -87,7 +87,7 @@ const Dashboard = () => {
     <Layout>
       <div className="w-full">
         {/* Navegación fija debajo de la barra superior */}
-        <div className="sticky top-14 sm:top-16 bg-background z-20 border-b shadow-sm">
+        <div className="sticky top-14 sm:top-16 bg-background z-20">
           <div className="w-full px-2 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between h-12 sm:h-14">
               {/* Título visible solo en móvil */}
