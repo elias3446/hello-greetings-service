@@ -20,6 +20,7 @@ import { eliminarReporte } from '@/controller/controller/reportDeleteController'
 import { getSystemUser } from '@/utils/userUtils';
 import { deleteCategoryAndUpdateHistory } from '@/controller/controller/categoryDeleteController';
 import { actualizarEstadoCategoria } from '@/controller/controller/actualizarEstadoCategoria';
+import { Icons } from '@/components/Icons';
 
 const DetalleCategoria = () => {
   const { id } = useParams<{ id: string }>();
@@ -236,12 +237,17 @@ const DetalleCategoria = () => {
             <Card className="overflow-hidden">
               <div className="bg-muted p-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                  <Avatar className="h-20 w-20 border-4 border-background">
-                    <AvatarImage src="" alt="Avatar" />
-                    <AvatarFallback style={{backgroundColor: categoria.color}}>
-                      {categoria.nombre.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  {categoria.icono && Icons[categoria.icono.charAt(0).toUpperCase() + categoria.icono.slice(1)]
+                    ? React.createElement(
+                        Icons[categoria.icono.charAt(0).toUpperCase() + categoria.icono.slice(1)],
+                        { size: 64, color: categoria.color }
+                      )
+                    : (
+                        <span className="text-3xl font-bold" style={{ color: categoria.color }}>
+                          {categoria.nombre.substring(0, 2).toUpperCase()}
+                        </span>
+                      )
+                  }
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-2xl font-semibold">{categoria.nombre}</h3>
