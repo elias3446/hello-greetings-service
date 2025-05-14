@@ -353,7 +353,6 @@ export const historialEstadosReporte: HistorialEstadoReporte[] = [
         nombre: 'Pendiente',
         descripcion: 'Reporte pendiente de atención',
         color: '#FF0000',
-        tipo: 'pendiente',
         fechaCreacion: new Date('2023-01-01'),
         activo: true,
         icono: 'fas fa-exclamation-triangle'
@@ -438,7 +437,6 @@ export const historialEstadosReporte: HistorialEstadoReporte[] = [
         nombre: 'Pendiente',
         descripcion: 'Reporte pendiente de atención',
         color: '#FF0000',
-        tipo: 'pendiente',
         fechaCreacion: new Date('2023-01-01'),
         activo: true,
         icono: 'fas fa-exclamation-triangle'
@@ -509,7 +507,6 @@ export const historialEstadosReporteEjemplo: HistorialEstadoReporte[] = [
         nombre: 'Pendiente',
         color: '#FF0000',
         descripcion: 'Reporte pendiente de atención',
-        tipo: 'pendiente',
         fechaCreacion: new Date('2023-01-01'),
         activo: true,
         icono: 'clock'
@@ -595,7 +592,6 @@ export const historialEstadosReporteEjemplo: HistorialEstadoReporte[] = [
         nombre: 'En Proceso',
         color: '#FFA500',
         descripcion: 'Reporte en proceso de atención',
-        tipo: 'en_progreso',
         fechaCreacion: new Date('2023-01-01'),
         activo: true,
         icono: 'clock'

@@ -44,8 +44,8 @@ const DashboardCategorias = () => {
     // Obtener todos los tipos de estados únicos y sus colores
     const tiposEstadoTemp: {[key: string]: {nombre: string, color: string}} = {};
     estadosData.forEach(estado => {
-      if (!tiposEstadoTemp[estado.tipo]) {
-        tiposEstadoTemp[estado.tipo] = {
+      if (!tiposEstadoTemp[estado.nombre]) {
+        tiposEstadoTemp[estado.nombre] = {
           nombre: estado.nombre,
           color: estado.color
         };
@@ -91,7 +91,7 @@ const DashboardCategorias = () => {
             tiposEstadoTemp[tipo].nombre,
             reportesData.filter(reporte => 
               (!reporte.categoria || reporte.categoria.id === 'sin-categoria') && 
-              tiposEstadoTemp[reporte.estado.tipo]?.nombre === tiposEstadoTemp[tipo].nombre
+              reporte.estado.nombre === tiposEstadoTemp[tipo].nombre
             ).length
           ])
         )
@@ -114,7 +114,7 @@ const DashboardCategorias = () => {
           
           // Contar reportes por cada tipo de estado para esta categoría
           reportesCat.forEach(reporte => {
-            const estadoNombre = tiposEstadoTemp[reporte.estado.tipo]?.nombre || reporte.estado.nombre;
+            const estadoNombre = reporte.estado.nombre;
             estadosConteo[estadoNombre] = (estadosConteo[estadoNombre] || 0) + 1;
           });
 

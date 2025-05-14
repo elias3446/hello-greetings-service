@@ -42,40 +42,31 @@ const DashboardEstados = () => {
 
     setReportesPorEstado(reportesEstado);
 
-    // Análisis de tiempo de resolución por estado
-    const reportesPorTiempo = estadosData.map(estado => {
+    // Análisis de rendimiento considerando estado activo e historial
+    const reportesPorRendimiento = estadosData.map(estado => {
       const reportesDelEstado = reportesData.filter(reporte => reporte.estado.id === estado.id);
       
-      // Calcular métricas de tiempo
-      const reportesResueltos = reportesDelEstado.filter(r => r.fechaFinalizacion);
-      const tiempoPromedio = reportesResueltos.length > 0 
-        ? reportesResueltos.reduce((total, reporte) => {
-            const inicio = new Date(reporte.fechaInicio).getTime();
-            const fin = new Date(reporte.fechaFinalizacion!).getTime();
-            return total + (fin - inicio);
-          }, 0) / reportesResueltos.length
-        : 0;
+      // Filtrar reportes activos
+      const reportesActivos = reportesDelEstado.filter(r => r.activo);
+      const reportesInactivos = reportesDelEstado.filter(r => !r.activo);
 
-      // Calcular eficiencia (reportes resueltos vs total)
-      const eficiencia = reportesDelEstado.length > 0
-        ? (reportesResueltos.length / reportesDelEstado.length) * 100
+      // Calcular velocidad de resolución (reportes resueltos por día)
+      const reportesResueltos = reportesInactivos.length;
+      const velocidadResolucion = reportesResueltos > 0
+        ? reportesResueltos / (30) // Promedio de reportes resueltos por día en los últimos 30 días
         : 0;
-
-      // Reportes pendientes (sin fecha de finalización)
-      const pendientes = reportesDelEstado.filter(r => !r.fechaFinalizacion).length;
 
       return {
         name: estado.nombre,
-        tiempoPromedio: Math.round(tiempoPromedio / (1000 * 60 * 60 * 24)), // Convertir a días
-        eficiencia: Math.round(eficiencia),
-        resueltos: reportesResueltos.length,
-        pendientes: pendientes,
+        resueltos: reportesInactivos.length,
+        sinResolver: reportesActivos.length,
+        velocidadResolucion: Math.round(velocidadResolucion * 100) / 100,
         color: estado.color,
         total: reportesDelEstado.length
       };
     }).sort((a, b) => b.total - a.total);
 
-    setReportesPorTipoEstado(reportesPorTiempo);
+    setReportesPorTipoEstado(reportesPorRendimiento);
 
   }, []);
 
@@ -96,7 +87,7 @@ const DashboardEstados = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Reportes por Estado</CardTitle>
+            <CardTitle>Distribución de Reportes</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             {reportesPorEstado.length > 0 ? (
@@ -130,7 +121,7 @@ const DashboardEstados = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Eficiencia por Estado</CardTitle>
+            <CardTitle>Rendimiento por Estado</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             {reportesPorTipoEstado.length > 0 ? (
@@ -147,21 +138,19 @@ const DashboardEstados = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                   <Tooltip formatter={(value, name) => {
-                    if (name === "Tiempo Promedio") return [`${value} días`, name];
-                    if (name === "Eficiencia") return [`${value}%`, name];
+                    if (name === "Velocidad de Resolución") return [`${value} reportes/día`, name];
                     return [value, name];
                   }} />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="tiempoPromedio" name="Tiempo Promedio" fill="#8884d8">
+                  <Bar yAxisId="left" dataKey="sinResolver" name="Sin Resolver" fill="#ef4444">
                     {reportesPorTipoEstado.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill="#8884d8" />
+                      <Cell key={`cell-${index}`} fill="#ef4444" />
                     ))}
                   </Bar>
-                  <Bar yAxisId="right" dataKey="eficiencia" name="Eficiencia" fill="#82ca9d">
+                  <Bar yAxisId="left" dataKey="resueltos" name="Resueltos" fill="#22c55e">
                     {reportesPorTipoEstado.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill="#82ca9d" />
+                      <Cell key={`cell-${index}`} fill="#22c55e" />
                     ))}
                   </Bar>
                 </BarChart>
@@ -181,53 +170,76 @@ const DashboardEstados = () => {
           <CardTitle>Lista de Estados</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {estados.map((estado) => {
               const reportesCount = reportesPorEstado.find(r => r.name === estado.nombre)?.value || 0;
               const metricas = reportesPorTipoEstado.find(r => r.name === estado.nombre);
+              const reportesDelEstado = getReports().filter(reporte => reporte.estado.id === estado.id);
               
               return (
                 <div 
                   key={estado.id} 
-                  className="flex items-center justify-between p-3 rounded-lg"
-                  style={{ backgroundColor: `${estado.color}10` }}
+                  className="p-4 rounded-lg border"
+                  style={{ borderColor: estado.color }}
                 >
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: estado.color }}
-                    ></div>
-                    <div>
-                      <span className="font-medium">{estado.nombre}</span>
-                      <p className="text-xs text-muted-foreground">{estado.descripcion}</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: estado.color }}
+                      ></div>
+                      <div>
+                        <span className="font-medium text-lg">{estado.nombre}</span>
+                        <p className="text-sm text-muted-foreground">{estado.descripcion}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <span className="text-sm text-muted-foreground">Total</span>
+                        <p className="text-xl font-bold">{reportesCount}</p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm text-muted-foreground">Sin Resolver</span>
+                        <p className="text-xl font-bold text-red-500">{metricas?.sinResolver || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm text-muted-foreground">Resueltos</span>
+                        <p className="text-xl font-bold text-green-500">{metricas?.resueltos || 0}</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span 
-                      className="px-2 py-1 rounded-full text-xs"
-                      style={{ 
-                        backgroundColor: estado.color, 
-                        color: '#fff'
-                      }}
-                    >
-                      {reportesCount} reportes
-                    </span>
-                    {metricas && (
-                      <div className="flex flex-col items-end text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Tiempo promedio:</span>
-                          <span className="font-medium">{metricas.tiempoPromedio} días</span>
+
+                  {/* Lista de reportes */}
+                  <div className="mt-4 space-y-2">
+                    {reportesDelEstado.map(reporte => (
+                      <div 
+                        key={reporte.id}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className={`w-2 h-2 rounded-full ${reporte.activo ? 'bg-red-500' : 'bg-green-500'}`}
+                          />
+                          <div>
+                            <p className="font-medium">{reporte.titulo}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Categoría: {reporte.categoria.nombre} | 
+                              Prioridad: {reporte.prioridad?.nombre || 'Sin prioridad'} | 
+                              Fecha: {new Date(reporte.fechaCreacion).toLocaleDateString()}
+                            </p>
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Eficiencia:</span>
-                          <span className="font-medium">{metricas.eficiencia}%</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Pendientes:</span>
-                          <span className="font-medium">{metricas.pendientes}</span>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            reporte.activo 
+                              ? 'bg-red-100 text-red-700' 
+                              : 'bg-green-100 text-green-700'
+                          }`}>
+                            {reporte.activo ? 'Sin Resolver' : 'Resuelto'}
+                          </span>
                         </div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               );

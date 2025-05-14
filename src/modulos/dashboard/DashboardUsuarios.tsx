@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getUsers } from '@/controller/CRUD/userController';
@@ -56,18 +55,20 @@ const DashboardUsuarios = () => {
     // Usuarios por estado
     const usuariosActivos = usuariosData.filter(u => u.estado === 'activo').length;
     const usuariosInactivos = usuariosData.filter(u => u.estado === 'inactivo').length;
+    const usuariosBloqueados = usuariosData.filter(u => u.estado === 'bloqueado').length;
 
     setUsuariosPorEstado([
       { name: 'Activos', value: usuariosActivos, color: '#10b981' },
-      { name: 'Inactivos', value: usuariosInactivos, color: '#f43f5e' }
-    ]);
+      { name: 'Inactivos', value: usuariosInactivos, color: '#f43f5e' },
+      { name: 'Bloqueados', value: usuariosBloqueados, color: '#f59e0b' }
+    ].filter(estado => estado.value > 0));
 
   }, []);
 
   return (
     <div className="space-y-6">
       {/* Tarjetas de contadores */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-l-4" style={{ borderLeftColor: '#10b981' }}>
           <CardContent className="flex justify-between items-center py-6">
             <div>
@@ -85,6 +86,16 @@ const DashboardUsuarios = () => {
               <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'inactivo').length}</p>
             </div>
             <UserMinus className="h-8 w-8 text-[#f43f5e]" />
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4" style={{ borderLeftColor: '#f59e0b' }}>
+          <CardContent className="flex justify-between items-center py-6">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Usuarios Bloqueados</p>
+              <p className="text-3xl font-bold">{usuarios.filter(u => u.estado === 'bloqueado').length}</p>
+            </div>
+            <UserMinus className="h-8 w-8 text-[#f59e0b]" />
           </CardContent>
         </Card>
       </div>

@@ -46,6 +46,7 @@ export interface Reporte {
   usuarioCreador: Usuario;
   asignadoA?: Usuario;
   historialAsignaciones: HistorialAsignacion[];
+  historialEstados: HistorialEstadoReporte[];
   fechaInicio: Date;
   fechaFinalizacion?: Date;
   comentarios?: Comentario[];

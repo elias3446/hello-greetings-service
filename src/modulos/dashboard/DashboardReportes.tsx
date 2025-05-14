@@ -48,7 +48,7 @@ const DashboardReportes = () => {
   const [coloresPorTipo, setColoresPorTipo] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const reportesData = getReports();
+    const reportesData = getReports().filter(r => r.activo);
     const estadosData = getEstados();
     setReportes(reportesData);
 
@@ -68,7 +68,7 @@ const DashboardReportes = () => {
       return acc;
     }, {});
 
-    setReportesPorCategoria(Object.values(categorias));
+    setReportesPorCategoria(Object.values(categorias).filter(cat => cat.value > 0));
 
     // Reportes por prioridad
     const prioridades = reportesData.reduce((acc: { [key: string]: { name: string, value: number, color: string } }, reporte) => {
@@ -86,7 +86,7 @@ const DashboardReportes = () => {
       return acc;
     }, {});
 
-    setReportesPorPrioridad(Object.values(prioridades));
+    setReportesPorPrioridad(Object.values(prioridades).filter(pri => pri.value > 0));
 
     // Reportes recientes (últimos 5)
     const recientes = [...reportesData]
@@ -102,18 +102,18 @@ const DashboardReportes = () => {
     
     // Extraer colores e iconos de los estados
     estadosData.forEach(estado => {
-      if (!estadosPorTipo[estado.tipo]) {
-        estadosPorTipo[estado.tipo] = [];
+      const tipoEstado = estado.nombre;
+      if (!estadosPorTipo[tipoEstado]) {
+        estadosPorTipo[tipoEstado] = [];
         
         // Configurar color por tipo de estado
-        coloresEstados[estado.tipo] = estado.color || DEFAULT_COLORS_MAP[estado.tipo] || '#9b87f5'; // Color púrpura por defecto
+        coloresEstados[tipoEstado] = estado.color || DEFAULT_COLORS_MAP[tipoEstado] || '#9b87f5';
         
         // Intentar asignar un icono basado en el nombre del tipo o usar uno predeterminado
         let iconoNombre = estado.icono;
-        if (!iconoNombre && DEFAULT_ICONS_MAP[estado.tipo]) {
-          iconosEstados[estado.tipo] = DEFAULT_ICONS_MAP[estado.tipo];
+        if (!iconoNombre && DEFAULT_ICONS_MAP[tipoEstado]) {
+          iconosEstados[tipoEstado] = DEFAULT_ICONS_MAP[tipoEstado];
         } else {
-          // Intentar convertir el nombre de icono a componente Lucide
           const nombreCamellizado = iconoNombre ? 
             iconoNombre.split('-').map((part, i) => 
               i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
@@ -122,13 +122,13 @@ const DashboardReportes = () => {
           
           const LucideIcon = nombreCamellizado && (icons as any)[nombreCamellizado] ? 
             (icons as any)[nombreCamellizado] : 
-            DEFAULT_ICONS_MAP[estado.tipo] || AlertTriangle;
+            DEFAULT_ICONS_MAP[tipoEstado] || AlertTriangle;
           
-          iconosEstados[estado.tipo] = LucideIcon;
+          iconosEstados[tipoEstado] = LucideIcon;
         }
       }
       
-      estadosPorTipo[estado.tipo].push(estado);
+      estadosPorTipo[tipoEstado].push(estado);
       estadosPorId[estado.id] = estado;
     });
     
@@ -146,7 +146,12 @@ const DashboardReportes = () => {
       }).length;
     });
     
-    setContadores(contadoresPorTipo);
+    // Filtrar contadores para mostrar solo valores mayores a cero
+    const contadoresFiltrados = Object.fromEntries(
+      Object.entries(contadoresPorTipo).filter(([_, value]) => value > 0)
+    );
+    
+    setContadores(contadoresFiltrados);
   }, []);
 
   // Función para formatear el tipo de estado para su visualización

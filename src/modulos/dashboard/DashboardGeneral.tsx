@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -49,7 +48,7 @@ const DashboardGeneral = () => {
 
     // Calcular estadísticas para reportes por estado
     const estadisticas = estados.map(estado => {
-      const cantidad = reportes.filter(reporte => reporte.estado.id === estado.id).length;
+      const cantidad = reportes.filter(reporte => reporte.estado.id === estado.id && reporte.activo).length;
       return {
         name: estado.nombre,
         value: cantidad,
@@ -72,22 +71,27 @@ const DashboardGeneral = () => {
       reportesPorTipo[tipo] = 0;
     });
     
-    // Contar reportes por tipo de estado
-    reportes.forEach(reporte => {
-      const tipoEstado = reporte.estado.tipo;
+    // Contar reportes por tipo de estado (solo activos)
+    reportes.filter(r => r.activo).forEach(reporte => {
+      const tipoEstado = reporte.estado.nombre;
       if (tipoEstado in reportesPorTipo) {
         reportesPorTipo[tipoEstado]++;
       }
     });
+
+    // Filtrar solo los tipos con reportes activos
+    const reportesPorTipoFiltrados = Object.fromEntries(
+      Object.entries(reportesPorTipo).filter(([_, value]) => value > 0)
+    );
     
-    setEstadisticasPorTipo(reportesPorTipo);
+    setEstadisticasPorTipo(reportesPorTipoFiltrados);
   }, []);
 
   // Obtener todos los tipos únicos de estado
   const getAllTiposEstado = (estados: EstadoReporte[]): string[] => {
     const tiposUnicos = new Set<string>();
     estados.forEach(estado => {
-      tiposUnicos.add(estado.tipo);
+      tiposUnicos.add(estado.nombre);
     });
     return Array.from(tiposUnicos);
   };
