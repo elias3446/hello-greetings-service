@@ -47,10 +47,11 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <div className="relative">
-        <nav className="bg-background fixed top-0 left-0 right-0 z-[100] border-b shadow-sm">
+      <div className="w-full">
+        {/* Static dashboard navigation under the main NavBar */}
+        <div className="sticky top-14 sm:top-16 bg-background z-20 border-b shadow-sm">
           <div className="w-full px-2 sm:px-4 lg:px-6">
-            <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center justify-between h-12 sm:h-14">
               {/* Page Title - Only visible on mobile */}
               <div className="flex items-center [@media(min-width:910px)]:hidden">
                 <h1 className="text-lg sm:text-xl font-semibold text-foreground">
@@ -100,7 +101,7 @@ const Dashboard = () => {
               isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
             }`}
           >
-            <div className="px-3 py-2 space-y-1">
+            <div className="px-3 py-2 space-y-1 bg-background">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -120,18 +121,16 @@ const Dashboard = () => {
               })}
             </div>
           </div>
-        </nav>
+        </div>
 
-        {/* Add padding-top to account for fixed nav */}
-        <div className="pt-14 sm:pt-16">
-          <div className="mt-5">
-            {activeTab === 'general' && <DashboardGeneral />}
-            {activeTab === 'reportes' && <DashboardReportes />}
-            {activeTab === 'usuarios' && <DashboardUsuarios />}
-            {activeTab === 'categorias' && <DashboardCategorias />}
-            {activeTab === 'roles' && <DashboardRoles />}
-            {activeTab === 'estados' && <DashboardEstados />}
-          </div>
+        {/* Dashboard Content */}
+        <div className="w-full py-5">
+          {activeTab === 'general' && <DashboardGeneral />}
+          {activeTab === 'reportes' && <DashboardReportes />}
+          {activeTab === 'usuarios' && <DashboardUsuarios />}
+          {activeTab === 'categorias' && <DashboardCategorias />}
+          {activeTab === 'roles' && <DashboardRoles />}
+          {activeTab === 'estados' && <DashboardEstados />}
         </div>
       </div>
     </Layout>
