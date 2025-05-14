@@ -35,7 +35,7 @@ export const categorias: Categoria[] = [
     nombre: 'Seguridad',
     descripcion: 'Incidentes de seguridad ciudadana',
     color: '#FFD166',
-    icono: 'AlertTriangle',
+    icono: 'TriangleAlert',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     fechaActualizacion: new Date('2025-04-25T08:30:00'),
     fechaEliminacion: new Date('2025-04-25T08:30:00'),
