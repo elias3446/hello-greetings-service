@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getEstados } from '@/controller/CRUD/estadoController';
@@ -43,57 +42,40 @@ const DashboardEstados = () => {
 
     setReportesPorEstado(reportesEstado);
 
-    // Reportes por tipo de estado (agrupados) - VERSIÓN DINÁMICA
-    // Primero identificamos todos los tipos de estado únicos que existen en los datos
-    const tiposUnicos = new Set<string>();
-    estadosData.forEach(estado => {
-      tiposUnicos.add(estado.tipo);
-    });
-    
-    // Creamos un objeto para almacenar los datos por tipo
-    const tipoEstadoMap: Record<string, { name: string, value: number, color: string }> = {};
-    
-    // Para cada tipo único, encontramos un estado representativo para obtener el color y crear un nombre legible
-    tiposUnicos.forEach(tipo => {
-      // Encontrar un estado representativo de este tipo para obtener un color
-      const estadoRepresentativo = estadosData.find(estado => estado.tipo === tipo);
+    // Análisis de tiempo de resolución por estado
+    const reportesPorTiempo = estadosData.map(estado => {
+      const reportesDelEstado = reportesData.filter(reporte => reporte.estado.id === estado.id);
       
-      if (estadoRepresentativo) {
-        // Crear un nombre legible (capitalizar y reemplazar guiones bajos)
-        let nombreLegible = tipo
-          .split('_')
-          .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
-          .join(' ');
-        
-        // Pluralizar el nombre
-        if (nombreLegible.endsWith('o')) {
-          nombreLegible = nombreLegible + 's';
-        } else if (nombreLegible.endsWith('e')) {
-          nombreLegible = nombreLegible + 's';
-        } else {
-          nombreLegible = nombreLegible + 'es';
-        }
-        
-        tipoEstadoMap[tipo] = {
-          name: nombreLegible,
-          value: 0,
-          color: estadoRepresentativo.color
-        };
-      }
-    });
-    
-    // Ahora contamos los reportes para cada tipo de estado
-    estadosData.forEach(estado => {
-      const reportesCount = reportesData.filter(r => r.estado.id === estado.id).length;
-      if (tipoEstadoMap[estado.tipo]) {
-        tipoEstadoMap[estado.tipo].value += reportesCount;
-      }
-    });
+      // Calcular métricas de tiempo
+      const reportesResueltos = reportesDelEstado.filter(r => r.fechaFinalizacion);
+      const tiempoPromedio = reportesResueltos.length > 0 
+        ? reportesResueltos.reduce((total, reporte) => {
+            const inicio = new Date(reporte.fechaInicio).getTime();
+            const fin = new Date(reporte.fechaFinalizacion!).getTime();
+            return total + (fin - inicio);
+          }, 0) / reportesResueltos.length
+        : 0;
 
-    // Convertimos el mapa a un array para el gráfico
-    const tiposEstadoArray = Object.values(tipoEstadoMap);
-    
-    setReportesPorTipoEstado(tiposEstadoArray);
+      // Calcular eficiencia (reportes resueltos vs total)
+      const eficiencia = reportesDelEstado.length > 0
+        ? (reportesResueltos.length / reportesDelEstado.length) * 100
+        : 0;
+
+      // Reportes pendientes (sin fecha de finalización)
+      const pendientes = reportesDelEstado.filter(r => !r.fechaFinalizacion).length;
+
+      return {
+        name: estado.nombre,
+        tiempoPromedio: Math.round(tiempoPromedio / (1000 * 60 * 60 * 24)), // Convertir a días
+        eficiencia: Math.round(eficiencia),
+        resueltos: reportesResueltos.length,
+        pendientes: pendientes,
+        color: estado.color,
+        total: reportesDelEstado.length
+      };
+    }).sort((a, b) => b.total - a.total);
+
+    setReportesPorTipoEstado(reportesPorTiempo);
 
   }, []);
 
@@ -148,7 +130,7 @@ const DashboardEstados = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reportes por Tipo de Estado</CardTitle>
+            <CardTitle>Eficiencia por Estado</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             {reportesPorTipoEstado.length > 0 ? (
@@ -164,12 +146,22 @@ const DashboardEstados = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip formatter={(value) => [`${value} reportes`, 'Cantidad']} />
+                  <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                  <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                  <Tooltip formatter={(value, name) => {
+                    if (name === "Tiempo Promedio") return [`${value} días`, name];
+                    if (name === "Eficiencia") return [`${value}%`, name];
+                    return [value, name];
+                  }} />
                   <Legend />
-                  <Bar dataKey="value" name="Reportes">
+                  <Bar yAxisId="left" dataKey="tiempoPromedio" name="Tiempo Promedio" fill="#8884d8">
                     {reportesPorTipoEstado.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill="#8884d8" />
+                    ))}
+                  </Bar>
+                  <Bar yAxisId="right" dataKey="eficiencia" name="Eficiencia" fill="#82ca9d">
+                    {reportesPorTipoEstado.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill="#82ca9d" />
                     ))}
                   </Bar>
                 </BarChart>
@@ -192,6 +184,7 @@ const DashboardEstados = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {estados.map((estado) => {
               const reportesCount = reportesPorEstado.find(r => r.name === estado.nombre)?.value || 0;
+              const metricas = reportesPorTipoEstado.find(r => r.name === estado.nombre);
               
               return (
                 <div 
@@ -209,7 +202,7 @@ const DashboardEstados = () => {
                       <p className="text-xs text-muted-foreground">{estado.descripcion}</p>
                     </div>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex flex-col items-end gap-1">
                     <span 
                       className="px-2 py-1 rounded-full text-xs"
                       style={{ 
@@ -219,6 +212,22 @@ const DashboardEstados = () => {
                     >
                       {reportesCount} reportes
                     </span>
+                    {metricas && (
+                      <div className="flex flex-col items-end text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Tiempo promedio:</span>
+                          <span className="font-medium">{metricas.tiempoPromedio} días</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Eficiencia:</span>
+                          <span className="font-medium">{metricas.eficiencia}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Pendientes:</span>
+                          <span className="font-medium">{metricas.pendientes}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

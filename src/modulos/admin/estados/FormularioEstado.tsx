@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Edit, X, Shield, Check, AlertTriangle, Clock, CheckCircle, XCircle, AlertCircle, icons } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -23,22 +23,6 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 interface FormularioEstadoProps {
   modo: 'crear' | 'editar';
 }
-
-// Helper function to map icon names to valid tipos
-const mapIconToTipo = (iconName: string): "pendiente" | "en_progreso" | "completado" | "cancelado" => {
-  switch (iconName) {
-    case 'alert-triangle':
-      return "pendiente";
-    case 'clock':
-      return "en_progreso";
-    case 'check-circle':
-      return "completado";
-    case 'x-circle':
-      return "cancelado";
-    default:
-      return "pendiente"; // Default to pendiente for safety
-  }
-};
 
 const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
   const navigate = useNavigate();
@@ -60,37 +44,16 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
     },
   });
 
-  const getIconComponent = (iconName: string) => {
-    switch (iconName) {
-      case 'alert-triangle':
-        return <AlertTriangle />;
-      case 'clock':
-        return <Clock />;
-      case 'check-circle':
-        return <CheckCircle />;
-      case 'x-circle':
-        return <XCircle />;
-      case 'alert-circle':
-        return <AlertCircle />;
-      default:
-        return <Check />;
-    }
-  };
-
   const onSubmit = (data: any) => {
     try {
       // Validaciones básicas
       if (!data.nombre) {
         throw new Error('El nombre del estado es obligatorio');
       }
-
-      // Mapping icon to a valid tipo
-      const tipoMapped = mapIconToTipo(data.icono);
       
       // Creando el objeto de datos
       const estadoData = {
         ...data,
-        tipo: tipoMapped, // Use the mapped tipo that matches the required enum values
         fechaCreacion: new Date(),
       };
 
@@ -170,13 +133,6 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                       >
                         {form.watch('activo') ? 'Activo' : 'Inactivo'}
                       </Badge>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      {getIconComponent(form.watch('icono'))}
-                      <span className="ml-2">
-                        {mapIconToTipo(form.watch('icono')).replace('_', ' ').charAt(0).toUpperCase() + 
-                        mapIconToTipo(form.watch('icono')).replace('_', ' ').slice(1)}
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -269,15 +225,12 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                         )}
                       />
 
-                      <FormField
+<FormField
                         control={form.control}
                         name="icono"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Icono</FormLabel>
-                            <FormDescription className="mb-2">
-                              Selecciona un icono para representar este estado. El icono seleccionado también definirá el tipo del estado.
-                            </FormDescription>
                             <FormControl>
                               <div className="flex flex-col items-center space-y-4">
                                 {selectedIcon && SelectedIcon ? (
@@ -311,6 +264,7 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                                 />
                               </div>
                             </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />

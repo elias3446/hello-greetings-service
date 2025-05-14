@@ -99,7 +99,6 @@ export interface EstadoReporte {
   nombre: string;
   descripcion: string;
   color: string;
-  //tipo: 'pendiente' | 'en_progreso' | 'completado' | 'cancelado';
   fechaCreacion: Date;
   activo: boolean;
   icono: string;

@@ -10,7 +10,7 @@ export const estadosReporte: EstadoReporte[] = [
     color: '#FFD166',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
-    icono: 'alert-triangle'
+    icono: 'TriangleAlert'
   },
   {
     id: '2',
@@ -19,7 +19,7 @@ export const estadosReporte: EstadoReporte[] = [
     color: '#118AB2',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
-    icono: 'clock'
+    icono: 'Clock'
   },
   {
     id: '3',
@@ -28,7 +28,7 @@ export const estadosReporte: EstadoReporte[] = [
     color: '#06D6A0',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
-    icono: 'clock'
+    icono: 'Clock'
   },
   {
     id: '4',
@@ -37,7 +37,7 @@ export const estadosReporte: EstadoReporte[] = [
     color: '#73D2DE',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
-    icono: 'check-circle'
+    icono: 'CircleCheckBig'
   },
   {
     id: '5',
@@ -46,6 +46,6 @@ export const estadosReporte: EstadoReporte[] = [
     color: '#EF476F',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
-    icono: 'x-circle'
+    icono: 'CircleX'
   },
 ];

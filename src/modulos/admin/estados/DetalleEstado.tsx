@@ -18,18 +18,22 @@ import {
   ArrowLeft, 
   Trash,
   Info,
-  Clock
+  Clock,
+  icons
 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { EstadoReporte } from '@/types/tipos';
 import { getEstadoById, deleteEstado } from '@/controller/CRUD/estadoController';
 import { Separator } from '@/components/ui/separator';
-
+import { Icons } from '@/components/Icons';
 const DetalleEstado = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [estado, setEstado] = useState<EstadoReporte | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+
+  const SelectedIcon = selectedIcon ? icons[selectedIcon] : null;
 
   useEffect(() => {
     const cargarEstado = () => {
@@ -49,6 +53,7 @@ const DetalleEstado = () => {
         }
         
         setEstado(estadoEncontrado);
+        setSelectedIcon(estadoEncontrado.icono);
       } catch (error) {
         console.error('Error al cargar el estado:', error);
         toast.error('Error al cargar el estado');
@@ -208,11 +213,16 @@ const DetalleEstado = () => {
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Icono</h4>
                         <div className="flex items-center gap-2">
-                          {estado.icono === 'check-circle' && <CheckCircle className="h-5 w-5" />}
-                          {estado.icono === 'alert-triangle' && <AlertTriangle className="h-5 w-5" />}
-                          {estado.icono === 'clock' && <Clock className="h-5 w-5" />}
-                          {estado.icono === 'x-circle' && <AlertTriangle className="h-5 w-5 text-red-500" />}
-                          <span className="font-medium">{estado.icono}</span>
+                          {selectedIcon && SelectedIcon ? (
+                            <div className="p-4 rounded-lg bg-gray-50 border flex flex-col items-center">
+                              <SelectedIcon size={48} className="text-blue-500" />
+                              <span className="mt-2 text-sm font-medium">{selectedIcon}</span>
+                            </div>
+                          ) : (
+                            <div className="p-4 rounded-lg bg-gray-50 border flex items-center justify-center w-24 h-24 text-gray-300">
+                              Sin selección
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
