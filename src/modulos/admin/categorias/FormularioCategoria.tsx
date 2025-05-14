@@ -8,7 +8,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Edit, X, Shield, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, X, Shield, FileText, icons } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,8 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { createCategory, updateCategory, getCategoryById } from '@/controller/CRUD/categoryController';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
-import { IconSelector } from '@/components/ui/icon-selector';
-
+import { IconPicker } from "@/components/IconPicker";
+import { LucideIcon } from "lucide-react";
 interface FormularioCategoriaProps {
   modo: 'crear' | 'editar';
 }
@@ -28,6 +28,10 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
   const { id } = useParams();
   const categoriaExistente = id ? getCategoryById(id) : undefined;
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState<string | null>(categoriaExistente?.icono || 'category');
+
+  const SelectedIcon = selectedIcon ? icons[selectedIcon] : null;
   
   const form = useForm({
     defaultValues: {
@@ -233,10 +237,37 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
                           <FormItem>
                             <FormLabel>Icono</FormLabel>
                             <FormControl>
-                              <IconSelector
-                                value={field.value}
-                                onChange={field.onChange}
-                              />
+                              <div className="flex flex-col items-center space-y-4">
+                                {selectedIcon && SelectedIcon ? (
+                                  <div className="p-4 rounded-lg bg-gray-50 border flex flex-col items-center">
+                                    <SelectedIcon size={48} className="text-blue-500" />
+                                    <span className="mt-2 text-sm font-medium">{selectedIcon}</span>
+                                  </div>
+                                ) : (
+                                  <div className="p-4 rounded-lg bg-gray-50 border flex items-center justify-center w-24 h-24 text-gray-300">
+                                    Sin selección
+                                  </div>
+                                )}
+                                
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  onClick={() => setIsOpen(true)}
+                                  className="w-full"
+                                >
+                                  {selectedIcon ? "Cambiar icono" : "Seleccionar icono"}
+                                </Button>
+                                
+                                <IconPicker
+                                  open={isOpen}
+                                  onOpenChange={setIsOpen}
+                                  onSelect={(iconName) => {
+                                    setSelectedIcon(iconName);
+                                    field.onChange(iconName);
+                                    setIsOpen(false);
+                                  }}
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
