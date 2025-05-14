@@ -120,15 +120,6 @@ const DetalleEstado = () => {
               <span className="mx-2">/</span>
               <span>Detalle</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight">{estado.nombre}</h2>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" /> Editar
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash className="h-4 w-4 mr-2" /> Eliminar
-            </Button>
           </div>
         </div>
 
@@ -155,7 +146,7 @@ const DetalleEstado = () => {
                     </div>
                     <div className="flex items-center text-muted-foreground">
                       <Info className="h-4 w-4 mr-2" />
-                      {estado.tipo}
+                      {estado.descripcion}
                     </div>
                   </div>
                 </div>
@@ -202,12 +193,6 @@ const DetalleEstado = () => {
                         </div>
                       </div>
                       
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-1">Tipo</h4>
-                        <Badge variant="outline" className="font-normal">
-                          {estado.tipo}
-                        </Badge>
-                      </div>
 
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">Color</h4>
@@ -296,26 +281,6 @@ const DetalleEstado = () => {
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Eliminar estado
                 </Button>
-              </CardContent>
-            </Card>
-            
-            {/* Tarjeta de información adicional */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Información adicional</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Tipo de estado</p>
-                    <p className="font-medium">{estado.tipo}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Identificador</p>
-                    <p className="font-medium text-xs">{estado.id}</p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
             

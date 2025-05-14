@@ -8,7 +8,6 @@ export const estadosReporte: EstadoReporte[] = [
     nombre: 'Pendiente',
     descripcion: 'Reporte recibido pero sin asignar',
     color: '#FFD166',
-    tipo: 'pendiente',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
     icono: 'alert-triangle'
@@ -18,7 +17,6 @@ export const estadosReporte: EstadoReporte[] = [
     nombre: 'En revisión',
     descripcion: 'Reporte asignado y en proceso de evaluación',
     color: '#118AB2',
-    tipo: 'en_progreso',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
     icono: 'clock'
@@ -28,7 +26,6 @@ export const estadosReporte: EstadoReporte[] = [
     nombre: 'En proceso',
     descripcion: 'El problema está siendo solucionado',
     color: '#06D6A0',
-    tipo: 'en_progreso',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
     icono: 'clock'
@@ -38,7 +35,6 @@ export const estadosReporte: EstadoReporte[] = [
     nombre: 'Resuelto',
     descripcion: 'El problema ha sido solucionado',
     color: '#73D2DE',
-    tipo: 'completado',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
     icono: 'check-circle'
@@ -48,7 +44,6 @@ export const estadosReporte: EstadoReporte[] = [
     nombre: 'Cancelado',
     descripcion: 'El reporte ha sido cancelado o no procede',
     color: '#EF476F',
-    tipo: 'cancelado',
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
     icono: 'x-circle'
