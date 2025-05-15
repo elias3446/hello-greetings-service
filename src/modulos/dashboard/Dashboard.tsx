@@ -48,40 +48,34 @@ const Dashboard = () => {
   };
 
   // Componente individual para cada ítem de navegación
-  const NavItem = ({ item }: { item: typeof navItems[0] }) => {
+  const NavItem = (item: typeof navItems[number], isMobile = false) => {
     const Icon = item.icon;
     const isActive = activeTab === item.value;
+
+    const baseClass = isMobile
+    ? `w-full py-2.5 px-3 flex items-center rounded-md ${
+        isActive
+          ? 'bg-primary/10 text-primary'
+          : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+      }`
+    : `nav-link px-2 py-1.5 whitespace-nowrap text-sm lg:text-base ${
+        isActive
+          ? 'text-primary border-b-2 border-primary'
+          : 'text-muted-foreground hover:text-foreground'
+      }`;
+
     return (
       <button
+        key={item.value}
         onClick={() => handleTabChange(item.value)}
-        className={`nav-link px-2 py-1.5 whitespace-nowrap text-sm lg:text-base ${
-          isActive ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'
-        }`}
+        className={baseClass}
       >
-        <Icon className="h-4 w-4 inline-block" />
-        <span className="ml-1.5">{item.label}</span>
+        <Icon className={isMobile ? 'h-5 w-5' : 'h-4 w-4 inline-block'} />
+        <span className={isMobile ? 'ml-2' : 'ml-1.5'}>{item.label}</span>
       </button>
     );
   };
 
-  // Componente para el menú móvil
-  const MobileNavItem = ({ item }: { item: typeof navItems[0] }) => {
-    const Icon = item.icon;
-    const isActive = activeTab === item.value;
-    return (
-      <button
-        onClick={() => handleTabChange(item.value)}
-        className={`w-full py-2.5 px-3 flex items-center rounded-md ${
-          isActive
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-        }`}
-      >
-        <Icon className="h-5 w-5" />
-        <span className="ml-2">{item.label}</span>
-      </button>
-    );
-  };
 
   return (
     <Layout>
@@ -100,9 +94,8 @@ const Dashboard = () => {
               {/* Navegación de escritorio */}
               <div className="hidden [@media(min-width:910px)]:flex items-center justify-center flex-1">
                 <div className="flex items-center space-x-1 lg:space-x-2">
-                  {navItems.map((item) => (
-                    <NavItem key={item.value} item={item} />
-                  ))}
+                {navItems.map(item => NavItem(item))}
+
                 </div>
               </div>
 
@@ -126,9 +119,7 @@ const Dashboard = () => {
             }`}
           >
             <div className="px-3 py-2 space-y-1 bg-background">
-              {navItems.map((item) => (
-                <MobileNavItem key={item.value} item={item} />
-              ))}
+            {navItems.map(item => NavItem(item, true))}
             </div>
           </div>
         </div>

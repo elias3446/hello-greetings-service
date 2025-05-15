@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { User, FileText, List, Shield, Activity, Upload, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
 
 // Definición de ítems del menú de navegación
 const navItems = [
