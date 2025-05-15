@@ -1,7 +1,9 @@
-import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte, HistorialEstadoCategoria, HistorialActividadCategoria } from '@/types/tipos';
+import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte, HistorialEstadoCategoria, HistorialActividadCategoria, HistorialEstadoRol, HistorialEstado } from '@/types/tipos';
 import { usuarios } from './usuarios';
 import { reportes } from './reportes';
 import { categorias } from './categorias';
+import { roles } from './roles';
+import { estadosReporte } from './estadosReporte';
 
 export const actividadesUsuario: ActividadUsuario[] = [
   {
@@ -840,5 +842,154 @@ export const historialActividadCategoria: HistorialActividadCategoria[] = [
       comentario: 'Categoría eliminada por obsolescencia'
     },
     activo: true
+  }
+];
+
+// Datos de ejemplo para el historial de estados de roles
+export const historialEstadosRol: HistorialEstadoRol[] = [
+  {
+    id: '1',
+    idRol: roles[0], // Administrador
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:00:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '2',
+    idRol: roles[1], // Supervisor
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:15:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '3',
+    idRol: roles[2], // Operador
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:30:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '4',
+    idRol: roles[3], // Ciudadano
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:45:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '5',
+    idRol: roles[1], // Supervisor
+    estadoAnterior: 'activo',
+    estadoNuevo: 'inactivo',
+    fechaHoraCambio: new Date('2023-02-15T14:30:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    motivoCambio: 'Rol temporalmente suspendido',
+    tipoAccion: 'cambio_estado'
+  },
+  {
+    id: '6',
+    idRol: roles[1], // Supervisor
+    estadoAnterior: 'inactivo',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-03-01T10:15:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    motivoCambio: 'Rol reactivado por necesidad operativa',
+    tipoAccion: 'cambio_estado'
+  },
+  {
+    id: '7',
+    idRol: roles[2], // Operador
+    estadoAnterior: 'Operador',
+    estadoNuevo: 'Técnico de Campo',
+    fechaHoraCambio: new Date('2023-03-15T09:30:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    motivoCambio: 'Actualización de nombre de rol para mayor claridad',
+    tipoAccion: 'actualizacion'
+  }
+];
+
+// Datos de ejemplo para el historial de estados
+export const historialEstados: HistorialEstado[] = [
+  {
+    id: '1',
+    idEstado: estadosReporte[0], // Pendiente
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:00:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '2',
+    idEstado: estadosReporte[1], // En revisión
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:15:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '3',
+    idEstado: estadosReporte[2], // En proceso
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:30:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '4',
+    idEstado: estadosReporte[3], // Resuelto
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T08:45:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '5',
+    idEstado: estadosReporte[4], // Cancelado
+    estadoAnterior: 'no_existe',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-01-01T09:00:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    tipoAccion: 'creacion'
+  },
+  {
+    id: '6',
+    idEstado: estadosReporte[1], // En revisión
+    estadoAnterior: 'activo',
+    estadoNuevo: 'inactivo',
+    fechaHoraCambio: new Date('2023-02-15T14:30:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    motivoCambio: 'Estado temporalmente suspendido para mantenimiento',
+    tipoAccion: 'cambio_estado'
+  },
+  {
+    id: '7',
+    idEstado: estadosReporte[1], // En revisión
+    estadoAnterior: 'inactivo',
+    estadoNuevo: 'activo',
+    fechaHoraCambio: new Date('2023-03-01T10:15:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    motivoCambio: 'Estado reactivado tras mantenimiento',
+    tipoAccion: 'cambio_estado'
+  },
+  {
+    id: '8',
+    idEstado: estadosReporte[2], // En proceso
+    estadoAnterior: 'En proceso',
+    estadoNuevo: 'En ejecución',
+    fechaHoraCambio: new Date('2023-03-15T09:30:00'),
+    realizadoPor: usuarios[0], // Admin Sistema
+    motivoCambio: 'Actualización de nombre para mayor claridad',
+    tipoAccion: 'actualizacion'
   }
 ]; 
