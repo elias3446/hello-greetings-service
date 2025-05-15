@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  SearchIcon, 
-  FilterIcon, 
-  ArrowUpIcon, 
-  ArrowDownIcon, 
+import {
+  SearchIcon,
+  FilterIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
   DownloadIcon,
   CheckIcon,
   UserPlus
 } from 'lucide-react';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -21,6 +21,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface SortOption {
+  value: string;
+  label: string;
+}
+
+interface FilterOption {
   value: string;
   label: string;
 }
@@ -36,14 +41,12 @@ interface SearchFilterBarProps {
   onSortByChange: (value: string) => void;
   sortDirection: 'asc' | 'desc';
   onSortDirectionChange: () => void;
-  currentField: string | undefined;
   onCurrentFieldChange: (value: string | undefined) => void;
-  onFilterChange: (values: any[]) => void;
+  onFilterChange: (values: string[]) => void;
   onExport: () => void;
   onNewItem: () => void;
-  items: any[];
+  items: Record<string, any>[];
   getFieldValue: (item: any, field: string) => string;
-  roles?: string[];
   showNewButton?: boolean;
   newButtonLabel?: string;
   showExportButton?: boolean;
@@ -51,10 +54,7 @@ interface SearchFilterBarProps {
   filteredCount?: number;
   totalCount?: number;
   itemLabel?: string;
-  filterOptions: {
-    value: string;
-    label: string;
-  }[];
+  filterOptions: FilterOption[];
   searchPlaceholder?: string;
   initialFilters?: string[];
 }
@@ -70,14 +70,12 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   onSortByChange,
   sortDirection,
   onSortDirectionChange,
-  currentField,
   onCurrentFieldChange,
   onFilterChange,
   onExport,
   onNewItem,
   items,
   getFieldValue,
-  roles = [],
   showNewButton = true,
   newButtonLabel = 'Nuevo',
   showExportButton = true,
@@ -86,98 +84,67 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   totalCount = items.length,
   itemLabel = 'elementos',
   filterOptions,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder = 'Buscar...',
   initialFilters = []
 }) => {
   const [selectedValues, setSelectedValues] = useState<string[]>(initialFilters);
   const [showAll, setShowAll] = useState(true);
-  const [filterState, setFilterState] = useState<{
-    values: string[];
-    filters: string[];
-  }>({
-    values: [],
-    filters: initialFilters
-  });
+  const [filterState, setFilterState] = useState({ values: [] as string[], filters: initialFilters });
 
-  // Efecto para sincronizar los filtros
+  // Separar valores y filtros
   useEffect(() => {
-    console.log('SelectedValues changed:', selectedValues);
     const values = selectedValues.filter(v => !v.includes(':'));
     const filters = selectedValues.filter(v => v.includes(':'));
-    console.log('Setting filter state:', { values, filters });
     setFilterState({ values, filters });
     onFilterChange(selectedValues);
   }, [selectedValues]);
 
-  // Efecto para manejar filtros iniciales
   useEffect(() => {
     if (initialFilters.length > 0) {
-      console.log('Initial filters detected:', initialFilters);
       setSelectedValues(initialFilters);
-      setFilterState(prev => ({
-        ...prev,
-        filters: initialFilters
-      }));
+      setFilterState(prev => ({ ...prev, filters: initialFilters }));
     }
   }, [initialFilters]);
 
-  const handleValueChange = (value: string, checked: boolean) => {
-    console.log('Value change:', { value, checked, currentField: sortBy });
-    if (!sortBy) return;
+  const uniqueValues = useMemo(() => {
+    if (!sortBy) return [];
+    const values = items.map(item => getFieldValue(item, sortBy));
+    return Array.from(new Set(values));
+  }, [items, sortBy]);
 
+  const getFilterValues = (field: string) => {
+    const values = items.map(item => getFieldValue(item, field));
+    return Array.from(new Set(values));
+  };
+
+  const handleValueChange = (value: string, checked: boolean) => {
+    if (!sortBy) return;
     setSelectedValues(prev => {
       const currentFilters = prev.filter(v => v.includes(':'));
-      let newValues;
-
       if (value === 'Todos') {
-        // Si se selecciona "Todos", mantener solo los filtros
-        newValues = currentFilters;
         setShowAll(true);
+        return currentFilters;
       } else {
         setShowAll(false);
-        if (checked) {
-          // Agregar nuevo valor manteniendo los filtros
-          newValues = [...currentFilters, value];
-        } else {
-          // Remover valor manteniendo los filtros
-          newValues = prev.filter(v => v.includes(':') || v !== value);
-        }
+        return checked
+          ? [...currentFilters, value]
+          : prev.filter(v => v !== value && !v.includes(':'));
       }
-
-      console.log('New values after change:', newValues);
-      return newValues;
     });
   };
 
-  const handleFilterChange = (option: { value: string; label: string }, value: string, checked: boolean) => {
-    console.log('Filter change:', { option, value, checked });
-    
+  const handleFilterChange = (option: FilterOption, value: string, checked: boolean) => {
     setSelectedValues(prev => {
-      const currentValues = prev.filter(v => !v.includes(':'));
-      let newValues;
-
-      if (value === 'Todos') {
-        // Si se selecciona "Todos", mantener solo los valores normales
-        newValues = currentValues;
-      } else {
-        if (checked) {
-          // Remover cualquier otro filtro de la misma opción y agregar el nuevo
-          const filtered = prev.filter(v => !v.startsWith(option.value + ':'));
-          newValues = [...filtered, `${option.value}:${value}`];
-        } else {
-          // Remover el filtro específico
-          newValues = prev.filter(v => v !== `${option.value}:${value}`);
-        }
-      }
-
-      console.log('New selected values:', newValues);
-      return newValues;
+      const currentValues = prev.filter(v => !v.startsWith(option.value + ':'));
+      return checked
+        ? [...currentValues, `${option.value}:${value}`]
+        : prev.filter(v => v !== `${option.value}:${value}`);
     });
   };
 
-  const clearFilters = () => {
-    // Mantener solo los filtros al limpiar
-    setSelectedValues(prev => prev.filter(v => v.includes(':')));
+  const clearAll = () => {
+    setSelectedValues([]);
+    setFilterState({ values: [], filters: [] });
     setShowAll(true);
     onSearchChange('');
     onStatusFilterChange(null);
@@ -188,130 +155,84 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   };
 
   const handleSortChange = (value: string) => {
-    // Mantener los filtros existentes al cambiar el ordenamiento
-    const currentFilters = selectedValues.filter(v => v.includes(':'));
-    
-    onSearchChange('');
-    onStatusFilterChange(null);
-    onRoleFilterChange(null);
     onSortByChange(value);
     onSortDirectionChange();
     onCurrentFieldChange(value);
-    
-    // Mantener los filtros existentes
-    setSelectedValues(currentFilters);
-  };
-
-  const isAllSelected = () => {
-    return selectedValues.includes('Todos');
-  };
-
-  const isValueSelected = (value: string) => {
-    return selectedValues.includes(value);
+    setSelectedValues(prev => prev.filter(v => v.includes(':')));
   };
 
   return (
     <div className="space-y-4">
+      {/* Top Controls */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
+        {/* Search Input */}
         <div className="relative w-full sm:w-80">
           <Input
             placeholder={searchPlaceholder}
             value={searchTerm}
-            onChange={(e) => {
-              console.log('Input Search Value:', e.target.value);
-              onSearchChange(e.target.value);
-            }}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10"
           />
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>
-        
+
+        {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
-          
-          {/* Dropdown de ordenamiento */}
+          {/* Sort Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 {sortDirection === 'asc' ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
-                Ordenar por: {sortOptions.find(option => option.value === sortBy)?.label || sortBy}
+                Ordenar por: {sortOptions.find(option => option.value === sortBy)?.label}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {sortOptions.map(option => (
-                <DropdownMenuItem 
-                  key={option.value}
-                  onClick={() => handleSortChange(option.value)} 
-                  className="flex justify-between"
-                >
-                  {option.label} {sortBy === option.value && <CheckIcon className="h-4 w-4" />}
+                <DropdownMenuItem key={option.value} onClick={() => handleSortChange(option.value)}>
+                  {option.label} {sortBy === option.value && <CheckIcon className="h-4 w-4 ml-auto" />}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          
-           {/* Dropdown de valores */}
-           <DropdownMenu>
+
+          {/* Value Filter */}
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <FilterIcon className="h-4 w-4" />
-                Valores {filterState.values.length > 0 && <Badge variant="secondary" className="h-5 px-1">!</Badge>}
+                Valores {filterState.values.length > 0 && <Badge variant="secondary">!</Badge>}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              {sortBy && (
+              {sortBy ? (
                 <div className="p-2">
-                  <h4 className="mb-2 text-sm font-medium">
-                    {sortOptions.find(option => option.value === sortBy)?.label}
-                  </h4>
-                  <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
-                    <DropdownMenuCheckboxItem 
+                  <h4 className="mb-2 text-sm font-medium">{sortOptions.find(o => o.value === sortBy)?.label}</h4>
+                  <div className="max-h-40 overflow-y-auto space-y-1">
+                    <DropdownMenuCheckboxItem
                       checked={showAll}
                       onCheckedChange={(checked) => handleValueChange('Todos', checked)}
                     >
                       Todos
                     </DropdownMenuCheckboxItem>
-                    {items
-                      .map(item => getFieldValue(item, sortBy))
-                      .filter((value, index, self) => self.indexOf(value) === index)
-                      .map(value => {
-                        const isSelected = selectedValues.includes(value);
-                        console.log('Rendering value option:', {
-                          value,
-                          isSelected,
-                          selectedValues,
-                          currentField: sortBy
-                        });
-                        return (
-                          <DropdownMenuCheckboxItem 
-                            key={value}
-                            checked={isSelected}
-                            onCheckedChange={(checked) => handleValueChange(value, checked)}
-                          >
-                            {value}
-                          </DropdownMenuCheckboxItem>
-                        );
-                      })
-                    }
+                    {uniqueValues.map(value => (
+                      <DropdownMenuCheckboxItem
+                        key={value}
+                        checked={selectedValues.includes(value)}
+                        onCheckedChange={(checked) => handleValueChange(value, checked)}
+                      >
+                        {value}
+                      </DropdownMenuCheckboxItem>
+                    ))}
                   </div>
                 </div>
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground">Selecciona una columna para filtrar</div>
               )}
-              
-              {!sortBy && (
-                <div className="p-2 text-sm text-muted-foreground">
-                  Selecciona una columna para filtrar
-                </div>
-              )}
-              
               {filterState.values.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
                   <div className="p-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full" 
-                      onClick={() => handleValueChange('Todos', true)}
-                    >
+                    <Button variant="ghost" size="sm" className="w-full" onClick={() => handleValueChange('Todos', true)}>
                       Limpiar valores
                     </Button>
                   </div>
@@ -320,88 +241,49 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-           {/* Dropdown de filtros */}
-           <DropdownMenu>
+          {/* Filter Dropdown */}
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <FilterIcon className="h-4 w-4" />
-                Filtros {filterState.filters.length > 0 && <Badge variant="secondary" className="h-5 px-1">!</Badge>}
+                Filtros {filterState.filters.length > 0 && <Badge variant="secondary">!</Badge>}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {filterOptions.map((option) => {
-                const hasFilters = filterState.filters.some(f => f.startsWith(option.value + ':'));
+                const filterValues = getFilterValues(option.value);
                 const selectedValue = filterState.filters.find(f => f.startsWith(option.value + ':'))?.split(':')[1];
-                
-                console.log('Rendering filter section:', {
-                  option: option.value,
-                  hasFilters,
-                  selectedValue,
-                  filters: filterState.filters,
-                  selectedValues
-                });
-                
+
                 return (
                   <div key={option.value} className="p-2">
                     <h4 className="mb-2 text-sm font-medium">{option.label}</h4>
                     <div className="flex flex-col gap-1">
-                      <DropdownMenuCheckboxItem 
-                        checked={!hasFilters}
-                        onCheckedChange={(checked) => {
-                          setSelectedValues(prev => {
-                            const newValues = prev.filter(v => !v.startsWith(option.value + ':'));
-                            onFilterChange(newValues);
-                            return newValues;
-                          });
-                        }}
+                      <DropdownMenuCheckboxItem
+                        checked={!selectedValue}
+                        onCheckedChange={() =>
+                          setSelectedValues(prev => prev.filter(v => !v.startsWith(option.value + ':')))
+                        }
                       >
                         Todos
                       </DropdownMenuCheckboxItem>
-                      {items
-                        .map(item => getFieldValue(item, option.value))
-                        .filter((value, index, self) => self.indexOf(value) === index)
-                        .map(value => {
-                          const isSelected = selectedValue === value;
-                          console.log('Rendering filter option:', {
-                            option: option.value,
-                            value,
-                            selectedValue,
-                            isSelected,
-                            filters: filterState.filters,
-                            selectedValues
-                          });
-                          return (
-                            <DropdownMenuCheckboxItem 
-                              key={value}
-                              checked={isSelected}
-                              onCheckedChange={(checked) => {
-                                console.log('Changing filter:', { option: option.value, value, checked });
-                                handleFilterChange(option, value, checked);
-                              }}
-                            >
-                              {value}
-                            </DropdownMenuCheckboxItem>
-                          );
-                        })
-                      }
+                      {filterValues.map(value => (
+                        <DropdownMenuCheckboxItem
+                          key={value}
+                          checked={selectedValue === value}
+                          onCheckedChange={(checked) => handleFilterChange(option, value, checked)}
+                        >
+                          {value}
+                        </DropdownMenuCheckboxItem>
+                      ))}
                     </div>
                   </div>
                 );
               })}
-              
               {filterState.filters.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
                   <div className="p-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full" 
-                      onClick={() => {
-                        setSelectedValues([]);
-                        setFilterState({ values: [], filters: [] });
-                      }}
-                    >
+                    <Button variant="ghost" size="sm" className="w-full" onClick={clearAll}>
                       Limpiar filtros
                     </Button>
                   </div>
@@ -410,25 +292,15 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Botón de exportar */}
           {showExportButton && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onExport}
-              className="flex items-center gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={onExport} className="flex items-center gap-2">
               <DownloadIcon className="h-4 w-4" />
               Exportar
             </Button>
           )}
-          
-          {/* Botón de nuevo */}
+
           {showNewButton && (
-            <Button 
-              onClick={onNewItem}
-              className="flex items-center gap-2"
-            >
+            <Button onClick={onNewItem} className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
               {newButtonLabel}
             </Button>
@@ -436,24 +308,11 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         </div>
       </div>
 
-      {/* Contador de resultados */}
+      {/* Result Count */}
       <div className="text-sm text-gray-500">
         Mostrando {filteredCount} de {totalCount} {itemLabel}
-        {(statusFilter !== null || roleFilter !== null || searchTerm || selectedValues.length > 0) && (
-          <Button 
-            variant="link" 
-            className="p-0 h-auto text-sm ml-2" 
-            onClick={() => {
-              // Limpiar todos los filtros
-              setSelectedValues(prev => 
-                  prev.filter(v => !v.includes(':')),
-                  
-              );
-              handleValueChange('Todos', true);
-              onSearchChange('')
-            }
-          }
-          >
+        {(statusFilter || roleFilter || searchTerm || selectedValues.length > 0) && (
+          <Button variant="link" className="p-0 h-auto text-sm ml-2" onClick={clearAll}>
             Limpiar filtros
           </Button>
         )}
@@ -462,4 +321,4 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   );
 };
 
-export default SearchFilterBar; 
+export default SearchFilterBar;

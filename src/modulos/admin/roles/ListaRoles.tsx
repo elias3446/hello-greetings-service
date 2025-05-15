@@ -255,7 +255,6 @@ const ListaRoles = () => {
           onSortByChange={setSortBy}
           sortDirection={sortDirection}
           onSortDirectionChange={handleToggleSortDirection}
-          currentField={currentField}
           onCurrentFieldChange={setCurrentField}
           onFilterChange={handleFilterChange}
           onExport={handleExportRoles}

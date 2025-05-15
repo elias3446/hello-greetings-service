@@ -291,7 +291,6 @@ const ListaEstados: React.FC = () => {
           onSortByChange={setSortBy}
           sortDirection={sortDirection}
           onSortDirectionChange={handleToggleSortDirection}
-          currentField={currentField}
           onCurrentFieldChange={setCurrentField}
           onFilterChange={handleFilterChange}
           onExport={handleExportEstados}

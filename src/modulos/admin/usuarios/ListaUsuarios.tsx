@@ -32,7 +32,6 @@ const ListaUsuarios: React.FC = () => {
   const handlers = useUsuarioHandlers(state, actions);
 
   const { currentUsuarios, totalPages } = calculatePagination(state.filteredUsuarios, state.currentPage);
-  const rolesUnicos = getUniqueRoles(state.usuarios);
 
   // Count results
   const filteredCount = state.filteredUsuarios.length;
@@ -474,14 +473,12 @@ const ListaUsuarios: React.FC = () => {
           onSortByChange={actions.setSortBy}
           sortDirection={state.sortDirection}
           onSortDirectionChange={handlers.handleToggleSortDirection}
-          currentField={state.currentField}
           onCurrentFieldChange={actions.setCurrentField}
           onFilterChange={handlers.handleFilterChange}
           onExport={handlers.handleExportUsuarios}
           onNewItem={handleNuevoUsuario}
           items={state.usuarios}
           getFieldValue={getFieldValue}
-          roles={rolesUnicos}
         showNewButton={true}
         newButtonLabel="Nuevo usuario"
         showExportButton={true}
