@@ -1,13 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Activity } from 'lucide-react';
+import { EstadoTotalCardProps } from '@/props/dashboard/PropDashboardEstados';
 
-interface EstadoTotalCardProps {
-  totalEstados: number;
-}
-
-const EstadoTotalCard = ({ totalEstados }: EstadoTotalCardProps) => {
+const EstadoTotalCard: React.FC<EstadoTotalCardProps> = ({ totalEstados }) => {
   return (
     <Card className="border-l-4" style={{ borderLeftColor: '#ec4899' }}>
       <CardContent className="flex justify-between items-center py-6">
@@ -21,4 +17,4 @@ const EstadoTotalCard = ({ totalEstados }: EstadoTotalCardProps) => {
   );
 };
 
-export default EstadoTotalCard;
+export default EstadoTotalCard; 

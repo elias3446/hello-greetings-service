@@ -1,13 +1,7 @@
-
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Reporte } from '@/types/tipos';
+import { RecentReportsProps } from '@/props/dashboard/PropDashboardReportes';
 
-interface RecentReportsTableProps {
-  reportesRecientes: Reporte[];
-}
-
-const RecentReportsTable = ({ reportesRecientes }: RecentReportsTableProps) => {
+const RecentReports = ({ reportesRecientes }: RecentReportsProps) => {
   return (
     <Card>
       <CardHeader>
@@ -28,7 +22,9 @@ const RecentReportsTable = ({ reportesRecientes }: RecentReportsTableProps) => {
               {reportesRecientes.map((reporte) => (
                 <tr key={reporte.id} className="border-b hover:bg-muted/50">
                   <td className="px-4 py-3 font-medium">{reporte.titulo}</td>
-                  <td className="px-4 py-3">{reporte.categoria.nombre}</td>
+                  <td className="px-4 py-3">
+                    {reporte.categoria ? reporte.categoria.nombre : 'Sin categoría'}
+                  </td>
                   <td className="px-4 py-3">
                     <span 
                       className="inline-block px-2 py-1 rounded-full text-xs" 
@@ -53,4 +49,4 @@ const RecentReportsTable = ({ reportesRecientes }: RecentReportsTableProps) => {
   );
 };
 
-export default RecentReportsTable;
+export default RecentReports; 

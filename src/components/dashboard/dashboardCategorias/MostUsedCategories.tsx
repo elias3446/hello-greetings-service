@@ -1,14 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
-import { CategoriaConReportes } from '@/utils/dashboardUtils';
+import { MostUsedCategoriesProps } from '@/props/dashboard/PropDashboardCategorias';
 
-interface CategoriasMasUsadasListProps {
-  categoriasMasUsadas: CategoriaConReportes[];
-}
-
-const CategoriasMasUsadasList = ({ categoriasMasUsadas }: CategoriasMasUsadasListProps) => {
+const MostUsedCategories: React.FC<MostUsedCategoriesProps> = ({ categoriasMasUsadas }) => {
   return (
     <Card>
       <CardHeader>
@@ -43,4 +38,4 @@ const CategoriasMasUsadasList = ({ categoriasMasUsadas }: CategoriasMasUsadasLis
   );
 };
 
-export default CategoriasMasUsadasList;
+export default MostUsedCategories; 

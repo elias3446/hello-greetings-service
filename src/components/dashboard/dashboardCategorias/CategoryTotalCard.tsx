@@ -1,13 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { List } from 'lucide-react';
+import { CategoryTotalCardProps } from '@/props/dashboard/PropDashboardCategorias';
 
-interface CategoriaTotalCardProps {
-  totalCategorias: number;
-}
-
-const CategoriaTotalCard = ({ totalCategorias }: CategoriaTotalCardProps) => {
+const CategoryTotalCard: React.FC<CategoryTotalCardProps> = ({ totalCategorias }) => {
   return (
     <Card className="border-l-4" style={{ borderLeftColor: '#f59e0b' }}>
       <CardContent className="flex justify-between items-center py-6">
@@ -21,4 +17,4 @@ const CategoriaTotalCard = ({ totalCategorias }: CategoriaTotalCardProps) => {
   );
 };
 
-export default CategoriaTotalCard;
+export default CategoryTotalCard; 

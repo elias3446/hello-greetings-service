@@ -1,14 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Rol } from '@/types/tipos';
+import { RoleDetailsProps } from '@/props/dashboard/PropDashboardRoles';
 
-interface RolesDetailListProps {
-  roles: Rol[];
-}
-
-const RolesDetailList = ({ roles }: RolesDetailListProps) => {
+const RoleDetails: React.FC<RoleDetailsProps> = ({ roles }) => {
   return (
     <Card>
       <CardHeader>
@@ -35,7 +30,7 @@ const RolesDetailList = ({ roles }: RolesDetailListProps) => {
               <div>
                 <h4 className="text-sm font-medium mb-2">Permisos ({rol.permisos?.length || 0})</h4>
                 <div className="flex flex-wrap gap-2">
-                  {rol.permisos && rol.permisos.slice(0, 5).map((permiso, index) => (
+                  {rol.permisos?.slice(0, 5).map((permiso, index) => (
                     <span 
                       key={index} 
                       className="px-2 py-1 bg-muted text-xs rounded-full"
@@ -58,4 +53,4 @@ const RolesDetailList = ({ roles }: RolesDetailListProps) => {
   );
 };
 
-export default RolesDetailList;
+export default RoleDetails; 

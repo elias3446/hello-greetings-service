@@ -1,13 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Shield } from 'lucide-react';
+import { RoleTotalCardProps } from '@/props/dashboard/PropDashboardRoles';
 
-interface RolesTotalCardProps {
-  totalRoles: number;
-}
-
-const RolesTotalCard = ({ totalRoles }: RolesTotalCardProps) => {
+const RoleTotalCard: React.FC<RoleTotalCardProps> = ({ totalRoles }) => {
   return (
     <Card className="border-l-4" style={{ borderLeftColor: '#6366f1' }}>
       <CardContent className="flex justify-between items-center py-6">
@@ -21,4 +17,4 @@ const RolesTotalCard = ({ totalRoles }: RolesTotalCardProps) => {
   );
 };
 
-export default RolesTotalCard;
+export default RoleTotalCard; 
