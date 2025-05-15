@@ -1,7 +1,7 @@
 import { Usuario } from '@/types/tipos';
 import { updateUser } from '@/controller/CRUD/user/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
-import { getRoleById } from '@/controller/CRUD/roleController';
+import { getRoleById } from '@/controller/CRUD/role/roleController';
 
 /**
  * Actualiza el rol de un usuario y registra el cambio en el historial

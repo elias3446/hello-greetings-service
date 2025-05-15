@@ -1,7 +1,7 @@
 
-import { Rol } from '../../types/tipos';
-import { roles } from '../../data/roles';
-import { permisosDisponibles } from '../../data/permisos';
+import { Rol } from '@/types/tipos';
+import { roles } from '@/data/roles';
+import { permisosDisponibles } from '@/data/permisos';
 
 // Obtener todos los roles
 export const getRoles = (): Rol[] => {

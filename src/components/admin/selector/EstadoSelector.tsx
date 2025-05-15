@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getEstados } from '@/controller/CRUD/estadoController';
+import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { EstadoReporte } from '@/types/tipos';
 
 interface EstadoSelectorProps {

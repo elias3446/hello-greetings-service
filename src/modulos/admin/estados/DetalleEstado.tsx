@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { EstadoReporte } from '@/types/tipos';
-import { getEstadoById, deleteEstado } from '@/controller/CRUD/estadoController';
+import { getEstadoById, deleteEstado } from '@/controller/CRUD/estado/estadoController';
 import { Separator } from '@/components/ui/separator';
 import { Icons } from '@/components/Icons';
 const DetalleEstado = () => {

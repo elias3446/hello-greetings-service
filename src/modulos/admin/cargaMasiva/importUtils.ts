@@ -1,8 +1,8 @@
 import { createUser } from '@/controller/CRUD/user/userController';
 import { createReport } from '@/controller/CRUD/report/reportController';
-import { createCategory } from '@/controller/CRUD/categoryController';
-import { createRole } from '@/controller/CRUD/roleController';
-import { createEstado } from '@/controller/CRUD/estadoController';
+import { createCategory } from '@/controller/CRUD/category/categoryController';
+import { createRole } from '@/controller/CRUD/role/roleController';
+import { createEstado } from '@/controller/CRUD/estado/estadoController';
 import { crearUsuario } from '@/controller/controller/user/newUser';
 import { TipoEntidad } from '@/types/tipos';
 

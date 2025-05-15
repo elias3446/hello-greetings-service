@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 import { getReports } from '@/controller/CRUD/report/reportController';
 import { getUsers } from '@/controller/CRUD/user/userController';
-import { getCategories } from '@/controller/CRUD/categoryController';
-import { getRoles } from '@/controller/CRUD/roleController';
-import { getEstados } from '@/controller/CRUD/estadoController';
+import { getCategories } from '@/controller/CRUD/category/categoryController';
+import { getRoles } from '@/controller/CRUD/role/roleController';
+import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { EstadoReporte } from '@/types/tipos';
 

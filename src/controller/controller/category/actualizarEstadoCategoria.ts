@@ -1,6 +1,6 @@
 import { Categoria, Usuario } from '@/types/tipos';
-import { updateCategory } from '../../CRUD/categoryController';
-import { registrarCambioEstadoCategoria } from '../../CRUD/historialEstadosCategoria';
+import { updateCategory } from '../../CRUD/category/categoryController';
+import { registrarCambioEstadoCategoria } from '../../CRUD/category/historialEstadosCategoria';
 import { registrarCambioEstadoReporte } from '../../CRUD/report/historialEstadosReporte';
 import { filterReports } from '../../CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';

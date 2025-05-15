@@ -15,12 +15,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getCategories } from '@/controller/CRUD/categoryController';
+import { getCategories } from '@/controller/CRUD/category/categoryController';
 import { actualizarCategoriaReporte } from '@/controller/controller/report/reportCategoryController';
 import { actualizarEstadoReporte } from '@/controller/controller/report/reportStateController';
 import { actualizarAsignacionReporte } from '@/controller/controller/report/reportAssignmentController';
 import { eliminarReporte } from '@/controller/controller/report/reportDeleteController';
-import { getEstados } from '@/controller/CRUD/estadoController';
+import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { usuarios } from '@/data/usuarios';
 import { getSystemUser } from '@/utils/userUtils';
 import { Pencil, Trash2 } from 'lucide-react';

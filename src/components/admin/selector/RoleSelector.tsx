@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getRoles } from '@/controller/CRUD/roleController';
+import { getRoles } from '@/controller/CRUD/role/roleController';
 import { updateUser } from '@/controller/CRUD/user/userController';
 import { toast } from '@/components/ui/sonner';
 import { Usuario, Rol } from '@/types/tipos';

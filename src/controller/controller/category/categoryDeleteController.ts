@@ -1,4 +1,4 @@
-import { deleteCategory } from '@/controller/CRUD/categoryController';
+import { deleteCategory } from '@/controller/CRUD/category/categoryController';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { Reporte, Usuario } from '@/types/tipos';
 import { reportes } from '@/data/reportes';

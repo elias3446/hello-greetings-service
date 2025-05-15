@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { createRole, updateRole, getRoleById } from '@/controller/CRUD/roleController';
+import { createRole, updateRole, getRoleById } from '@/controller/CRUD/role/roleController';
 import { permisosDisponibles } from '@/data/permisos';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import ColorPicker from '@/components/admin/estados/ColorPicker';

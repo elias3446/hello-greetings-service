@@ -13,7 +13,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { useForm } from 'react-hook-form';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { createEstado, getEstadoById, updateEstado } from '@/controller/CRUD/estadoController';
+import { createEstado, getEstadoById, updateEstado } from '@/controller/CRUD/estado/estadoController';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
 import { IconPicker } from "@/components/IconPicker";
 import Layout from '@/components/layout/Layout';
@@ -121,7 +121,7 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                   <Avatar className="h-20 w-20 border-4 border-background">
                     <AvatarFallback style={{ backgroundColor: form.watch('color') }}>
-                      {form.watch('nombre').substring(0, 2).toUpperCase() || 'ES'}
+                      {(form.watch('nombre') as string).substring(0, 2).toUpperCase() || 'ES'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">

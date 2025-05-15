@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getEstados, updateEstado, deleteEstado } from '@/controller/CRUD/estadoController';
+import { getEstados, updateEstado, deleteEstado } from '@/controller/CRUD/estado/estadoController';
 import FilterByValues from '@/components/common/FilterByValues';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
