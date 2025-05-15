@@ -24,7 +24,7 @@ import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getReportById, createReport, updateReport } from '@/controller/CRUD/report/reportController';
+import { obtenerReportePorId, crearReporte, actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { getCategories } from '@/controller/CRUD/category/categoryController';
 import { categorias } from '@/data/categorias';
 import { estadosReporte } from '@/data/estadosReporte';
@@ -91,7 +91,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
     // Si es modo editar, cargar datos del reporte
     const loadReporteData = () => {
       if (modo === 'editar' && id) {
-        const reporteExistente = getReportById(id);
+        const reporteExistente = obtenerReportePorId(id);
         if (reporteExistente) {
           form.setValue('titulo', reporteExistente.titulo);
           form.setValue('descripcion', reporteExistente.descripcion);
@@ -183,7 +183,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
           toast.error(resultado.message || 'Error al crear el reporte');
         }
       } else if (modo === 'editar' && id) {
-        updateReport(id, reporteData);
+        actualizarReporte(id, reporteData);
         toast.success('Reporte actualizado correctamente');
         navigate(`/reportes/${id}`);
       }

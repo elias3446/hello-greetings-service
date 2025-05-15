@@ -1,6 +1,6 @@
 import { Categoria, EstadoReporte } from '@/types/tipos';
 import { getCategories } from '@/controller/CRUD/category/categoryController';
-import { getReports } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes } from '@/controller/CRUD/report/reportController';
 import { getEstados } from '@/controller/CRUD/estado/estadoController';
 
 // Interface for grouped states
@@ -30,7 +30,7 @@ export interface CategoriaEstadoData {
 // Get categories with report counts
 export const getCategoriaConReportes = (): CategoriaConReportes[] => {
   const categoriasData = getCategories();
-  const reportesData = getReports();
+  const reportesData = obtenerReportes();
   
   return categoriasData.map(categoria => {
     const reportesCat = reportesData.filter(reporte => reporte.categoria.id === categoria.id);
@@ -46,7 +46,7 @@ export const getCategoriaConReportes = (): CategoriaConReportes[] => {
 // Get report counts by category and status type
 export const getReportesPorCategoriaEstado = (tiposEstado: TipoEstado): CategoriaEstadoData[] => {
   const categoriasData = getCategories();
-  const reportesData = getReports();
+  const reportesData = obtenerReportes();
   
   return categoriasData
     .filter(categoria => 

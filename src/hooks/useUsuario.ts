@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Usuario, Reporte, HistorialEstadoUsuario, Rol } from '@/types/tipos';
 import { UsuarioState, UsuarioActions } from '@/types/usuario';
 import { getUsers, updateUser, deleteUser, getUserById } from '@/controller/CRUD/user/userController';
-import { getReports, filterReports } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes, filtrarReportes } from '@/controller/CRUD/report/reportController';
 import { registrarCambioEstado, obtenerHistorialUsuario } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
@@ -194,7 +194,7 @@ export const useUsuarioHandlers = (state: UsuarioState, actions: UsuarioActions)
     const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
     
     try {
-      const reportesAsignados = getReports().filter(reporte => 
+      const reportesAsignados = obtenerReportes().filter(reporte => 
         reporte.asignadoA && reporte.asignadoA.id === usuario.id
       );
 
@@ -280,7 +280,7 @@ export const useUsuarioHandlers = (state: UsuarioState, actions: UsuarioActions)
     try {
       if (!usuarioAEliminar) return;
       
-      const reportesAsignados = getReports().filter(reporte => 
+      const reportesAsignados = obtenerReportes().filter(reporte => 
         reporte.asignadoA && reporte.asignadoA.id === usuarioAEliminar.id
       );
 
@@ -374,7 +374,7 @@ export const useUsuario = () => {
 
   useEffect(() => {
     if (id) {
-      const reportes = filterReports({ userId: id });
+      const reportes = filtrarReportes({ userId: id });
       setReportesAsignados(reportes);
     }
   }, [id]);

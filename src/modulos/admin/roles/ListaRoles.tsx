@@ -21,7 +21,7 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
-import { getRoles } from '@/controller/CRUD/role/roleController';
+import { obtenerRoles } from '@/controller/CRUD/role/roleController';
 import type { Rol } from '@/types/tipos';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -55,7 +55,7 @@ const ListaRoles = () => {
     // Cargar roles
     setIsLoading(true);
     try {
-      const data = getRoles();
+      const data = obtenerRoles();
       setRoles(data);
       setFilteredRoles(data);
       setIsLoading(false);

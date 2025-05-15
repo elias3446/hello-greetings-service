@@ -1,54 +1,76 @@
-
 import { Rol } from '@/types/tipos';
 import { roles } from '@/data/roles';
-import { permisosDisponibles } from '@/data/permisos';
 
-// Obtener todos los roles
-export const getRoles = (): Rol[] => {
-  return roles;
+/**
+ * Retorna todos los roles existentes.
+ */
+export const obtenerRoles = (): Rol[] => {
+  return [...roles];
 };
 
-// Obtener un rol por ID
-export const getRoleById = (id: string): Rol | undefined => {
-  return roles.find((role) => role.id === id);
+/**
+ * Busca un rol por su ID único.
+ * 
+ * @param id - ID del rol.
+ * @returns El rol encontrado o undefined.
+ */
+export const obtenerRolPorId = (id: string): Rol | undefined => {
+  return roles.find(rol => rol.id === id);
 };
 
-// Crear un nuevo rol
-export const createRole = (roleData: Omit<Rol, 'id'>): Rol => {
-  const newRole: Rol = {
+/**
+ * Crea un nuevo rol con datos proporcionados.
+ * 
+ * @param datosRol - Datos del nuevo rol, excluyendo el ID.
+ * @returns El nuevo rol creado.
+ */
+export const crearRol = (datosRol: Omit<Rol, 'id' | 'fechaCreacion' | 'activo'>): Rol => {
+  const nuevoRol: Rol = {
     id: crypto.randomUUID(),
-    ...roleData,
+    ...datosRol,
     fechaCreacion: new Date(),
-    activo: true
+    activo: true,
   };
-  roles.push(newRole);
-  return newRole;
+
+  roles.push(nuevoRol);
+  return nuevoRol;
 };
 
-// Actualizar un rol
-export const updateRole = (id: string, roleData: Partial<Rol>): Rol => {
-  const index = roles.findIndex((role) => role.id === id);
-  if (index === -1) {
-    throw new Error('Rol no encontrado');
+/**
+ * Actualiza un rol existente por ID.
+ * 
+ * @param id - ID del rol a actualizar.
+ * @param datos - Datos parciales a modificar.
+ * @returns El rol actualizado.
+ * @throws Error si el rol no existe.
+ */
+export const actualizarRol = (id: string, datos: Partial<Rol>): Rol => {
+  const indice = roles.findIndex(rol => rol.id === id);
+
+  if (indice === -1) {
+    throw new Error(`Rol con ID "${id}" no encontrado.`);
   }
 
-  // Actualizar el rol existente manteniendo los campos no modificados
   const rolActualizado: Rol = {
-    ...roles[index],
-    ...roleData,
-    fechaActualizacion: new Date()
+    ...roles[indice],
+    ...datos,
+    fechaActualizacion: new Date(),
   };
 
-  roles[index] = rolActualizado;
+  roles[indice] = rolActualizado;
   return rolActualizado;
 };
 
-// Eliminar un rol
-export const deleteRole = (id: string): boolean => {
-  const index = roles.findIndex((role) => role.id === id);
-  if (index !== -1) {
-    roles.splice(index, 1);
-    return true;
-  }
-  return false;
+/**
+ * Elimina un rol por su ID.
+ * 
+ * @param id - ID del rol a eliminar.
+ * @returns true si se eliminó correctamente, false si no se encontró.
+ */
+export const eliminarRol = (id: string): boolean => {
+  const indice = roles.findIndex(rol => rol.id === id);
+  if (indice === -1) return false;
+
+  roles.splice(indice, 1);
+  return true;
 };

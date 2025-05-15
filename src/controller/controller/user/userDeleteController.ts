@@ -2,7 +2,7 @@ import { Usuario, Reporte } from '@/types/tipos';
 import { deleteUser } from '@/controller/CRUD/user/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/report/reportController';
+import { filtrarReportes } from '@/controller/CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';
 
 /**
@@ -16,16 +16,16 @@ export const eliminarUsuario = async (
   realizadoPor: Usuario
 ): Promise<boolean> => {
   try {
-    console.log('Iniciando eliminación de usuario:', {
+    console.log('[eliminarUsuario] Iniciando eliminación de usuario:', {
       usuarioId: usuario.id,
-      nombre: usuario.nombre
+      nombreCompleto: `${usuario.nombre} ${usuario.apellido}`
     });
 
-    // 1. Obtener los reportes asignados antes de eliminar
-    const reportesAsignados = filterReports({ userId: usuario.id });
-    console.log('Reportes asignados encontrados:', reportesAsignados.length);
+    // 1. Obtener reportes asignados al usuario antes de eliminarlo
+    const reportesAsignados = filtrarReportes({ userId: usuario.id });
+    console.log(`[eliminarUsuario] Reportes asignados encontrados: ${reportesAsignados.length}`);
 
-    // 2. Registrar el cambio en el historial de estados del usuario
+    // 2. Registrar cambio de estado del usuario a "eliminado" en historial
     await registrarCambioEstado(
       usuario,
       usuario.estado,
@@ -34,17 +34,11 @@ export const eliminarUsuario = async (
       'Usuario eliminado del sistema',
       'otro'
     );
+    console.log('[eliminarUsuario] Historial de estados de usuario actualizado');
 
-    console.log('Historial de usuario actualizado');
-
-    // 3. Actualizar el historial de estados y asignaciones de cada reporte
+    // 3. Actualizar historial de cada reporte asignado, marcando "Sin responsable"
     for (const reporte of reportesAsignados) {
-      console.log('Actualizando historial de reporte:', {
-        reporteId: reporte.id,
-        estadoAnterior: `${usuario.nombre} ${usuario.apellido}`,
-        estadoNuevo: 'Sin responsable'
-      });
-
+      console.log(`[eliminarUsuario] Actualizando historial del reporte ${reporte.id}`);
       await registrarCambioEstadoReporte(
         reporte,
         `${usuario.nombre} ${usuario.apellido}`,
@@ -53,23 +47,21 @@ export const eliminarUsuario = async (
         'Usuario eliminado del sistema',
         'asignacion_reporte'
       );
-
-      console.log('Historial de reporte actualizado');
+      console.log(`[eliminarUsuario] Historial del reporte ${reporte.id} actualizado`);
     }
 
     // 4. Eliminar el usuario
-    const resultado = deleteUser(usuario.id);
-    
+    const resultado = await deleteUser(usuario.id);
     if (!resultado) {
       throw new Error('Error al eliminar el usuario');
     }
 
-    console.log('Usuario eliminado correctamente');
+    console.log('[eliminarUsuario] Usuario eliminado correctamente');
     toast.success(`Usuario ${usuario.nombre} ${usuario.apellido} eliminado correctamente`);
     return true;
   } catch (error) {
-    console.error('Error al eliminar el usuario:', error);
+    console.error('[eliminarUsuario] Error al eliminar el usuario:', error);
     toast.error('Error al eliminar el usuario');
     return false;
   }
-}; 
+};

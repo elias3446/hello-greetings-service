@@ -1,7 +1,7 @@
 import { EstadoReporte, Usuario } from '@/types/tipos';
 import { getEstadoById, updateEstado, deleteEstado } from '../../CRUD/estado/estadoController';
 import { createHistorialEstado } from '../../CRUD/estado/historialEstadoController';
-import { filterReports, updateReport } from '../../CRUD/report/reportController';
+import { filtrarReportes, actualizarReporte } from '../../CRUD/report/reportController';
 import { registrarCambioEstadoReporte } from '../../CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 
@@ -41,7 +41,7 @@ export const eliminarEstadoConHistorial = async (
     }
 
     // 2. Identificar reportes afectados
-    const reportesAfectados = await filterReports({ estadoId: id });
+    const reportesAfectados = await filtrarReportes({ estadoId: id });
     
     // 3. Registrar en historial del estado a eliminar
     await createHistorialEstado(
@@ -69,7 +69,7 @@ export const eliminarEstadoConHistorial = async (
         );
         
         // Actualizar el reporte con el estado alternativo
-        const reporteActualizado = updateReport(reporte.id, {
+        const reporteActualizado = actualizarReporte(reporte.id, {
           estado: estadoAlternativo
         });
         
@@ -144,7 +144,7 @@ export const desactivarEstado = async (
     }
 
     // 2. Identificar reportes afectados
-    const reportesAfectados = await filterReports({ estadoId: id });
+    const reportesAfectados = await filtrarReportes({ estadoId: id });
     
     // 3. Registrar en historial del estado a desactivar
     await createHistorialEstado(
@@ -182,7 +182,7 @@ export const desactivarEstado = async (
         );
         
         // Actualizar el reporte con el estado alternativo
-        const reporteActualizado = updateReport(reporte.id, {
+        const reporteActualizado = actualizarReporte(reporte.id, {
           estado: estadoAlternativo
         });
         

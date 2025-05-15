@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getEstados } from '@/controller/CRUD/estado/estadoController';
-import { getReports } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes } from '@/controller/CRUD/report/reportController';
 import { EstadoReporte } from '@/types/tipos';
 import { 
   BarChart, 
@@ -25,7 +25,7 @@ const DashboardEstados = () => {
   
   useEffect(() => {
     const estadosData = getEstados();
-    const reportesData = getReports();
+    const reportesData = obtenerReportes();
     
     setEstados(estadosData);
 
@@ -174,7 +174,7 @@ const DashboardEstados = () => {
             {estados.map((estado) => {
               const reportesCount = reportesPorEstado.find(r => r.name === estado.nombre)?.value || 0;
               const metricas = reportesPorTipoEstado.find(r => r.name === estado.nombre);
-              const reportesDelEstado = getReports().filter(reporte => reporte.estado.id === estado.id);
+              const reportesDelEstado = obtenerReportes().filter(reporte => reporte.estado.id === estado.id);
               
               return (
                 <div 

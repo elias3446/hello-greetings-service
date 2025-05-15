@@ -2,22 +2,43 @@ import { HistorialEstado, EstadoReporte, Usuario } from '@/types/tipos';
 import { historialEstados } from '@/data/actividades';
 import { getEstadoById } from './estadoController';
 
-// Obtener todo el historial de estados
+/**
+ * Obtiene todos los registros del historial de estados.
+ * @returns Array de registros de historial.
+ */
 export const getHistorialEstados = (): HistorialEstado[] => {
-  return historialEstados;
+  return [...historialEstados]; // Retorna copia para evitar modificaciones externas
 };
 
-// Obtener el historial de estado por ID
+/**
+ * Obtiene un registro del historial por su ID.
+ * @param id - ID del registro.
+ * @returns Registro encontrado o undefined si no existe.
+ */
 export const getHistorialEstadoById = (id: string): HistorialEstado | undefined => {
-  return historialEstados.find((historial) => historial.id === id);
+  return historialEstados.find(historial => historial.id === id);
 };
 
-// Obtener el historial de estados de un estado específico
+/**
+ * Obtiene todos los registros del historial para un estado específico.
+ * @param estadoId - ID del estado.
+ * @returns Array de registros relacionados al estado.
+ */
 export const getHistorialEstadoByEstadoId = (estadoId: string): HistorialEstado[] => {
-  return historialEstados.filter((historial) => historial.idEstado.id === estadoId);
+  return historialEstados.filter(historial => historial.idEstado.id === estadoId);
 };
 
-// Crear un nuevo registro en el historial de estados
+/**
+ * Crea un nuevo registro en el historial de estados.
+ * @param estadoId - ID del estado actual.
+ * @param estadoAnterior - Nombre del estado anterior.
+ * @param estadoNuevo - Nombre del estado nuevo.
+ * @param realizadoPorId - ID del usuario que realiza el cambio.
+ * @param tipoAccion - Tipo de acción realizada.
+ * @param motivoCambio - Motivo opcional del cambio.
+ * @returns Nuevo registro creado.
+ * @throws Error si el estado no existe.
+ */
 export const createHistorialEstado = (
   estadoId: string,
   estadoAnterior: string,
@@ -26,15 +47,11 @@ export const createHistorialEstado = (
   tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'otro',
   motivoCambio?: string
 ): HistorialEstado => {
-  // Obtener el estado por ID
   const estado = getEstadoById(estadoId);
-  if (!estado) {
-    throw new Error('Estado no encontrado');
-  }
+  if (!estado) throw new Error(`Estado con ID "${estadoId}" no encontrado`);
 
-  // En un caso real, buscaríamos al usuario en la base de datos
-  // Aquí usamos el usuario admin de ejemplo
-  const realizadoPor = {
+  // En un entorno real, obtener usuario de la base de datos; aquí se simula admin
+  const realizadoPor: Usuario = {
     id: realizadoPorId,
     nombre: 'Admin',
     apellido: 'Sistema',
@@ -45,7 +62,7 @@ export const createHistorialEstado = (
     tipo: 'admin',
     intentosFallidos: 0,
     password: ''
-  } as Usuario;
+  };
 
   const nuevoHistorial: HistorialEstado = {
     id: crypto.randomUUID(),
@@ -62,32 +79,37 @@ export const createHistorialEstado = (
   return nuevoHistorial;
 };
 
-// Actualizar un registro del historial de estados
+/**
+ * Actualiza un registro existente del historial de estados.
+ * @param id - ID del registro a actualizar.
+ * @param historialData - Campos a modificar.
+ * @returns Registro actualizado.
+ * @throws Error si no se encuentra el registro.
+ */
 export const updateHistorialEstado = (
   id: string,
   historialData: Partial<HistorialEstado>
 ): HistorialEstado => {
-  const index = historialEstados.findIndex((historial) => historial.id === id);
-  if (index === -1) {
-    throw new Error('Registro de historial no encontrado');
-  }
+  const index = historialEstados.findIndex(historial => historial.id === id);
+  if (index === -1) throw new Error(`Registro con ID "${id}" no encontrado`);
 
-  // Actualizar el registro existente manteniendo los campos no modificados
-  const historialActualizado: HistorialEstado = {
+  historialEstados[index] = {
     ...historialEstados[index],
     ...historialData
   };
 
-  historialEstados[index] = historialActualizado;
-  return historialActualizado;
+  return historialEstados[index];
 };
 
-// Eliminar un registro del historial de estados
+/**
+ * Elimina un registro del historial de estados.
+ * @param id - ID del registro a eliminar.
+ * @returns true si se eliminó correctamente, false si no se encontró.
+ */
 export const deleteHistorialEstado = (id: string): boolean => {
-  const index = historialEstados.findIndex((historial) => historial.id === id);
-  if (index !== -1) {
-    historialEstados.splice(index, 1);
-    return true;
-  }
-  return false;
-}; 
+  const index = historialEstados.findIndex(historial => historial.id === id);
+  if (index === -1) return false;
+
+  historialEstados.splice(index, 1);
+  return true;
+};

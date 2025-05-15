@@ -7,10 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getCategories } from '@/controller/CRUD/category/categoryController';
-import { getReportById, updateReport } from '@/controller/CRUD/report/reportController';
-import { toast } from '@/components/ui/sonner';
 import {  Categoria} from '@/types/tipos';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 
 interface CategoriaSelectorProps {
   ReporteId: string;

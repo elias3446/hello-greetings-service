@@ -1,15 +1,10 @@
 import { Rol, Usuario } from '@/types/tipos';
-import { createRole, getRoleById } from '../../CRUD/role/roleController';
-import { createHistorialEstadoRol } from '../../CRUD/role/historialEstadoRolController';
+import { crearRol, obtenerRolPorId } from '../../CRUD/role/roleController';
+import { crearHistorialEstadoRol } from '../../CRUD/role/historialEstadoRolController';
 import { toast } from '@/components/ui/sonner';
 
 /**
- * Crea un nuevo rol y registra su creación en el historial de estados
- * 
- * @param rolData - Datos del nuevo rol
- * @param usuario - Usuario que realiza la creación
- * @param comentario - Comentario opcional sobre la creación
- * @returns Promise con el rol creado o null si ocurrió un error
+ * Crea un nuevo rol y registra su creación en el historial
  */
 export const crearRolConHistorial = async (
   rolData: Omit<Rol, 'id'>,
@@ -17,42 +12,38 @@ export const crearRolConHistorial = async (
   comentario?: string
 ): Promise<Rol | null> => {
   try {
-    // 1. Validar datos mínimos necesarios
-    if (!rolData.nombre) {
+    if (!rolData.nombre?.trim()) {
       toast.error('El nombre del rol es obligatorio');
       return null;
     }
 
-    // Asegurar que se incluyan los campos necesarios con valores por defecto
-    const datosCompletos: Omit<Rol, 'id'> = {
+    const datos: Omit<Rol, 'id'> = {
       ...rolData,
-      fechaCreacion: rolData.fechaCreacion || new Date(),
-      activo: rolData.activo !== undefined ? rolData.activo : true,
-      permisos: rolData.permisos || [],
-      tipo: rolData.tipo || 'usuario'
+      fechaCreacion: rolData.fechaCreacion ?? new Date(),
+      activo: rolData.activo ?? true,
+      permisos: rolData.permisos ?? [],
+      tipo: rolData.tipo ?? 'usuario',
     };
 
-    // 2. Crear el rol
-    const nuevoRol = createRole(datosCompletos);
+    const nuevoRol = crearRol(datos);
 
     if (!nuevoRol) {
       throw new Error('Error al crear el rol');
     }
 
-    // 3. Registrar la creación en el historial de estados de roles
-    const descripcionCambio = comentario || `Creación del rol "${nuevoRol.nombre}"`;
-    
-    const historialCreado = createHistorialEstadoRol(
+    const descripcion = comentario || `Creación del rol "${nuevoRol.nombre}"`;
+
+    const historial = crearHistorialEstadoRol(
       nuevoRol.id,
-      'no_existe', // Estado anterior
-      nuevoRol.activo ? 'activo' : 'inactivo', // Estado nuevo
+      'no_existe',
+      nuevoRol.activo ? 'activo' : 'inactivo',
       usuario.id,
-      'creacion', // Tipo de acción
-      descripcionCambio
+      'creacion',
+      descripcion
     );
 
-    if (!historialCreado) {
-      console.warn('No se pudo registrar el historial de la creación del rol');
+    if (!historial) {
+      console.warn(`Historial no registrado para rol "${nuevoRol.nombre}"`);
     }
 
     toast.success(`Rol "${nuevoRol.nombre}" creado correctamente`);
@@ -65,13 +56,7 @@ export const crearRolConHistorial = async (
 };
 
 /**
- * Crea un rol duplicando uno existente
- * 
- * @param idRolBase - ID del rol a duplicar
- * @param nuevoNombre - Nombre para el nuevo rol
- * @param usuario - Usuario que realiza la operación
- * @param comentario - Comentario opcional sobre la creación
- * @returns Promise con el nuevo rol o null si ocurrió un error
+ * Duplica un rol existente asignándole un nuevo nombre
  */
 export const duplicarRol = async (
   idRolBase: string,
@@ -80,33 +65,27 @@ export const duplicarRol = async (
   comentario?: string
 ): Promise<Rol | null> => {
   try {
-    // 1. Obtener el rol base
-    const rolBase = getRoleById(idRolBase);
-    
+    const rolBase = obtenerRolPorId(idRolBase);
+
     if (!rolBase) {
       toast.error('No se encontró el rol a duplicar');
       return null;
     }
 
-    // 2. Preparar los datos del nuevo rol (eliminando el id y fechas específicas)
-    const datosNuevoRol: Omit<Rol, 'id'> = {
+    const nuevoRol: Omit<Rol, 'id'> = {
       nombre: nuevoNombre,
       descripcion: `${rolBase.descripcion} (copia)`,
-      permisos: rolBase.permisos,
+      permisos: [...rolBase.permisos],
       color: rolBase.color,
       tipo: rolBase.tipo,
       fechaCreacion: new Date(),
-      activo: true
+      activo: true,
     };
 
-    // 3. Crear el nuevo rol con historial
-    const comentarioFinal = comentario || 
-      `Rol creado como duplicado de "${rolBase.nombre}"`;
-    
     return await crearRolConHistorial(
-      datosNuevoRol,
+      nuevoRol,
       usuario,
-      comentarioFinal
+      comentario || `Rol duplicado desde "${rolBase.nombre}"`
     );
   } catch (error) {
     console.error('Error en duplicarRol:', error);
@@ -116,11 +95,7 @@ export const duplicarRol = async (
 };
 
 /**
- * Crea uno o más roles a partir de una plantilla predefinida
- * 
- * @param tipoPlantilla - Tipo de plantilla a usar ('basico', 'intermedio', 'completo')
- * @param usuario - Usuario que realiza la creación
- * @returns Promise con array de roles creados
+ * Crea uno o más roles desde una plantilla predefinida
  */
 export const crearRolesDesdeTemplates = async (
   tipoPlantilla: 'basico' | 'intermedio' | 'completo',
@@ -129,75 +104,59 @@ export const crearRolesDesdeTemplates = async (
   const rolesCreados: Rol[] = [];
 
   try {
-    // Cargar los permisos disponibles
-    const permisosDisponibles = require('@/data/permisos').permisosDisponibles;
-    
-    // Definir templates de roles según el tipo solicitado
+    const { permisosDisponibles } = require('@/data/permisos');
+
+    const baseTemplate = (nombre: string, descripcion: string, filtro: (id: string) => boolean, color: string): Omit<Rol, 'id'> => ({
+      nombre,
+      descripcion,
+      permisos: permisosDisponibles.filter(p => filtro(p.id)),
+      color,
+      tipo: 'usuario',
+      fechaCreacion: new Date(),
+      activo: true,
+    });
+
     const templates: Omit<Rol, 'id'>[] = [];
-    
-    if (tipoPlantilla === 'basico' || tipoPlantilla === 'intermedio' || tipoPlantilla === 'completo') {
-      // Siempre incluir el rol básico de visualizador
-      templates.push({
-        nombre: 'Visualizador',
-        descripcion: 'Puede ver información pero no modificarla',
-        permisos: permisosDisponibles.filter(p => p.id.startsWith('ver_')),
-        color: '#6B7280', // Gris
-        tipo: 'usuario',
-        fechaCreacion: new Date(),
-        activo: true
-      });
-    }
-    
-    if (tipoPlantilla === 'intermedio' || tipoPlantilla === 'completo') {
-      // Añadir rol de editor
-      templates.push({
-        nombre: 'Editor',
-        descripcion: 'Puede ver y editar información existente',
-        permisos: permisosDisponibles.filter(p => 
-          p.id.startsWith('ver_') || 
-          p.id.startsWith('editar_')
-        ),
-        color: '#10B981', // Verde
-        tipo: 'usuario',
-        fechaCreacion: new Date(),
-        activo: true
-      });
-    }
-    
-    if (tipoPlantilla === 'completo') {
-      // Añadir rol de gestor
-      templates.push({
-        nombre: 'Gestor',
-        descripcion: 'Puede crear, editar y gestionar la mayoría de contenidos',
-        permisos: permisosDisponibles.filter(p => 
-          !p.id.includes('admin_') && 
-          !p.id.includes('eliminar_usuario')
-        ),
-        color: '#3B82F6', // Azul
-        tipo: 'usuario',
-        fechaCreacion: new Date(),
-        activo: true
-      });
+
+    if (['basico', 'intermedio', 'completo'].includes(tipoPlantilla)) {
+      templates.push(baseTemplate(
+        'Visualizador',
+        'Puede ver información pero no modificarla',
+        id => id.startsWith('ver_'),
+        '#6B7280'
+      ));
     }
 
-    // Crear roles desde los templates
+    if (['intermedio', 'completo'].includes(tipoPlantilla)) {
+      templates.push(baseTemplate(
+        'Editor',
+        'Puede ver y editar información existente',
+        id => id.startsWith('ver_') || id.startsWith('editar_'),
+        '#10B981'
+      ));
+    }
+
+    if (tipoPlantilla === 'completo') {
+      templates.push(baseTemplate(
+        'Gestor',
+        'Puede crear, editar y gestionar la mayoría de contenidos',
+        id => !id.includes('admin_') && !id.includes('eliminar_usuario'),
+        '#3B82F6'
+      ));
+    }
+
     for (const template of templates) {
-      const rolCreado = await crearRolConHistorial(
+      const creado = await crearRolConHistorial(
         template,
         usuario,
-        `Rol creado automáticamente desde plantilla de tipo "${tipoPlantilla}"`
+        `Rol creado desde plantilla "${tipoPlantilla}"`
       );
-      
-      if (rolCreado) {
-        rolesCreados.push(rolCreado);
-      }
+      if (creado) rolesCreados.push(creado);
     }
 
-    if (rolesCreados.length > 0) {
-      toast.success(`Se crearon ${rolesCreados.length} roles desde la plantilla "${tipoPlantilla}"`);
-    } else {
-      toast.warning('No se pudo crear ningún rol desde la plantilla');
-    }
+    rolesCreados.length > 0
+      ? toast.success(`Se crearon ${rolesCreados.length} roles desde la plantilla "${tipoPlantilla}"`)
+      : toast.warning('No se creó ningún rol');
 
     return rolesCreados;
   } catch (error) {
@@ -205,4 +164,4 @@ export const crearRolesDesdeTemplates = async (
     toast.error('Error al crear roles desde plantillas');
     return rolesCreados;
   }
-}; 
+};

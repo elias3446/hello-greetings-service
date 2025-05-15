@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
-import { getRoles } from '@/controller/CRUD/roleController';
-import { getUsers } from '@/controller/userController';
+import { obtenerRoles } from '@/controller/CRUD/role/roleController';
+import { getUsers } from '@/controller/CRUD/user/userController';
 import { Rol } from '@/types/tipos';
 
 export const useRoleDashboard = () => {
@@ -10,7 +9,7 @@ export const useRoleDashboard = () => {
   const [permisosPorRol, setPermisosPorRol] = useState<any[]>([]);
   
   useEffect(() => {
-    const rolesData = getRoles();
+    const rolesData = obtenerRoles();
     const usuariosData = getUsers();
     
     setRoles(rolesData);

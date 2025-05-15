@@ -7,10 +7,10 @@ import {
   Shield, 
   Activity 
 } from 'lucide-react';
-import { getReports } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes } from '@/controller/CRUD/report/reportController';
 import { getUsers } from '@/controller/CRUD/user/userController';
 import { getCategories } from '@/controller/CRUD/category/categoryController';
-import { getRoles } from '@/controller/CRUD/role/roleController';
+import { obtenerRoles } from '@/controller/CRUD/role/roleController';
 import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { EstadoReporte } from '@/types/tipos';
@@ -32,10 +32,10 @@ const DashboardGeneral = () => {
   
   useEffect(() => {
     // Obtener datos para los contadores
-    const reportes = getReports();
+    const reportes = obtenerReportes();
     const usuarios = getUsers();
     const categorias = getCategories();
-    const roles = getRoles();
+    const roles = obtenerRoles();
     const estados = getEstados();
 
     setData({

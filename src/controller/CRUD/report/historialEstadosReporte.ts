@@ -1,102 +1,90 @@
 import { HistorialEstadoReporte, Reporte, Usuario } from '@/types/tipos';
 import { historialEstadosReporteEjemplo } from '@/data/actividades';
 
-// Array para almacenar los registros del historial (simulación de base de datos)
+// Simulación de base de datos
 let historialEstados: HistorialEstadoReporte[] = [...historialEstadosReporteEjemplo];
 
+/* =========================
+   FUNCIONES PRINCIPALES
+   ========================= */
+
 /**
- * Crea un nuevo registro en el historial de estados de reporte
- * @param registro - El registro a crear
- * @returns El registro creado con su ID
+ * Crea un nuevo registro de historial de estado de reporte.
+ * @param registro - Datos del nuevo registro (sin ID).
+ * @returns Registro creado con ID generado.
  */
-export const crearRegistroHistorial = (registro: Omit<HistorialEstadoReporte, 'id'>): HistorialEstadoReporte => {
+export const crearRegistroHistorial = (
+  registro: Omit<HistorialEstadoReporte, 'id'>
+): HistorialEstadoReporte => {
   const nuevoRegistro: HistorialEstadoReporte = {
     ...registro,
-    id: Date.now().toString(), // Usamos timestamp como ID temporal
+    id: Date.now().toString(), // ID generado por timestamp
   };
-  
+
   historialEstados.push(nuevoRegistro);
   return nuevoRegistro;
 };
 
 /**
- * Obtiene todos los registros del historial de un reporte específico
- * @param idReporte - ID del reporte
- * @returns Array de registros ordenados cronológicamente
+ * Obtiene todos los registros del historial de un reporte específico.
+ * @param idReporte - ID del reporte.
+ * @returns Registros ordenados de más reciente a más antiguo.
  */
-export const obtenerHistorialReporte = (idReporte: string | number): HistorialEstadoReporte[] => {
-  console.log('Buscando historial para reporte:', idReporte);
-  console.log('Tipo de idReporte:', typeof idReporte);
-  console.log('Historial actual:', historialEstados);
-  
-  const historialFiltrado = historialEstados
-    .filter(registro => {
-      const idReporteRegistro = registro.idReporte.id;
-      console.log('Comparando IDs:', {
-        idReporte,
-        idReporteRegistro,
-        tipoIdReporte: typeof idReporte,
-        tipoIdReporteRegistro: typeof idReporteRegistro,
-        iguales: String(idReporte) === String(idReporteRegistro)
-      });
-      return String(idReporte) === String(idReporteRegistro);
-    })
+export const obtenerHistorialReporte = (idReporte: string): HistorialEstadoReporte[] => {
+  return historialEstados
+    .filter(registro => String(registro.idReporte.id) === String(idReporte))
     .sort((a, b) => b.fechaHoraCambio.getTime() - a.fechaHoraCambio.getTime());
-  
-  console.log('Historial filtrado:', historialFiltrado);
-  return historialFiltrado;
 };
 
 /**
- * Obtiene un registro específico del historial
- * @param id - ID del registro
- * @returns El registro encontrado o undefined
+ * Obtiene un registro específico del historial por su ID.
+ * @param id - ID del registro.
+ * @returns El registro encontrado o undefined si no existe.
  */
-export const obtenerRegistroHistorial = (id: string | number): HistorialEstadoReporte | undefined => {
+export const obtenerRegistroHistorial = (id: string): HistorialEstadoReporte | undefined => {
   return historialEstados.find(registro => registro.id === id);
 };
 
 /**
- * Actualiza un registro existente en el historial
- * @param id - ID del registro a actualizar
- * @param datos - Nuevos datos del registro
- * @returns El registro actualizado o undefined si no se encontró
+ * Actualiza un registro del historial.
+ * @param id - ID del registro a actualizar.
+ * @param datos - Datos nuevos a aplicar.
+ * @returns El registro actualizado o undefined si no se encontró.
  */
 export const actualizarRegistroHistorial = (
-  id: string | number,
+  id: string,
   datos: Partial<HistorialEstadoReporte>
 ): HistorialEstadoReporte | undefined => {
   const indice = historialEstados.findIndex(registro => registro.id === id);
-  
   if (indice === -1) return undefined;
-  
+
   historialEstados[indice] = {
     ...historialEstados[indice],
     ...datos,
   };
-  
+
   return historialEstados[indice];
 };
 
 /**
- * Elimina un registro del historial
- * @param id - ID del registro a eliminar
- * @returns true si se eliminó correctamente, false si no se encontró
+ * Elimina un registro del historial.
+ * @param id - ID del registro a eliminar.
+ * @returns true si se eliminó correctamente, false si no se encontró.
  */
-export const eliminarRegistroHistorial = (id: string | number): boolean => {
+export const eliminarRegistroHistorial = (id: string): boolean => {
   const longitudInicial = historialEstados.length;
   historialEstados = historialEstados.filter(registro => registro.id !== id);
   return historialEstados.length < longitudInicial;
 };
 
 /**
- * Registra automáticamente un cambio de estado de reporte
- * @param reporte - Reporte afectado
- * @param estadoAnterior - Estado previo del reporte
- * @param estadoNuevo - Nuevo estado del reporte
- * @param realizadoPor - Usuario que realizó el cambio
- * @param motivoCambio - Motivo opcional del cambio
- * @param tipoAccion - Tipo de acción realizada
+ * Registra un cambio de estado en un reporte.
+ * @param reporte - Reporte afectado.
+ * @param estadoAnterior - Estado anterior del reporte.
+ * @param estadoNuevo - Estado nuevo del reporte.
+ * @param realizadoPor - Usuario que realizó el cambio.
+ * @param motivoCambio - Motivo opcional del cambio.
+ * @param tipoAccion - Tipo de acción (por defecto: 'cambio_estado').
  */
 export const registrarCambioEstadoReporte = (
   reporte: Reporte,
@@ -106,16 +94,7 @@ export const registrarCambioEstadoReporte = (
   motivoCambio?: string,
   tipoAccion: HistorialEstadoReporte['tipoAccion'] = 'cambio_estado'
 ): void => {
-  console.log('Registrando cambio de estado en reporte:', {
-    reporteId: reporte.id,
-    estadoAnterior,
-    estadoNuevo,
-    realizadoPorId: realizadoPor.id,
-    motivoCambio,
-    tipoAccion
-  });
-
-  const nuevoRegistro = crearRegistroHistorial({
+  crearRegistroHistorial({
     idReporte: reporte,
     estadoAnterior,
     estadoNuevo,
@@ -124,7 +103,4 @@ export const registrarCambioEstadoReporte = (
     motivoCambio,
     tipoAccion,
   });
-
-  console.log('Nuevo registro creado:', nuevoRegistro);
-  console.log('Historial actualizado:', historialEstados);
-}; 
+};

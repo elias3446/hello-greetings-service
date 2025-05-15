@@ -1,40 +1,59 @@
 import { HistorialEstadoRol, Rol, Usuario } from '@/types/tipos';
 import { historialEstadosRol } from '@/data/actividades';
-import { getRoleById } from './roleController';
+import { obtenerRolPorId } from './roleController';
 
-// Obtener todo el historial de estados de roles
-export const getHistorialEstadosRol = (): HistorialEstadoRol[] => {
-  return historialEstadosRol;
+/**
+ * Retorna todo el historial de estados de roles.
+ */
+export const obtenerHistorialEstadosRol = (): HistorialEstadoRol[] => {
+  return [...historialEstadosRol];
 };
 
-// Obtener el historial de estados por ID
-export const getHistorialEstadoRolById = (id: string): HistorialEstadoRol | undefined => {
-  return historialEstadosRol.find((historial) => historial.id === id);
+/**
+ * Obtiene un registro del historial por ID.
+ * 
+ * @param id - ID del historial.
+ * @returns El registro encontrado o undefined.
+ */
+export const obtenerHistorialEstadoRolPorId = (id: string): HistorialEstadoRol | undefined => {
+  return historialEstadosRol.find(historial => historial.id === id);
 };
 
-// Obtener el historial de estados de un rol específico
-export const getHistorialEstadoRolByRolId = (rolId: string): HistorialEstadoRol[] => {
-  return historialEstadosRol.filter((historial) => historial.idRol.id === rolId);
+/**
+ * Obtiene el historial de cambios de estado para un rol específico.
+ * 
+ * @param rolId - ID del rol.
+ * @returns Arreglo de historial filtrado.
+ */
+export const obtenerHistorialPorRolId = (rolId: string): HistorialEstadoRol[] => {
+  return historialEstadosRol.filter(historial => historial.idRol.id === rolId);
 };
 
-// Crear un nuevo registro en el historial de estados de rol
-export const createHistorialEstadoRol = (
+/**
+ * Crea un nuevo registro de historial de estado para un rol.
+ * 
+ * @param rolId - ID del rol.
+ * @param estadoAnterior - Estado anterior del rol.
+ * @param estadoNuevo - Estado nuevo del rol.
+ * @param realizadoPorId - ID del usuario que realizó el cambio.
+ * @param tipoAccion - Tipo de acción registrada.
+ * @param motivoCambio - Motivo opcional del cambio.
+ * @returns El nuevo registro creado.
+ * @throws Error si el rol no se encuentra.
+ */
+export const crearHistorialEstadoRol = (
   rolId: string,
   estadoAnterior: string,
   estadoNuevo: string,
   realizadoPorId: string,
-  tipoAccion: 'creacion' | 'actualizacion' | 'cambio_estado' | 'otro',
+  tipoAccion: HistorialEstadoRol['tipoAccion'],
   motivoCambio?: string
 ): HistorialEstadoRol => {
-  // Obtener el rol por ID
-  const rol = getRoleById(rolId);
-  if (!rol) {
-    throw new Error('Rol no encontrado');
-  }
+  const rol = obtenerRolPorId(rolId);
+  if (!rol) throw new Error(`Rol con ID "${rolId}" no encontrado.`);
 
-  // En un caso real, buscaríamos al usuario en la base de datos
-  // Aquí usamos el usuario admin de ejemplo
-  const realizadoPor = {
+  // Simulación de usuario administrador
+  const realizadoPor: Usuario = {
     id: realizadoPorId,
     nombre: 'Admin',
     apellido: 'Sistema',
@@ -45,7 +64,7 @@ export const createHistorialEstadoRol = (
     tipo: 'admin',
     intentosFallidos: 0,
     password: ''
-  } as Usuario;
+  };
 
   const nuevoHistorial: HistorialEstadoRol = {
     id: crypto.randomUUID(),
@@ -62,32 +81,40 @@ export const createHistorialEstadoRol = (
   return nuevoHistorial;
 };
 
-// Actualizar un registro del historial de estados de rol
-export const updateHistorialEstadoRol = (
+/**
+ * Actualiza un registro existente del historial.
+ * 
+ * @param id - ID del registro a actualizar.
+ * @param datos - Datos a modificar.
+ * @returns Registro actualizado.
+ * @throws Error si no se encuentra el historial.
+ */
+export const actualizarHistorialEstadoRol = (
   id: string,
-  historialData: Partial<HistorialEstadoRol>
+  datos: Partial<HistorialEstadoRol>
 ): HistorialEstadoRol => {
-  const index = historialEstadosRol.findIndex((historial) => historial.id === id);
-  if (index === -1) {
-    throw new Error('Registro de historial no encontrado');
-  }
+  const index = historialEstadosRol.findIndex(historial => historial.id === id);
+  if (index === -1) throw new Error(`Historial con ID "${id}" no encontrado.`);
 
-  // Actualizar el registro existente manteniendo los campos no modificados
   const historialActualizado: HistorialEstadoRol = {
     ...historialEstadosRol[index],
-    ...historialData
+    ...datos,
   };
 
   historialEstadosRol[index] = historialActualizado;
   return historialActualizado;
 };
 
-// Eliminar un registro del historial de estados de rol
-export const deleteHistorialEstadoRol = (id: string): boolean => {
-  const index = historialEstadosRol.findIndex((historial) => historial.id === id);
-  if (index !== -1) {
-    historialEstadosRol.splice(index, 1);
-    return true;
-  }
-  return false;
-}; 
+/**
+ * Elimina un registro del historial por ID.
+ * 
+ * @param id - ID del historial a eliminar.
+ * @returns true si fue eliminado, false si no se encontró.
+ */
+export const eliminarHistorialEstadoRol = (id: string): boolean => {
+  const index = historialEstadosRol.findIndex(historial => historial.id === id);
+  if (index === -1) return false;
+
+  historialEstadosRol.splice(index, 1);
+  return true;
+};

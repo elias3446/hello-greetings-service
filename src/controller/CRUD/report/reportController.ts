@@ -1,156 +1,164 @@
 import { Reporte } from '@/types/tipos';
 import { reportes } from '@/data/reportes';
 import { agregarAsignacion } from '@/controller/CRUD/user/historialAsignacionController';
-import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 
-// Obtener todos los reportes
-export const getReports = (): Reporte[] => {
-  return [...reportes]; // Devuelve una copia para evitar modificaciones accidentales
-};
+/* =========================
+   OPERACIONES PRINCIPALES
+   ========================= */
 
-// Obtener un reporte por ID
-export const getReportById = (id: string): Reporte | undefined => {
-  return reportes.find((report) => report.id === id);
-};
+/**
+ * Devuelve todos los reportes (copia del arreglo original).
+ */
+export const obtenerReportes = (): Reporte[] => [...reportes];
 
-// Crear un nuevo reporte
-export const createReport = (reportData: Omit<Reporte, 'id'>): Reporte => {
-  const newReport: Reporte = {
+/**
+ * Busca un reporte por su ID.
+ */
+export const obtenerReportePorId = (id: string): Reporte | undefined =>
+  reportes.find((reporte) => reporte.id === id);
+
+/**
+ * Crea un nuevo reporte y actualiza historial si es necesario.
+ */
+export const crearReporte = (datos: Omit<Reporte, 'id'>): Reporte => {
+  const nuevoReporte: Reporte = {
     id: crypto.randomUUID(),
-    ...reportData
+    ...datos
   };
-  reportes.push(newReport);
-  const index = reportes.findIndex((report) => report.id === newReport.id);
-  if (index !== -1) {
-    const reporte = reportes[index];
-    
-    // Si se está actualizando el usuario asignado, actualizar el historial
-    if ('asignadoA' in reportData) {
-      const historialActualizado = agregarAsignacion(reporte, reportData.asignadoA);
-      reportData.historialAsignaciones = historialActualizado;
-    }
-    
-    const updatedReport = { ...reporte, ...reportData };
-    reportes[index] = updatedReport;
-    return updatedReport;
+
+  reportes.push(nuevoReporte);
+
+  // Si se asignó a un usuario, agregar historial
+  if (datos.asignadoA) {
+    const historialAsignaciones = agregarAsignacion(nuevoReporte, datos.asignadoA);
+    nuevoReporte.historialAsignaciones = historialAsignaciones;
   }
-  return newReport;
+
+  return nuevoReporte;
 };
 
-// Actualizar un reporte
-export const updateReport = (id: string, reportData: Partial<Reporte>): Reporte | undefined => {
-  const index = reportes.findIndex((report) => report.id === id);
-  if (index !== -1) {
-    const reporte = reportes[index];
-    
-    // Solo actualizar el historial de asignaciones si hay un cambio real en el usuario asignado
-    if ('asignadoA' in reportData) {
-      const hayCambioAsignacion = 
-        (reportData.asignadoA?.id !== reporte.asignadoA?.id) || 
-        (reportData.asignadoA === null && reporte.asignadoA !== null) ||
-        (reportData.asignadoA !== null && reporte.asignadoA === null);
+/**
+ * Actualiza un reporte existente, incluyendo historial de asignación si cambia.
+ */
+export const actualizarReporte = (id: string, cambios: Partial<Reporte>): Reporte | undefined => {
+  const index = reportes.findIndex((r) => r.id === id);
+  if (index === -1) return undefined;
 
-      if (hayCambioAsignacion) {
-        const historialActualizado = agregarAsignacion(reporte, reportData.asignadoA);
-        reportData.historialAsignaciones = historialActualizado;
-      }
-    }
-    
-    const updatedReport = { ...reporte, ...reportData };
-    reportes[index] = updatedReport;
-    return updatedReport;
+  const reporteOriginal = reportes[index];
+
+  // Verificar si cambió el usuario asignado
+  const asignadoOriginalId = reporteOriginal.asignadoA?.id || null;
+  const nuevoAsignadoId = cambios.asignadoA?.id || null;
+  const cambioAsignacion = asignadoOriginalId !== nuevoAsignadoId;
+
+  if (cambioAsignacion && cambios.asignadoA) {
+    cambios.historialAsignaciones = agregarAsignacion(reporteOriginal, cambios.asignadoA);
   }
-  return undefined;
+
+  const reporteActualizado: Reporte = {
+    ...reporteOriginal,
+    ...cambios
+  };
+
+  reportes[index] = reporteActualizado;
+  return reporteActualizado;
 };
 
-// Eliminar un reporte
-export const deleteReport = async (id: string): Promise<boolean> => {
-  const index = reportes.findIndex((report) => report.id === id);
-  if (index !== -1) {
-    reportes.splice(index, 1);
-    return true;
-  }
-  return false;
+/**
+ * Elimina un reporte por ID.
+ */
+export const eliminarReporte = async (id: string): Promise<boolean> => {
+  const index = reportes.findIndex((r) => r.id === id);
+  if (index === -1) return false;
+  reportes.splice(index, 1);
+  return true;
 };
 
-// Filtrar reportes por criterios
-export const filterReports = (criteria: {
+/* ========================
+   FILTRADO Y ORDENAMIENTO
+   ======================== */
+
+/**
+ * Filtra reportes por múltiples criterios.
+ */
+export const filtrarReportes = (criterios: {
   search?: string;
   categoryId?: string;
   statusId?: string;
   estadoId?: string;
   userId?: string;
 }): Reporte[] => {
-  let filteredReports = [...reportes];
-  
-  if (criteria.search) {
-    const term = criteria.search.toLowerCase();
-    filteredReports = filteredReports.filter(
-      report => report.titulo.toLowerCase().includes(term) ||
-               (report.categoria?.nombre || '').toLowerCase().includes(term) ||
-               (report.estado?.nombre || '').toLowerCase().includes(term) ||
-               (report.ubicacion?.direccion || '').toLowerCase().includes(term) ||
-               (report.asignadoA?.nombre || '').toLowerCase().includes(term)
+  let resultado = [...reportes];
+
+  const { search, categoryId, statusId, estadoId, userId } = criterios;
+
+  if (search) {
+    const termino = search.toLowerCase();
+    resultado = resultado.filter((r) =>
+      r.titulo.toLowerCase().includes(termino) ||
+      (r.categoria?.nombre || '').toLowerCase().includes(termino) ||
+      (r.estado?.nombre || '').toLowerCase().includes(termino) ||
+      (r.ubicacion?.direccion || '').toLowerCase().includes(termino) ||
+      (r.asignadoA?.nombre || '').toLowerCase().includes(termino)
     );
   }
-  
-  if (criteria.categoryId) {
-    filteredReports = filteredReports.filter(report => report.categoria?.id === criteria.categoryId);
+
+  if (categoryId) {
+    resultado = resultado.filter(r => r.categoria?.id === categoryId);
   }
-  
-  if (criteria.statusId || criteria.estadoId) {
-    const idEstado = criteria.statusId || criteria.estadoId;
-    filteredReports = filteredReports.filter(report => report.estado.id === idEstado);
+
+  if (statusId || estadoId) {
+    const estadoBuscado = statusId || estadoId;
+    resultado = resultado.filter(r => r.estado?.id === estadoBuscado);
   }
-  
-  if (criteria.userId) {
-    filteredReports = filteredReports.filter(report => {
-      console.log('Comparando IDs de usuario:', {
-        userId: criteria.userId,
-        asignadoAId: report.asignadoA?.id,
-        iguales: String(criteria.userId) === String(report.asignadoA?.id)
-      });
-      return String(criteria.userId) === String(report.asignadoA?.id);
-    });
+
+  if (userId) {
+    resultado = resultado.filter(r => r.asignadoA?.id === userId);
   }
-  
-  return filteredReports;
+
+  return resultado;
 };
 
-// Ordenar reportes
-export const sortReports = (reports: Reporte[], sortBy: string, direction: 'asc' | 'desc'): Reporte[] => {
-  const sortedReports = [...reports];
-  
-  sortedReports.sort((a, b) => {
-    let comparison = 0;
-    
-    switch (sortBy) {
+/**
+ * Ordena reportes por campo específico.
+ */
+export const ordenarReportes = (
+  reportes: Reporte[],
+  campo: string,
+  direccion: 'asc' | 'desc'
+): Reporte[] => {
+  const copia = [...reportes];
+
+  copia.sort((a, b) => {
+    let resultado = 0;
+
+    switch (campo) {
       case 'titulo':
-        comparison = a.titulo.localeCompare(b.titulo);
+        resultado = a.titulo.localeCompare(b.titulo);
         break;
       case 'categoria':
-        comparison = (a.categoria?.nombre || '').localeCompare(b.categoria?.nombre || '');
+        resultado = (a.categoria?.nombre || '').localeCompare(b.categoria?.nombre || '');
         break;
       case 'estado':
-        comparison = (a.estado?.nombre || '').localeCompare(b.estado?.nombre || '');
+        resultado = (a.estado?.nombre || '').localeCompare(b.estado?.nombre || '');
         break;
       case 'ubicacion':
-        comparison = (a.ubicacion?.direccion || '').localeCompare(b.ubicacion?.direccion || '');
+        resultado = (a.ubicacion?.direccion || '').localeCompare(b.ubicacion?.direccion || '');
         break;
       case 'asignadoA':
-        comparison = (a.asignadoA?.nombre || '').localeCompare(b.asignadoA?.nombre || '');
+        resultado = (a.asignadoA?.nombre || '').localeCompare(b.asignadoA?.nombre || '');
         break;
       case 'fecha':
-        const fechaA = a.fechaCreacion instanceof Date ? a.fechaCreacion : new Date(a.fechaCreacion);
-        const fechaB = b.fechaCreacion instanceof Date ? b.fechaCreacion : new Date(b.fechaCreacion);
-        comparison = fechaA.getTime() - fechaB.getTime();
+        const fechaA = new Date(a.fechaCreacion).getTime();
+        const fechaB = new Date(b.fechaCreacion).getTime();
+        resultado = fechaA - fechaB;
         break;
       default:
-        comparison = 0;
+        resultado = 0;
     }
 
-    return direction === 'asc' ? comparison : -comparison;
+    return direccion === 'asc' ? resultado : -resultado;
   });
-  
-  return sortedReports;
+
+  return copia;
 };

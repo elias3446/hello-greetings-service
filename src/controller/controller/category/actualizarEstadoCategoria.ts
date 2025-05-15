@@ -2,9 +2,9 @@ import { Categoria, Usuario } from '@/types/tipos';
 import { updateCategory } from '../../CRUD/category/categoryController';
 import { registrarCambioEstadoCategoria } from '../../CRUD/category/historialEstadosCategoria';
 import { registrarCambioEstadoReporte } from '../../CRUD/report/historialEstadosReporte';
-import { filterReports } from '../../CRUD/report/reportController';
+import { filtrarReportes } from '../../CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';
-import { updateReport } from '../../CRUD/report/reportController';
+import { actualizarReporte } from '../../CRUD/report/reportController';
 
 /**
  * Actualiza el estado de una categoría y registra los cambios en los historiales correspondientes
@@ -47,7 +47,7 @@ export const actualizarEstadoCategoria = async (
     }
 
     // 3. Obtener todos los reportes asociados a la categoría
-    const reportesCategoria = await filterReports({ categoryId: categoria.id });
+    const reportesCategoria = await filtrarReportes({ categoryId: categoria.id });
 
     // 4. Actualizar el historial de estados de los reportes asociados
     const actualizacionesReportes = await Promise.all(
@@ -66,7 +66,7 @@ export const actualizarEstadoCategoria = async (
 
           // Si la categoría se está desactivando, remover la categoría de los reportes
           if (!nuevoEstado) {
-            const reporteActualizado = updateReport(reporte.id, { categoria: undefined });
+            const reporteActualizado = actualizarReporte(reporte.id, { categoria: undefined });
             if (!reporteActualizado) {
               console.error(`Error al remover la categoría del reporte ${reporte.id}`);
               return false;

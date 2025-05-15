@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/components/ui/sonner';
 import { permisosDisponibles } from '@/data/permisos';
-import { getRoleById, updateRole } from '@/controller/CRUD/role/roleController';
+import { obtenerRolPorId, actualizarRol } from '@/controller/CRUD/role/roleController';
 import { getUsers } from '@/controller/CRUD/user/userController';
 import { 
   ArrowLeft, 
@@ -36,7 +36,7 @@ const DetalleRol = () => {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   
-  const rol = id ? getRoleById(id) : null;
+  const rol = id ? obtenerRolPorId(id) : null;
   
   // Obtener usuarios con este rol
   const todosUsuarios = getUsers();
@@ -75,7 +75,7 @@ const DetalleRol = () => {
       setIsLoading(true);
       const nuevoEstado = !rol.activo;
       
-      await updateRole(rol.id, {
+      await actualizarRol(rol.id, {
         activo: nuevoEstado
       });
       

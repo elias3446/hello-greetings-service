@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Reporte, Usuario, Categoria, EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, getReportById, updateReport } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes, obtenerReportePorId, actualizarReporte } from '@/controller/CRUD/report/reportController';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
@@ -19,7 +19,7 @@ import { getCategories } from '@/controller/CRUD/category/categoryController';
 import { actualizarCategoriaReporte } from '@/controller/controller/report/reportCategoryController';
 import { actualizarEstadoReporte } from '@/controller/controller/report/reportStateController';
 import { actualizarAsignacionReporte } from '@/controller/controller/report/reportAssignmentController';
-import { eliminarReporte } from '@/controller/controller/report/reportDeleteController';
+import { eliminarReport } from '@/controller/controller/report/reportDeleteController';
 import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { usuarios } from '@/data/usuarios';
 import { getSystemUser } from '@/utils/userUtils';
@@ -88,7 +88,7 @@ const ListaReportesAdmin: React.FC = () => {
   React.useEffect(() => {
     setIsLoading(true);
     try {
-      const data = getReports();
+      const data = obtenerReportes();
       setReportes(data);
       setFilteredReportes(data);
 
@@ -565,7 +565,7 @@ const ListaReportesAdmin: React.FC = () => {
               continue;
             }
 
-            const success = await eliminarReporte(reporte, {
+            const success = await eliminarReport(reporte, {
               id: '0',
               nombre: 'Sistema',
               apellido: '',
@@ -613,7 +613,7 @@ const ListaReportesAdmin: React.FC = () => {
           toast.info(`${skippedCount} reportes inactivos fueron omitidos`);
         }
       } else if (reporteAEliminar) {
-        const success = await eliminarReporte(reporteAEliminar, {
+        const success = await eliminarReport(reporteAEliminar, {
           id: '0',
           nombre: 'Sistema',
           apellido: '',

@@ -2,7 +2,7 @@ import { Usuario } from '@/types/tipos';
 import { UserFormData } from '@/types/user';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/report/reportController';
+import { filtrarReportes } from '@/controller/CRUD/report/reportController';
 
 // Ordenar usuarios
 export const sortUsers = (users: Usuario[], sortBy: string, direction: 'asc' | 'desc'): Usuario[] => {
@@ -84,7 +84,7 @@ export const handleUserStateChange = async (
     'cambio_estado'
   );
 
-  const reportesAsignados = filterReports({ userId: usuarioAnterior.id });
+  const reportesAsignados = filtrarReportes({ userId: usuarioAnterior.id });
   for (const reporte of reportesAsignados) {
     await registrarCambioEstadoReporte(
       reporte,

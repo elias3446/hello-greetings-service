@@ -1,106 +1,83 @@
-import { ActividadUsuario, Usuario } from '@/types/tipos';
+import { ActividadUsuario } from '@/types/tipos';
 import { actividadesUsuario } from '@/data/actividades';
 
-// Array para almacenar los registros del historial (simulación de base de datos)
+// Simulación de base de datos en memoria
 let historialEstados: ActividadUsuario[] = [...actividadesUsuario];
 
 /**
- * Crea un nuevo registro en el historial de estados de usuario
- * @param registro - El registro a crear
- * @returns El registro creado con su ID
+ * Crea un nuevo registro en el historial de usuario.
+ * @param registro - Datos del nuevo registro (sin ID).
+ * @returns El nuevo registro creado, con ID asignado.
  */
 export const crearHistorial = (registro: Omit<ActividadUsuario, 'id'>): ActividadUsuario => {
   const nuevoRegistro: ActividadUsuario = {
+    id: Date.now().toString(), // ID temporal basado en timestamp
     ...registro,
-    id: Date.now().toString(), // Usamos timestamp como ID temporal
   };
-  
+
   historialEstados.push(nuevoRegistro);
   return nuevoRegistro;
 };
 
 /**
- * Obtiene todos los registros del historial de un usuario específico
- * @param idUsuario - ID del usuario
- * @returns Array de registros ordenados cronológicamente
+ * Obtiene todos los registros del historial para un usuario específico.
+ * @param idUsuario - ID del usuario.
+ * @returns Lista de registros ordenados por fecha descendente.
  */
 export const obtenerHistorialUsuario = (idUsuario: string | number): ActividadUsuario[] => {
-  console.log('Buscando historial para usuario:', idUsuario);
-  console.log('Tipo de idUsuario:', typeof idUsuario);
-  console.log('Historial actual:', historialEstados);
-  
-  const historialFiltrado = historialEstados
-    .filter(registro => {
-      const idUsuarioRegistro = registro.usuarioId;
-      const sonIguales = String(idUsuario) === String(idUsuarioRegistro);
-      console.log('Comparando IDs:', {
-        idUsuario,
-        idUsuarioRegistro,
-        tipoIdUsuario: typeof idUsuario,
-        tipoIdUsuarioRegistro: typeof idUsuarioRegistro,
-        iguales: sonIguales
-      });
-      return sonIguales;
-    })
+  return historialEstados
+    .filter(registro => String(registro.usuarioId) === String(idUsuario))
     .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-  
-  console.log('Historial filtrado:', historialFiltrado);
-  return historialFiltrado;
 };
 
 /**
- * Obtiene un registro específico del historial
- * @param id - ID del registro
- * @returns El registro encontrado o undefined
+ * Obtiene un registro específico del historial por su ID.
+ * @param id - ID del registro.
+ * @returns El registro encontrado o undefined.
  */
 export const obtenerRegistroHistorial = (id: string | number): ActividadUsuario | undefined => {
-  return historialEstados.find(registro => registro.id === id);
+  return historialEstados.find(registro => registro.id === String(id));
 };
 
 /**
- * Actualiza un registro existente en el historial
- * @param id - ID del registro a actualizar
- * @param datos - Nuevos datos del registro
- * @returns El registro actualizado o undefined si no se encontró
+ * Actualiza un registro existente en el historial.
+ * @param id - ID del registro a actualizar.
+ * @param datos - Datos nuevos para el registro.
+ * @returns El registro actualizado o undefined si no se encontró.
  */
 export const actualizarRegistroHistorial = (
   id: string | number,
   datos: Partial<ActividadUsuario>
 ): ActividadUsuario | undefined => {
-  const indice = historialEstados.findIndex(registro => registro.id === id);
-  
+  const indice = historialEstados.findIndex(registro => registro.id === String(id));
   if (indice === -1) return undefined;
-  
-  historialEstados[indice] = {
-    ...historialEstados[indice],
-    ...datos,
-  };
-  
+
+  historialEstados[indice] = { ...historialEstados[indice], ...datos };
   return historialEstados[indice];
 };
 
 /**
- * Elimina un registro del historial
- * @param id - ID del registro a eliminar
- * @returns true si se eliminó correctamente, false si no se encontró
+ * Elimina un registro del historial por su ID.
+ * @param id - ID del registro a eliminar.
+ * @returns true si se eliminó correctamente, false si no se encontró.
  */
 export const eliminarRegistroHistorial = (id: string | number): boolean => {
-  const longitudInicial = historialEstados.length;
-  historialEstados = historialEstados.filter(registro => registro.id !== id);
-  return historialEstados.length < longitudInicial;
+  const longitudAntes = historialEstados.length;
+  historialEstados = historialEstados.filter(registro => registro.id !== String(id));
+  return historialEstados.length < longitudAntes;
 };
 
 /**
- * Registra automáticamente un cambio de estado de usuario
- * @param idUsuario - ID del usuario afectado
- * @param estadoAnterior - Estado previo del usuario
- * @param estadoNuevo - Nuevo estado del usuario
- * @param realizadoPor - Usuario que realizó el cambio
- * @param motivoCambio - Motivo opcional del cambio
- * @param tipoAccion - Tipo de acción realizada
+ * Registra automáticamente un cambio o acción en el historial de usuario.
+ * @param id - ID único del evento (opcional, reemplazado por timestamp interno).
+ * @param tipo - Tipo de acción (login, logout, creación, modificación, etc.).
+ * @param descripcion - Descripción del evento.
+ * @param fecha - Fecha del evento.
+ * @param usuarioId - Usuario afectado.
+ * @param detalles - Detalles opcionales del cambio (valor anterior/nuevo, comentario).
  */
 export const registrarCambioHistorial = (
-  id: string,
+  id: string, // No se usa directamente, se genera un nuevo ID interno
   tipo: 'login' | 'logout' | 'creacion' | 'modificacion' | 'eliminacion',
   descripcion: string,
   fecha: Date,
@@ -111,23 +88,11 @@ export const registrarCambioHistorial = (
     comentario?: string;
   }
 ): void => {
-  console.log('Registrando cambio de estado de usuario:', {
-    id,
+  crearHistorial({
     tipo,
     descripcion,
     fecha,
     usuarioId,
-    detalles
+    detalles,
   });
-
-  const nuevoRegistro = crearHistorial({
-    tipo,
-    descripcion,
-    fecha,
-    usuarioId,
-    detalles
-  });
-
-  console.log('Nuevo registro creado:', nuevoRegistro);
-  console.log('Historial actualizado:', historialEstados);
-}; 
+};

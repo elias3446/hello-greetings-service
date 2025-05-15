@@ -5,20 +5,24 @@ import { getSystemUser } from "@/utils/userUtils";
 import { createUser } from "@/controller/CRUD/user/userController";
 
 /**
- * Función para crear un nuevo usuario en el sistema
- * @param userData Datos parciales del usuario a crear
+ * Crea un nuevo usuario en el sistema, asignando valores por defecto si es necesario,
+ * y registra los cambios iniciales en los historiales correspondientes.
+ * 
+ * @param userData - Datos parciales para crear el usuario (nombre es obligatorio)
+ * @throws Error si faltan campos requeridos
+ * @returns Promise<Usuario> - El usuario creado
  */
-export const crearUsuario = async (userData: Partial<Usuario>) => {
-  if (!userData.nombre) {
-    throw new Error("Faltan campos requeridos: nombre es obligatorio");
+export const crearUsuario = async (userData: Partial<Usuario>): Promise<Usuario> => {
+  if (!userData.nombre || userData.nombre.trim() === '') {
+    throw new Error("Campo requerido: 'nombre' es obligatorio y no puede estar vacío.");
   }
 
-  // Asignamos valores por defecto si no se proporcionan
+  // Asignar valores por defecto para los campos faltantes
   const datosCompletos: Omit<Usuario, 'id'> = {
-    nombre: userData.nombre,
-    apellido: userData.apellido ?? '',
-    email: userData.email ?? `${userData.nombre}@example.com`,
-    password: userData.password ?? `${userData.nombre}@example.com`,
+    nombre: userData.nombre.trim(),
+    apellido: userData.apellido?.trim() ?? '',
+    email: userData.email?.trim() ?? `${userData.nombre.toLowerCase()}@example.com`,
+    password: userData.password ?? `${userData.nombre.toLowerCase()}@example.com`,
     estado: userData.estado ?? 'activo',
     roles: userData.roles ?? [],
     fechaCreacion: userData.fechaCreacion ?? new Date(),
@@ -26,25 +30,33 @@ export const crearUsuario = async (userData: Partial<Usuario>) => {
     intentosFallidos: userData.intentosFallidos ?? 0,
   };
 
-  // Creamos el usuario en la base de datos
-  const nuevoUsuario = await createUser(datosCompletos);
+  try {
+    // Crear usuario en base de datos
+    const nuevoUsuario = await createUser(datosCompletos);
 
-  // Registramos el cambio de estado inicial en el historial de estados
-  await registrarCambioEstado(
-    nuevoUsuario,
-    'no_existe',
-    nuevoUsuario.estado,
-    getSystemUser(),
-    'Usuario creado en el sistema',
-    'creacion'
-  );
+    // Registrar el cambio de estado inicial en historial de estados
+    await registrarCambioEstado(
+      nuevoUsuario,
+      'no_existe',                 // Estado anterior ficticio
+      nuevoUsuario.estado,         // Estado actual
+      getSystemUser(),             // Usuario sistema que realiza el cambio
+      'Usuario creado en el sistema',
+      'creacion'
+    );
 
-  // Registramos el evento de creación en el historial de cambios
-  await registrarCambioHistorial(
-    nuevoUsuario.id,
-    'creacion',
-    'Usuario creado en el sistema',
-    new Date(),
-    nuevoUsuario.id
-  );
+    // Registrar evento de creación en historial general de usuario
+    await registrarCambioHistorial(
+      nuevoUsuario.id,
+      'creacion',
+      'Usuario creado en el sistema',
+      new Date(),
+      nuevoUsuario.id
+    );
+
+    return nuevoUsuario;
+
+  } catch (error) {
+    console.error('Error al crear usuario:', error);
+    throw new Error('No se pudo crear el usuario. Inténtalo nuevamente.');
+  }
 };

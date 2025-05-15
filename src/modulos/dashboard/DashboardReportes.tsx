@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getReports } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes } from '@/controller/CRUD/report/reportController';
 import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { Reporte, EstadoReporte } from '@/types/tipos';
 import { 
@@ -48,7 +48,7 @@ const DashboardReportes = () => {
   const [coloresPorTipo, setColoresPorTipo] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const reportesData = getReports().filter(r => r.activo);
+    const reportesData = obtenerReportes().filter(r => r.activo);
     const estadosData = getEstados();
     setReportes(reportesData);
 

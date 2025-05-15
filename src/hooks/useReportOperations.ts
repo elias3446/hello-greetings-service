@@ -1,7 +1,7 @@
 import React from 'react';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { getReports, deleteReport } from '@/controller/CRUD/reportController';
+import { obtenerReportes, eliminarReporte } from '@/controller/CRUD/report/reportController';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 
@@ -15,7 +15,7 @@ export const useReportOperations = (
     if (!reporte) return;
     
     try {
-      const reportesAsignados = getReports().filter(r => 
+      const reportesAsignados = obtenerReportes().filter(r => 
         r.asignadoA && r.asignadoA.id === reporte.id
       );
 
@@ -39,7 +39,7 @@ export const useReportOperations = (
         );
       }
 
-      const success = deleteReport(reporte.id);
+      const success = eliminarReporte(reporte.id);
       
       if (success) {
         setReportes(prev => prev.filter(r => r.id !== reporte.id));

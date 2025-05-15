@@ -1,6 +1,6 @@
 import { Reporte, Usuario } from '@/types/tipos';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
-import { filterReports, getReports, deleteReport } from '@/controller/CRUD/report/reportController';
+import { filtrarReportes, obtenerReportes, eliminarReporte } from '@/controller/CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';
 
 /**
@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/sonner';
  * @param realizadoPor - Usuario que realiza la eliminación
  * @returns Promise<boolean> - true si la eliminación fue exitosa
  */
-export const eliminarReporte = async (
+export const eliminarReport = async (
   reporte: Reporte,
   realizadoPor: Usuario
 ): Promise<boolean> => {
@@ -33,14 +33,14 @@ export const eliminarReporte = async (
     }
 
     // 2. Eliminar el reporte
-    const success = await deleteReport(reporte.id);
+    const success = await eliminarReporte(reporte.id);
     if (!success) {
       throw new Error('Error al eliminar el reporte');
     }
 
     // 3. Actualizar los reportes asignados del usuario
     if (reporte.asignadoA) {
-      const reportesUsuario = filterReports({ userId: reporte.asignadoA.id });
+      const reportesUsuario = filtrarReportes({ userId: reporte.asignadoA.id });
       console.log('Reportes del usuario actualizados:', reportesUsuario.length);
     }
 

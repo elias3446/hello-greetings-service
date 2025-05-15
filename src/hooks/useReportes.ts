@@ -1,6 +1,5 @@
 import React from 'react';
 import { Reporte } from '@/types/tipos';
-import { sortReports } from '@/controller/CRUD/reportController';
 import { getFieldValue, formatDate, getFullName } from '@/utils/reportes';
 
 export const useReportesState = () => {

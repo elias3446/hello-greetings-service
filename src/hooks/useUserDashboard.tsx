@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { getUsers } from '@/controller/userController';
+import { getUsers } from '@/controller/CRUD/user/userController';
 import { Usuario } from '@/types/tipos';
 import { roles } from '@/data/roles';
 

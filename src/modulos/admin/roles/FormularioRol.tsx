@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { createRole, updateRole, getRoleById } from '@/controller/CRUD/role/roleController';
+import { crearRol, actualizarRol, obtenerRolPorId } from '@/controller/CRUD/role/roleController';
 import { permisosDisponibles } from '@/data/permisos';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import ColorPicker from '@/components/admin/estados/ColorPicker';
@@ -45,7 +44,7 @@ const FormularioRol = ({ modo }: FormularioRolProps) => {
   // Load existing role data when in edit mode
   useEffect(() => {
     if (modo === 'editar' && id) {
-      const rolExistente = getRoleById(id);
+      const rolExistente = obtenerRolPorId(id);
       if (rolExistente) {
         // Map permissions to their IDs for the form
         const permisosIds = rolExistente.permisos?.map(p => p.id) || [];
@@ -70,7 +69,7 @@ const FormularioRol = ({ modo }: FormularioRolProps) => {
       ).filter(Boolean);
       
       if (modo === 'editar' && id) {
-        const rolActualizado = updateRole(id, {
+        const rolActualizado = actualizarRol(id, {
           nombre: data.nombre,
           descripcion: data.descripcion,
           color: data.color,
@@ -81,14 +80,12 @@ const FormularioRol = ({ modo }: FormularioRolProps) => {
 
         toast.success("Rol actualizado exitosamente");
       } else {
-        const nuevoRol = createRole({
+        const nuevoRol = crearRol({
           nombre: data.nombre,
           descripcion: data.descripcion,
           color: data.color,
           tipo: data.tipo,
-          permisos: permisosSeleccionados,
-          activo: data.activo,
-          fechaCreacion: new Date()
+          permisos: permisosSeleccionados
         });
 
         toast.success("Rol creado exitosamente");

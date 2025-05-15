@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
@@ -34,7 +33,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ totalReportes, reportesPorEstad
 
       {Object.entries(reportesPorEstado).map(([estadoId, estado]) => {
         const estadoOriginal = getEstadoOriginal(estadoId);
-        const tipo = estadoOriginal?.tipo || 'default';
+        const tipo = estadoOriginal?.nombre.toLowerCase().replace(/ /g, '_') || 'default';
         
         const iconoInfo = getIconoInfo(tipo);
         const Icono = iconoInfo.icono;

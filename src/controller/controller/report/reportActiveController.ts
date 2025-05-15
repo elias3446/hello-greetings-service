@@ -1,5 +1,5 @@
 import { Reporte, Usuario } from '@/types/tipos';
-import { updateReport } from '@/controller/CRUD/report/reportController';
+import { actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
@@ -49,7 +49,7 @@ export const actualizarEstadoActivoReporte = async (
     }
 
     // 3. Actualizar el reporte
-    const reporteActualizado = updateReport(reporte.id, { activo: nuevoEstado });
+    const reporteActualizado = actualizarReporte(reporte.id, { activo: nuevoEstado });
     if (!reporteActualizado) {
       throw new Error('Error al actualizar el reporte');
     }

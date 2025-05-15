@@ -1,5 +1,5 @@
 import { Reporte, Usuario, ActividadReporte } from '@/types/tipos';
-import { createReport } from '@/controller/CRUD/report/reportController';
+import { crearReporte } from '@/controller/CRUD/report/reportController';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { registrarActividadReporte } from '@/controller/CRUD/report/actividadReporteController';
@@ -18,7 +18,7 @@ export const crearReporteCompleto = async (
 ): Promise<{ success: boolean; reporte?: Reporte; message?: string }> => {
   try {
     // 1. Crear el reporte
-    const nuevoReporte = createReport(reporte);
+    const nuevoReporte = crearReporte(reporte);
     if (!nuevoReporte) {
       return {
         success: false,

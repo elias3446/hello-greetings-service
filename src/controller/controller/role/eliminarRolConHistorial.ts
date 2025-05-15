@@ -1,8 +1,8 @@
 import { Rol, Usuario } from '@/types/tipos';
-import { deleteRole, getRoleById } from '../../CRUD/role/roleController';
-import { createHistorialEstadoRol } from '../../CRUD/role/historialEstadoRolController';
-import { registrarCambioEstado } from '../../CRUD/user/historialEstadosUsuario';
-import { getUsers, updateUser } from '../../CRUD/user/userController';
+import { eliminarRol, obtenerRolPorId } from '@/controller/CRUD/role/roleController';
+import { crearHistorialEstadoRol } from '@/controller/CRUD/role/historialEstadoRolController';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
+import { getUsers, updateUser } from '@/controller/CRUD/user/userController';
 import { toast } from '@/components/ui/sonner';
 
 /**
@@ -20,35 +20,32 @@ export const eliminarRolConHistorial = async (
 ): Promise<boolean> => {
   try {
     // 1. Obtener el rol antes de eliminarlo
-    const rol = getRoleById(id);
-    
+    const rol = await obtenerRolPorId(id);
     if (!rol) {
       toast.error('No se encontró el rol a eliminar');
       return false;
     }
 
-    // 2. Identificar los usuarios afectados
-    const usuariosAfectados = identificarUsuariosAfectados(rol);
-    
+    // 2. Identificar usuarios afectados
+    const usuariosAfectados = await identificarUsuariosAfectados(rol);
     if (usuariosAfectados.length > 0) {
       console.log(`La eliminación del rol afectará a ${usuariosAfectados.length} usuarios`);
     }
 
-    // 3. Actualizar los usuarios afectados
-    const actualizacionUsuariosExitosa = await actualizarUsuariosAfectados(
+    // 3. Actualizar usuarios afectados
+    const actualizacionExitosa = await actualizarUsuariosAfectados(
       rol,
       usuariosAfectados,
       usuario,
       motivoEliminacion
     );
-    
-    if (!actualizacionUsuariosExitosa) {
+    if (!actualizacionExitosa) {
       toast.error('No se pudieron actualizar correctamente todos los usuarios afectados');
       return false;
     }
 
-    // 4. Registrar la eliminación en el historial de estados del rol
-    createHistorialEstadoRol(
+    // 4. Registrar eliminación en historial del rol
+    await crearHistorialEstadoRol(
       id,
       rol.activo ? 'activo' : 'inactivo',
       'eliminado',
@@ -58,8 +55,7 @@ export const eliminarRolConHistorial = async (
     );
 
     // 5. Eliminar el rol
-    const eliminacionExitosa = deleteRole(id);
-    
+    const eliminacionExitosa = await eliminarRol(id);
     if (!eliminacionExitosa) {
       toast.error('Error al eliminar el rol');
       return false;
@@ -75,15 +71,15 @@ export const eliminarRolConHistorial = async (
 };
 
 /**
- * Identifica los usuarios que tienen asignado el rol a eliminar
+ * Obtiene todos los usuarios que tienen asignado el rol dado
  * 
  * @param rol - Rol que se va a eliminar
- * @returns Array de usuarios afectados
+ * @returns Promise<Usuario[]> usuarios afectados
  */
-const identificarUsuariosAfectados = (rol: Rol): Usuario[] => {
-  const todosLosUsuarios = getUsers();
-  return todosLosUsuarios.filter(usuario => 
-    usuario.roles && usuario.roles.some(r => r.id === rol.id)
+const identificarUsuariosAfectados = async (rol: Rol): Promise<Usuario[]> => {
+  const todosLosUsuarios = await getUsers();
+  return todosLosUsuarios.filter(usuario =>
+    usuario.roles?.some(r => r.id === rol.id)
   );
 };
 
@@ -94,7 +90,7 @@ const identificarUsuariosAfectados = (rol: Rol): Usuario[] => {
  * @param usuariosAfectados - Lista de usuarios que tienen asignado el rol
  * @param usuarioResponsable - Usuario que realiza la eliminación
  * @param motivoEliminacion - Motivo de la eliminación
- * @returns Promise<boolean> indicando si todas las actualizaciones fueron exitosas
+ * @returns Promise<boolean> si todas las actualizaciones fueron exitosas
  */
 const actualizarUsuariosAfectados = async (
   rol: Rol,
@@ -102,29 +98,26 @@ const actualizarUsuariosAfectados = async (
   usuarioResponsable: Usuario,
   motivoEliminacion?: string
 ): Promise<boolean> => {
-  if (usuariosAfectados.length === 0) {
-    return true; // No hay usuarios que actualizar
-  }
+  if (usuariosAfectados.length === 0) return true;
 
-  // Procesar cada usuario afectado
-  const resultadosActualizacion = await Promise.all(
+  const resultados = await Promise.all(
     usuariosAfectados.map(async (usuario) => {
       try {
-        // 1. Quitar el rol eliminado de la lista de roles del usuario
+        // Filtrar roles quitando el rol eliminado
         const rolesActualizados = usuario.roles.filter(r => r.id !== rol.id);
-        
-        // 2. Determinar si es necesario cambiar el estado del usuario
+
+        // Determinar cambio de estado
         const estadoAnterior = usuario.estado;
-        let nuevoEstado = usuario.estado;
-        
-        // Si el usuario se queda sin roles, desactivarlo
+        let nuevoEstado = estadoAnterior;
+
+        // Si usuario se queda sin roles y está activo, inactivarlo
         if (rolesActualizados.length === 0 && estadoAnterior === 'activo') {
           nuevoEstado = 'inactivo';
         }
-        
-        // 3. Registrar el cambio en el historial de estados del usuario si hay cambio de estado
+
+        // Registrar cambio de estado si aplica
         if (estadoAnterior !== nuevoEstado) {
-          registrarCambioEstado(
+          await registrarCambioEstado(
             usuario,
             estadoAnterior,
             nuevoEstado,
@@ -133,109 +126,97 @@ const actualizarUsuariosAfectados = async (
             'cambio_estado'
           );
         }
-        
-        // 4. Registrar el cambio de roles en el historial de estados del usuario
-        registrarCambioEstado(
+
+        // Registrar cambio en roles
+        await registrarCambioEstado(
           usuario,
-          `Roles: ${usuario.roles.map(r => r.nombre).join(', ')}`,
+          `Roles: ${usuario.roles.map(r => r.nombre).join(', ') || 'Ninguno'}`,
           `Roles: ${rolesActualizados.map(r => r.nombre).join(', ') || 'Ninguno'}`,
           usuarioResponsable,
           `Eliminación del rol "${rol.nombre}" de la lista de roles del usuario. ${motivoEliminacion || 'Sin detalles adicionales'}`,
           'otro'
         );
-        
-        // 5. Actualizar el usuario
-        const datosActualizados: Partial<Usuario> = {
-          roles: rolesActualizados
-        };
-        
-        if (estadoAnterior !== nuevoEstado) {
-          datosActualizados.estado = nuevoEstado;
-        }
-        
-        const usuarioActualizado = updateUser(usuario.id, datosActualizados);
-        
-        if (!usuarioActualizado) {
-          throw new Error(`Error al actualizar el usuario ${usuario.id}`);
-        }
-        
+
+        // Actualizar usuario
+        const datosActualizados: Partial<Usuario> = { roles: rolesActualizados };
+        if (estadoAnterior !== nuevoEstado) datosActualizados.estado = nuevoEstado;
+
+        const usuarioActualizado = await updateUser(usuario.id, datosActualizados);
+        if (!usuarioActualizado) throw new Error(`Error al actualizar usuario ${usuario.id}`);
+
         return true;
       } catch (error) {
-        console.error(`Error al actualizar el usuario ${usuario.id}:`, error);
+        console.error(`Error actualizando usuario ${usuario.id}:`, error);
         return false;
       }
     })
   );
-  
-  // Verificar si todas las actualizaciones fueron exitosas
-  const fallos = resultadosActualizacion.filter(resultado => !resultado).length;
-  
+
+  const fallos = resultados.filter(r => !r).length;
   if (fallos > 0) {
-    console.error(`${fallos} usuarios no pudieron ser actualizados correctamente`);
     toast.warning(`${fallos} de ${usuariosAfectados.length} usuarios no pudieron ser actualizados correctamente`);
     return false;
   }
-  
+
   toast.success(`${usuariosAfectados.length} usuarios actualizados correctamente`);
   return true;
 };
 
 /**
- * Busca un rol alternativo para asignar a los usuarios que perderán su único rol
+ * Busca un rol alternativo para asignar a usuarios que perderán su único rol
  * 
  * @param rolEliminado - Rol que está siendo eliminado
- * @returns Un rol alternativo o undefined si no hay alternativas adecuadas
+ * @returns Rol alternativo o undefined si no existe
  */
 export const buscarRolAlternativo = (rolEliminado: Rol): Rol | undefined => {
   try {
-    // Obtener roles que no sean el eliminado y estén activos
-    const todosLosRoles = require('@/data/roles').roles;
-    const rolesAlternativos = todosLosRoles.filter((r: Rol) => 
-      r.id !== rolEliminado.id && 
+    // Suponiendo que roles se importan desde un archivo estático
+    const todosLosRoles: Rol[] = require('@/data/roles').roles;
+
+    const rolesAlternativos = todosLosRoles.filter(r =>
+      r.id !== rolEliminado.id &&
       r.activo === true &&
-      r.tipo === 'usuario' // Preferir roles de tipo usuario
+      r.tipo === 'usuario'
     );
-    
-    if (rolesAlternativos.length === 0) {
-      return undefined;
+
+    if (rolesAlternativos.length === 0) return undefined;
+
+    // Buscar rol con más permisos comunes
+    if (!rolEliminado.permisos?.length) {
+      return rolesAlternativos[0];
     }
-    
-    // Intentar encontrar un rol con permisos similares
+
     let mejorAlternativa = rolesAlternativos[0];
-    
-    // Si el rol eliminado tiene permisos, buscar un rol con permisos similares
-    if (rolEliminado.permisos && rolEliminado.permisos.length > 0) {
-      for (const rol of rolesAlternativos) {
-        if (rol.permisos && rolEliminado.permisos) {
-          // Contar permisos en común
-          const permisosComunes = rol.permisos.filter(p1 => 
-            rolEliminado.permisos?.some(p2 => p1.id === p2.id)
-          ).length;
-          
-          // Si tiene más permisos en común, es mejor alternativa
-          if (permisosComunes > 0) {
-            mejorAlternativa = rol;
-            break;
-          }
-        }
+    let maxPermisosComunes = 0;
+
+    for (const rol of rolesAlternativos) {
+      if (!rol.permisos) continue;
+      const permisosComunes = rol.permisos.filter(p1 =>
+        rolEliminado.permisos.some(p2 => p1.id === p2.id)
+      ).length;
+
+      if (permisosComunes > maxPermisosComunes) {
+        maxPermisosComunes = permisosComunes;
+        mejorAlternativa = rol;
       }
     }
-    
+
     return mejorAlternativa;
+
   } catch (error) {
-    console.error('Error al buscar rol alternativo:', error);
+    console.error('Error buscando rol alternativo:', error);
     return undefined;
   }
 };
 
 /**
- * Asigna un rol alternativo a usuarios que quedarían sin roles
+ * Asigna un rol alternativo a usuarios que quedarían sin roles tras eliminar un rol
  * 
  * @param rolId - ID del rol a eliminar
  * @param rolAlternativoId - ID del rol alternativo a asignar
  * @param usuario - Usuario que realiza la operación
  * @param motivoCambio - Motivo del cambio
- * @returns Promise<boolean> indicando si la operación fue exitosa
+ * @returns Promise<boolean> indicando éxito o fallo
  */
 export const asignarRolAlternativo = async (
   rolId: string,
@@ -244,30 +225,24 @@ export const asignarRolAlternativo = async (
   motivoCambio?: string
 ): Promise<boolean> => {
   try {
-    // 1. Obtener los roles
-    const rolAEliminar = getRoleById(rolId);
-    const rolAlternativo = getRoleById(rolAlternativoId);
-    
+    const rolAEliminar = await obtenerRolPorId(rolId);
+    const rolAlternativo = await obtenerRolPorId(rolAlternativoId);
+
     if (!rolAEliminar || !rolAlternativo) {
       throw new Error('No se encontró alguno de los roles');
     }
-    
-    // 2. Identificar usuarios que quedarían sin roles
-    const todosLosUsuarios = getUsers();
-    const usuariosAfectados = todosLosUsuarios.filter(u => 
+
+    const todosLosUsuarios = await getUsers();
+    const usuariosAfectados = todosLosUsuarios.filter(u =>
       u.roles.length === 1 && u.roles.some(r => r.id === rolId)
     );
-    
-    if (usuariosAfectados.length === 0) {
-      return true; // No hay usuarios que actualizar
-    }
-    
-    // 3. Actualizar cada usuario
-    const resultadosActualizacion = await Promise.all(
+
+    if (usuariosAfectados.length === 0) return true;
+
+    const resultados = await Promise.all(
       usuariosAfectados.map(async (u) => {
         try {
-          // Registrar el cambio en el historial
-          registrarCambioEstado(
+          await registrarCambioEstado(
             u,
             `Rol: ${rolAEliminar.nombre}`,
             `Rol: ${rolAlternativo.nombre}`,
@@ -275,32 +250,27 @@ export const asignarRolAlternativo = async (
             `Asignación de rol alternativo por eliminación del rol "${rolAEliminar.nombre}". ${motivoCambio || 'Sin detalles adicionales'}`,
             'otro'
           );
-          
-          // Actualizar el usuario
-          const usuarioActualizado = updateUser(u.id, {
+
+          const usuarioActualizado = await updateUser(u.id, {
             roles: [rolAlternativo]
           });
-          
-          if (!usuarioActualizado) {
-            throw new Error(`Error al actualizar el usuario ${u.id}`);
-          }
-          
+
+          if (!usuarioActualizado) throw new Error(`Error actualizando usuario ${u.id}`);
+
           return true;
         } catch (error) {
-          console.error(`Error al asignar rol alternativo al usuario ${u.id}:`, error);
+          console.error(`Error asignando rol alternativo al usuario ${u.id}:`, error);
           return false;
         }
       })
     );
-    
-    // Verificar resultados
-    const fallos = resultadosActualizacion.filter(r => !r).length;
-    
+
+    const fallos = resultados.filter(r => !r).length;
     if (fallos > 0) {
       toast.warning(`${fallos} de ${usuariosAfectados.length} usuarios no pudieron ser actualizados con el rol alternativo`);
       return false;
     }
-    
+
     toast.success(`${usuariosAfectados.length} usuarios actualizados con el rol alternativo`);
     return true;
   } catch (error) {
@@ -308,4 +278,4 @@ export const asignarRolAlternativo = async (
     toast.error('Error al asignar rol alternativo');
     return false;
   }
-}; 
+};

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { MapPin, File, Calendar, CheckCircle, AlertTriangle, User, History, Edit, ArrowLeft, FileText, Clock } from 'lucide-react';
-import { getReportById, updateReport } from '@/controller/CRUD/report/reportController';
+import { obtenerReportePorId, actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { obtenerHistorialReporte, registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 import type { Reporte, HistorialEstadoReporte, Rol, Usuario } from '@/types/tipos';
@@ -18,7 +18,7 @@ import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, 
 import UsuarioSelector from '@/components/admin/selector/UsuarioSelector';
 import { updateUser } from '@/controller/CRUD/user/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
-import { eliminarReporte } from '@/controller/controller/report/reportDeleteController';
+import { eliminarReport } from '@/controller/controller/report/reportDeleteController';
 import { actualizarAsignacionReporte } from '@/controller/controller/report/reportAssignmentController';
 import { actualizarEstadoActivoReporte } from '@/controller/controller/report/reportActiveController';
 
@@ -40,7 +40,7 @@ const DetalleReporte = () => {
           return;
         }
         
-        const reporteEncontrado = getReportById(id);
+        const reporteEncontrado = obtenerReportePorId(id);
         
         if (!reporteEncontrado) {
           toast.error('Reporte no encontrado');
@@ -102,7 +102,7 @@ const DetalleReporte = () => {
     if (!reporte) return;
     
     try {
-      const currentReporte = getReportById(reporte.id);
+      const currentReporte = obtenerReportePorId(reporte.id);
       if (!currentReporte) return;
 
       const usuarioSistema: Usuario = {
@@ -163,7 +163,7 @@ const DetalleReporte = () => {
 
       const success = await actualizarAsignacionReporte(reporte, newUsuario, usuarioSistema);
       if (success) {
-        const reporteActualizado = getReportById(reporte.id);
+        const reporteActualizado = obtenerReportePorId(reporte.id);
         if (reporteActualizado) {
           setReporte(reporteActualizado);
           setShowRoleDialog(false);
@@ -615,7 +615,7 @@ const DetalleReporte = () => {
                   fechaCreacion: new Date('2023-01-01'),
                 };
 
-                const success = await eliminarReporte(reporte, usuarioSistema);
+                const success = await eliminarReport(reporte, usuarioSistema);
                 if (success) {
                   navigate('/admin/reportes');
                 }

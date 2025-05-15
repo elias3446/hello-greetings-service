@@ -1,6 +1,6 @@
 import React from 'react';
 import { Reporte } from '@/types/tipos';
-import { sortReports } from '@/controller/CRUD/reportController';
+import { ordenarReportes } from '@/controller/CRUD/report/reportController';
 
 export const useReportesFiltering = (
   reportes: Reporte[],
@@ -75,7 +75,7 @@ export const useReportesFiltering = (
       );
     }
 
-    return sortReports(result, sortBy, sortDirection);
+    return ordenarReportes(result, sortBy, sortDirection);
   }, [reportes, searchTerm, sortBy, sortDirection, selectedFilterValues]);
 
   return {

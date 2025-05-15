@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getRoles } from '@/controller/CRUD/role/roleController';
+import { obtenerRoles } from '@/controller/CRUD/role/roleController';
 import { updateUser } from '@/controller/CRUD/user/userController';
 import { toast } from '@/components/ui/sonner';
 import { Usuario, Rol } from '@/types/tipos';
@@ -27,7 +27,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState(currentRoleId);
-  const availableRoles = getRoles();
+  const availableRoles = obtenerRoles();
   const currentRole = availableRoles.find(role => role.id === selectedRoleId);
 
   useEffect(() => {

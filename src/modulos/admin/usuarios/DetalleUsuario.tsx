@@ -15,7 +15,7 @@ import { obtenerHistorialUsuario } from '@/controller/CRUD/user/historialUsuario
 import { actualizarEstadoUsuario } from '@/controller/controller/user/userStateController';
 import { toast } from '@/components/ui/sonner';
 import { updateUser } from '@/controller/CRUD/user/userController';
-import { filterReports } from '@/controller/CRUD/report/reportController';
+import { filtrarReportes } from '@/controller/CRUD/report/reportController';
 
 const DetalleUsuario: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,7 +73,7 @@ const DetalleUsuario: React.FC = () => {
       if (usuarioActualizado) {
         setUsuario(usuarioActualizado);
         // Actualizar los reportes asignados
-        const nuevosReportes = filterReports({ userId: usuario.id });
+        const nuevosReportes = filtrarReportes({ userId: usuario.id });
         setReportesAsignados(nuevosReportes);
       }
     }

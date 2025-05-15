@@ -25,7 +25,7 @@ import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getReportById, createReport } from '@/controller/CRUD/report/reportController';
+import { obtenerReportePorId, crearReporte, actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { getCategories } from '@/controller/CRUD/category/categoryController';
 import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { getUsers } from '@/controller/CRUD/user/userController';
@@ -39,7 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { actualizarReporte } from '@/controller/controller/report/reportUpdateController';
+import { reportUpdate } from '@/controller/controller/report/reportUpdateController';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { crearReporteCompleto } from '@/controller/controller/report/reporteCreateController';
 
@@ -111,7 +111,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
   // Efecto para sincronizar los valores del formulario
   useEffect(() => {
     if (modo === 'editar' && id) {
-      const reporteExistente = getReportById(id);
+      const reporteExistente = obtenerReportePorId(id);
       console.log('Reporte existente:', reporteExistente);
       
       if (reporteExistente) {
@@ -233,7 +233,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
           toast.error(resultado.message || 'Error al crear el reporte');
         }
       } else if (modo === 'editar' && id) {
-        const reporteActual = getReportById(id);
+        const reporteActual = obtenerReportePorId(id);
         if (!reporteActual) {
           toast.error('No se encontró el reporte a actualizar');
           return;
@@ -260,7 +260,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
           fechaCreacion: new Date('2023-01-01'),
         };
 
-        const success = await actualizarReporte(reporteActual, reporteData, usuarioSistema);
+        const success = await reportUpdate(reporteActual, reporteData, usuarioSistema);
         if (success) {
           navigate(`/admin/reportes/${id}`);
         }

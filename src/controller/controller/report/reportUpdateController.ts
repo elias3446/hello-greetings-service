@@ -1,5 +1,5 @@
 import { Reporte, Usuario } from '@/types/tipos';
-import { updateReport } from '@/controller/CRUD/report/reportController';
+import { actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { agregarAsignacion } from '@/controller/CRUD/user/historialAsignacionController';
@@ -7,12 +7,12 @@ import { toast } from '@/components/ui/sonner';
 
 /**
  * Actualiza un reporte y todos sus registros relacionados
- * @param reporte - Reporte a actualizar
- * @param reporteActualizado - Datos actualizados del reporte
+ * @param reporte - Reporte original
+ * @param reporteActualizado - Cambios a aplicar
  * @param realizadoPor - Usuario que realiza la actualización
- * @returns Promise<boolean> - true si la actualización fue exitosa
+ * @returns Promise<boolean> - true si se actualiza correctamente
  */
-export const actualizarReporte = async (
+export const reportUpdate = async (
   reporte: Reporte,
   reporteActualizado: Partial<Reporte>,
   realizadoPor: Usuario
@@ -23,7 +23,7 @@ export const actualizarReporte = async (
       cambios: reporteActualizado
     });
 
-    // 1. Verificar cambios en el estado activo
+    // 1. Cambio en el estado activo
     if ('activo' in reporteActualizado && reporteActualizado.activo !== reporte.activo) {
       await registrarCambioEstadoReporte(
         reporte,
@@ -35,62 +35,58 @@ export const actualizarReporte = async (
       );
 
       if (reporte.asignadoA) {
-        await registrarCambioEstado(
+        await registrarEstadoUsuario(
           reporte.asignadoA,
-          reporte.asignadoA.estado,
-          reporte.asignadoA.estado,
-          realizadoPor,
           `Reporte ${reporte.id} ${reporteActualizado.activo ? 'activado' : 'desactivado'}`,
-          'otro'
+          realizadoPor
         );
       }
     }
 
-    // 2. Verificar cambios en el estado
+    // 2. Cambio de estado
     if ('estado' in reporteActualizado && reporteActualizado.estado?.id !== reporte.estado.id) {
       await registrarCambioEstadoReporte(
         reporte,
         reporte.estado.nombre,
-        reporteActualizado.estado?.nombre || '',
+        reporteActualizado.estado?.nombre ?? '',
         realizadoPor,
         'Cambio de estado del reporte',
         'cambio_estado'
       );
     }
 
-    // 3. Verificar cambios en la prioridad
+    // 3. Cambio de prioridad
     if ('prioridad' in reporteActualizado && reporteActualizado.prioridad?.id !== reporte.prioridad?.id) {
       await registrarCambioEstadoReporte(
         reporte,
-        reporte.prioridad?.nombre || 'Sin prioridad',
-        reporteActualizado.prioridad?.nombre || 'Sin prioridad',
+        reporte.prioridad?.nombre ?? 'Sin prioridad',
+        reporteActualizado.prioridad?.nombre ?? 'Sin prioridad',
         realizadoPor,
         'Cambio de prioridad del reporte',
         'cambio_estado'
       );
 
       if (reporte.asignadoA) {
-        await registrarCambioEstado(
+        await registrarEstadoUsuario(
           reporte.asignadoA,
-          reporte.asignadoA.estado,
-          reporte.asignadoA.estado,
-          realizadoPor,
           `Cambio de prioridad en reporte ${reporte.id}`,
-          'otro'
+          realizadoPor
         );
       }
     }
 
-    // 4. Verificar cambios en la asignación
+    // 4. Cambio de asignación
     if ('asignadoA' in reporteActualizado) {
-      const hayCambioAsignacion = 
-        (reporteActualizado.asignadoA?.id !== reporte.asignadoA?.id) || 
-        (reporteActualizado.asignadoA === null && reporte.asignadoA !== null) ||
-        (reporteActualizado.asignadoA !== null && reporte.asignadoA === null);
+      const nuevoAsignadoId = reporteActualizado.asignadoA?.id;
+      const actualAsignadoId = reporte.asignadoA?.id;
+
+      const hayCambioAsignacion =
+        nuevoAsignadoId !== actualAsignadoId ||
+        (reporte.asignadoA && !reporteActualizado.asignadoA) ||
+        (!reporte.asignadoA && reporteActualizado.asignadoA);
 
       if (hayCambioAsignacion) {
-        const historialActualizado = agregarAsignacion(reporte, reporteActualizado.asignadoA);
-        reporteActualizado.historialAsignaciones = historialActualizado;
+        reporteActualizado.historialAsignaciones = agregarAsignacion(reporte, reporteActualizado.asignadoA);
 
         await registrarCambioEstadoReporte(
           reporte,
@@ -101,47 +97,39 @@ export const actualizarReporte = async (
           'asignacion_reporte'
         );
 
-        // Registrar cambio en historial del usuario anterior
         if (reporte.asignadoA) {
-          await registrarCambioEstado(
+          await registrarEstadoUsuario(
             reporte.asignadoA,
-            reporte.asignadoA.estado,
-            reporte.asignadoA.estado,
-            realizadoPor,
             `Reporte ${reporte.id} desasignado`,
-            'otro'
+            realizadoPor
           );
         }
 
-        // Registrar cambio en historial del nuevo usuario
         if (reporteActualizado.asignadoA) {
-          await registrarCambioEstado(
+          await registrarEstadoUsuario(
             reporteActualizado.asignadoA,
-            reporteActualizado.asignadoA.estado,
-            reporteActualizado.asignadoA.estado,
-            realizadoPor,
             `Reporte ${reporte.id} asignado`,
-            'otro'
+            realizadoPor
           );
         }
       }
     }
 
-    // 5. Verificar cambios en la categoría
+    // 5. Cambio de categoría
     if ('categoria' in reporteActualizado && reporteActualizado.categoria?.id !== reporte.categoria.id) {
       await registrarCambioEstadoReporte(
         reporte,
         reporte.categoria.nombre,
-        reporteActualizado.categoria?.nombre || '',
+        reporteActualizado.categoria?.nombre ?? '',
         realizadoPor,
         'Cambio de categoría del reporte',
         'otro'
       );
     }
 
-    // 6. Actualizar el reporte
-    const reporteActualizadoFinal = updateReport(reporte.id, reporteActualizado);
-    if (!reporteActualizadoFinal) {
+    // 6. Actualizar reporte
+    const resultado = await actualizarReporte(reporte.id, reporteActualizado);
+    if (!resultado) {
       throw new Error('Error al actualizar el reporte');
     }
 
@@ -153,4 +141,23 @@ export const actualizarReporte = async (
     toast.error('Error al actualizar el reporte');
     return false;
   }
-}; 
+};
+
+/**
+ * Registra un cambio de estado en el historial del usuario sin cambiar su estado real.
+ * Útil para notificaciones o auditoría de contexto.
+ */
+const registrarEstadoUsuario = async (
+  usuario: Usuario,
+  descripcion: string,
+  realizadoPor: Usuario
+) => {
+  await registrarCambioEstado(
+    usuario,
+    usuario.estado,
+    usuario.estado,
+    realizadoPor,
+    descripcion,
+    'otro'
+  );
+};

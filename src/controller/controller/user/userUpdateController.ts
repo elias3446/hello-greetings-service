@@ -1,18 +1,15 @@
 import { Usuario } from '@/types/tipos';
 import { updateUser } from '@/controller/CRUD/user/userController';
-import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/report/reportController';
 import { actualizarRolUsuario } from './userRoleController';
 import { actualizarEstadoUsuario } from './userStateController';
 import { toast } from '@/components/ui/sonner';
 
 /**
- * Actualiza un usuario y todos sus registros relacionados
- * @param usuarioAnterior - Usuario antes de la actualización
- * @param usuarioActualizado - Datos actualizados del usuario
- * @param realizadoPor - Usuario que realiza la actualización
- * @returns Promise<boolean> - true si la actualización fue exitosa
+ * Actualiza un usuario y sus registros relacionados (rol, estado)
+ * @param usuarioAnterior Usuario antes de la actualización
+ * @param usuarioActualizado Datos actualizados (parciales)
+ * @param realizadoPor Usuario que realiza la actualización
+ * @returns Promise<boolean> true si la actualización fue exitosa
  */
 export const actualizarUsuario = async (
   usuarioAnterior: Usuario,
@@ -20,18 +17,18 @@ export const actualizarUsuario = async (
   realizadoPor: Usuario
 ): Promise<boolean> => {
   try {
-    console.log('Iniciando actualización de usuario:', {
-      usuarioId: usuarioAnterior.id,
-      nombre: usuarioAnterior.nombre
-    });
+    console.log(`Iniciando actualización de usuario: ${usuarioAnterior.id} - ${usuarioAnterior.nombre} ${usuarioAnterior.apellido}`);
 
-    // 1. Verificar si hay cambios en el rol
-    const rolCambiado = usuarioAnterior.roles[0]?.id !== usuarioActualizado.roles?.[0]?.id;
+    // Detectar cambio de rol
+    const rolAnteriorId = usuarioAnterior.roles[0]?.id ?? '';
+    const rolNuevoId = usuarioActualizado.roles?.[0]?.id ?? rolAnteriorId;
+    const rolCambiado = rolAnteriorId !== rolNuevoId;
+
     if (rolCambiado) {
-      console.log('Detectado cambio de rol');
-      const resultadoRol = actualizarRolUsuario(
+      console.log(`Detectado cambio de rol de "${rolAnteriorId}" a "${rolNuevoId}"`);
+      const resultadoRol = await actualizarRolUsuario(
         usuarioAnterior.id,
-        usuarioActualizado.roles?.[0]?.id || '',
+        rolNuevoId,
         realizadoPor,
         `Cambio de rol para usuario ${usuarioAnterior.nombre} ${usuarioAnterior.apellido}`
       );
@@ -40,13 +37,17 @@ export const actualizarUsuario = async (
       }
     }
 
-    // 2. Verificar si hay cambios en el estado
-    const estadoCambiado = usuarioAnterior.estado !== usuarioActualizado.estado;
+    // Detectar cambio de estado
+    const estadoAnterior = usuarioAnterior.estado;
+    // Si no viene estado nuevo, mantener el anterior
+    const estadoNuevo = usuarioActualizado.estado ?? estadoAnterior;
+    const estadoCambiado = estadoAnterior !== estadoNuevo;
+
     if (estadoCambiado) {
-      console.log('Detectado cambio de estado');
+      console.log(`Detectado cambio de estado de "${estadoAnterior}" a "${estadoNuevo}"`);
       const resultadoEstado = await actualizarEstadoUsuario(
         usuarioAnterior,
-        usuarioActualizado.estado || 'activo',
+        estadoNuevo,
         realizadoPor
       );
       if (!resultadoEstado) {
@@ -54,18 +55,19 @@ export const actualizarUsuario = async (
       }
     }
 
-    // 3. Actualizar el usuario
+    // Actualizar datos generales del usuario
     const usuarioFinal = updateUser(usuarioAnterior.id, usuarioActualizado);
     if (!usuarioFinal) {
       throw new Error('Error al actualizar el usuario');
     }
 
-    console.log('Usuario actualizado correctamente');
+    console.log(`Usuario ${usuarioAnterior.nombre} ${usuarioAnterior.apellido} actualizado correctamente`);
     toast.success(`Usuario ${usuarioAnterior.nombre} ${usuarioAnterior.apellido} actualizado correctamente`);
     return true;
+
   } catch (error) {
     console.error('Error al actualizar el usuario:', error);
     toast.error('Error al actualizar el usuario');
     return false;
   }
-}; 
+};

@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getRoles } from '@/controller/CRUD/role/roleController';
+import { obtenerRoles } from '@/controller/CRUD/role/roleController';
 import { getUsers } from '@/controller/CRUD/user/userController';
 import { Rol } from '@/types/tipos';
 import { 
@@ -28,7 +27,7 @@ const DashboardRoles = () => {
   const [permisosPorRol, setPermisosPorRol] = useState<any[]>([]);
   
   useEffect(() => {
-    const rolesData = getRoles();
+    const rolesData = obtenerRoles();
     const usuariosData = getUsers();
     
     setRoles(rolesData);

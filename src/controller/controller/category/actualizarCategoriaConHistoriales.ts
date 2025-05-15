@@ -2,7 +2,7 @@ import { Categoria, Usuario } from '@/types/tipos';
 import { updateCategory, getCategoryById } from '../../CRUD/category/categoryController';
 import { registrarCambioEstadoCategoria } from '../../CRUD/category/historialEstadosCategoria';
 import { registrarModificacionCategoria, registrarCambioEstadoCategoria as registrarCambioEstadoActividadCategoria } from '../../CRUD/category/historialActividadCategoriaController';
-import { filterReports, updateReport } from '../../CRUD/report/reportController';
+import { filtrarReportes, actualizarReporte } from '../../CRUD/report/reportController';
 import { registrarCambioEstadoReporte } from '../../CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 
@@ -117,7 +117,7 @@ const actualizarReportesAsociados = async (
 ): Promise<boolean> => {
   try {
     // 1. Obtener todos los reportes asociados a la categoría
-    const reportesCategoria = await filterReports({ categoryId: categoria.id });
+    const reportesCategoria = await filtrarReportes({ categoryId: categoria.id });
     
     if (reportesCategoria.length === 0) {
       return true; // No hay reportes que actualizar
@@ -140,7 +140,7 @@ const actualizarReportesAsociados = async (
             );
             
             // Actualizar el estado del reporte
-            const reporteActualizado = updateReport(reporte.id, { 
+            const reporteActualizado = actualizarReporte(reporte.id, { 
               activo: nuevoEstado 
             });
             
@@ -151,7 +151,7 @@ const actualizarReportesAsociados = async (
           
           // Si la categoría se desactiva, desasociar la categoría del reporte
           if (!nuevoEstado) {
-            const reporteActualizado = updateReport(reporte.id, { 
+            const reporteActualizado = actualizarReporte(reporte.id, { 
               categoria: undefined 
             });
             

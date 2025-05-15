@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
-import { getReports } from '@/controller/CRUD/reportController';
-import { getEstados } from '@/controller/CRUD/estadoController';
+import { obtenerReportes } from '@/controller/CRUD/report/reportController';
+import { getEstados } from '@/controller/CRUD/estado/estadoController';
 import { Reporte, EstadoReporte } from '@/types/tipos';
 import { AlertTriangle, CheckCircle, Clock, icons } from 'lucide-react';
 
@@ -32,7 +31,7 @@ export const useReportDashboard = () => {
   const [coloresPorTipo, setColoresPorTipo] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const reportesData = getReports();
+    const reportesData = obtenerReportes();
     const estadosData = getEstados();
     setReportes(reportesData);
 
@@ -84,16 +83,17 @@ export const useReportDashboard = () => {
     
     // Extraer colores e iconos de los estados
     estadosData.forEach(estado => {
-      if (!estadosPorTipo[estado.tipo]) {
-        estadosPorTipo[estado.tipo] = [];
+      const tipoEstado = estado.nombre.toLowerCase().replace(/ /g, '_');
+      if (!estadosPorTipo[tipoEstado]) {
+        estadosPorTipo[tipoEstado] = [];
         
         // Configurar color por tipo de estado
-        coloresEstados[estado.tipo] = estado.color || DEFAULT_COLORS_MAP[estado.tipo] || '#9b87f5'; // Color púrpura por defecto
+        coloresEstados[tipoEstado] = estado.color || DEFAULT_COLORS_MAP[tipoEstado] || '#9b87f5';
         
         // Intentar asignar un icono basado en el nombre del tipo o usar uno predeterminado
         let iconoNombre = estado.icono;
-        if (!iconoNombre && DEFAULT_ICONS_MAP[estado.tipo]) {
-          iconosEstados[estado.tipo] = DEFAULT_ICONS_MAP[estado.tipo];
+        if (!iconoNombre && DEFAULT_ICONS_MAP[tipoEstado]) {
+          iconosEstados[tipoEstado] = DEFAULT_ICONS_MAP[tipoEstado];
         } else {
           // Intentar convertir el nombre de icono a componente Lucide
           const nombreCamellizado = iconoNombre ? 
@@ -104,13 +104,13 @@ export const useReportDashboard = () => {
           
           const LucideIcon = nombreCamellizado && (icons as any)[nombreCamellizado] ? 
             (icons as any)[nombreCamellizado] : 
-            DEFAULT_ICONS_MAP[estado.tipo] || AlertTriangle;
+            DEFAULT_ICONS_MAP[tipoEstado] || AlertTriangle;
           
-          iconosEstados[estado.tipo] = LucideIcon;
+          iconosEstados[tipoEstado] = LucideIcon;
         }
       }
       
-      estadosPorTipo[estado.tipo].push(estado);
+      estadosPorTipo[tipoEstado].push(estado);
       estadosPorId[estado.id] = estado;
     });
     

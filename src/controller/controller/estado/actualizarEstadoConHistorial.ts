@@ -1,7 +1,7 @@
 import { EstadoReporte, Usuario } from '@/types/tipos';
 import { getEstadoById, updateEstado } from '../../CRUD/estado/estadoController';
 import { createHistorialEstado } from '../../CRUD/estado/historialEstadoController';
-import { filterReports, updateReport } from '../../CRUD/report/reportController';
+import { filtrarReportes, actualizarReporte } from '../../CRUD/report/reportController';
 import { registrarCambioEstadoReporte } from '../../CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 
@@ -95,7 +95,7 @@ export const cambiarEstadoActivo = async (
 
     // Si vamos a desactivar un estado, verificar si hay reportes afectados y si hay estados alternativos
     if (!nuevoValorActivo) {
-      const reportesAfectados = await filterReports({ estadoId: id });
+      const reportesAfectados = await filtrarReportes({ estadoId: id });
       
       if (reportesAfectados.length > 0) {
         // Obtener estados alternativos activos
@@ -194,7 +194,7 @@ const actualizarReportesAfectados = async (
 ): Promise<number> => {
   try {
     // 1. Obtener reportes asociados a este estado
-    const reportesConEstado = await filterReports({ estadoId: estadoActualizado.id });
+      const reportesConEstado = await filtrarReportes({ estadoId: estadoActualizado.id });
     
     if (reportesConEstado.length === 0) {
       return 0; // No hay reportes afectados
@@ -225,7 +225,7 @@ const actualizarReportesAfectados = async (
             );
             
             // Actualizar el reporte
-            const reporteActualizado = updateReport(reporte.id, {
+            const reporteActualizado = actualizarReporte(reporte.id, {
               estado: estadoAlternativo
             });
             
@@ -244,7 +244,7 @@ const actualizarReportesAfectados = async (
             );
             
             // Marcar el reporte como inactivo
-            const reporteActualizado = updateReport(reporte.id, {
+            const reporteActualizado = actualizarReporte(reporte.id, {
               activo: false
             });
             
@@ -273,7 +273,7 @@ const actualizarReportesAfectados = async (
             );
             
             // Reactivar el reporte
-            const reporteActualizado = updateReport(reporte.id, {
+            const reporteActualizado = actualizarReporte(reporte.id, {
               activo: true
             });
             

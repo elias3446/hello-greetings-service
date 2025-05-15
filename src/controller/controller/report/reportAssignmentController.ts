@@ -1,8 +1,8 @@
 import { Reporte, Usuario } from '@/types/tipos';
-import { updateReport } from '@/controller/CRUD/report/reportController';
+import { actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
-import { filterReports } from '@/controller/CRUD/report/reportController';
+import { filtrarReportes } from '@/controller/CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';
 
 /**
@@ -61,19 +61,19 @@ export const actualizarAsignacionReporte = async (
     console.log('Historial de usuarios actualizado');
 
     // 4. Actualizar el reporte
-    const reporteActualizado = updateReport(reporte.id, { asignadoA: nuevoUsuario });
+    const reporteActualizado = actualizarReporte(reporte.id, { asignadoA: nuevoUsuario });
     if (!reporteActualizado) {
       throw new Error('Error al actualizar el reporte');
     }
 
     // 5. Actualizar los reportes asignados del usuario anterior
     if (reporte.asignadoA) {
-      const reportesUsuarioAnterior = filterReports({ userId: reporte.asignadoA.id });
+      const reportesUsuarioAnterior = filtrarReportes({ userId: reporte.asignadoA.id });
       console.log('Reportes del usuario anterior actualizados:', reportesUsuarioAnterior.length);
     }
 
     // 6. Actualizar los reportes asignados del nuevo usuario
-    const reportesNuevoUsuario = filterReports({ userId: nuevoUsuario.id });
+    const reportesNuevoUsuario = filtrarReportes({ userId: nuevoUsuario.id });
     console.log('Reportes del nuevo usuario actualizados:', reportesNuevoUsuario.length);
 
     console.log('Reporte actualizado correctamente');

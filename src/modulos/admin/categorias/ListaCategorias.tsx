@@ -65,7 +65,7 @@ const ListaCategorias: React.FC = () => {
   const [categorias, setCategorias] = useState(getCategories());
   const [filteredCategorias, setFilteredCategorias] = useState(categorias);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('nombre');
+  const [sortBy, setSortBy] = useState<'nombre' | 'descripcion' | 'reportes' | 'estado' | 'fecha'>('nombre');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,7 +85,8 @@ const ListaCategorias: React.FC = () => {
     { value: 'nombre', label: 'Nombre' },
     { value: 'descripcion', label: 'Descripción' },
     { value: 'reportes', label: 'Reportes' },
-    { value: 'fechaCreacion', label: 'Fecha creación' }
+    { value: 'estado', label: 'Estado' },
+    { value: 'fecha', label: 'Fecha creación' }
   ];
 
   const filterOptions = [
@@ -165,7 +166,7 @@ const ListaCategorias: React.FC = () => {
         return categoria.descripcion || 'Sin descripción';
       case 'reportes':
         return getReportesPorCategoria(categoria.id).toString();
-      case 'fechaCreacion':
+      case 'fecha':
         return new Date(categoria.fechaCreacion).toLocaleDateString('es-ES');
       case 'estado':
         return categoria.activo ? 'Activo' : 'Inactivo';
@@ -433,6 +434,10 @@ const ListaCategorias: React.FC = () => {
     setShowDeleteDialog(true);
   };
 
+  const handleSortByChange = (value: string) => {
+    setSortBy(value as 'nombre' | 'descripcion' | 'reportes' | 'estado' | 'fecha');
+  };
+
   return (
     <div>
       <div className="space-y-4">
@@ -445,7 +450,7 @@ const ListaCategorias: React.FC = () => {
           roleFilter={null}
           onRoleFilterChange={() => {}}
           sortBy={sortBy}
-          onSortByChange={setSortBy}
+          onSortByChange={handleSortByChange}
           sortDirection={sortDirection}
           onSortDirectionChange={handleToggleSortDirection}
           onCurrentFieldChange={setCurrentField}

@@ -1,7 +1,7 @@
 import { createUser } from '@/controller/CRUD/user/userController';
-import { createReport } from '@/controller/CRUD/report/reportController';
+import { crearReporte } from '@/controller/CRUD/report/reportController';
 import { createCategory } from '@/controller/CRUD/category/categoryController';
-import { createRole } from '@/controller/CRUD/role/roleController';
+import { crearRol } from '@/controller/CRUD/role/roleController';
 import { createEstado } from '@/controller/CRUD/estado/estadoController';
 import { crearUsuario } from '@/controller/controller/user/newUser';
 import { TipoEntidad } from '@/types/tipos';
@@ -344,7 +344,7 @@ const createEntityRecord = async (record: any, tipoEntidad: TipoEntidad): Promis
         return true;
       
       case 'reportes':
-        await createReport(record);
+        await crearReporte(record);
         return true;
       
       case 'categorias':
@@ -352,7 +352,7 @@ const createEntityRecord = async (record: any, tipoEntidad: TipoEntidad): Promis
         return true;
       
       case 'roles':
-        await createRole(record);
+        await crearRol(record);
         return true;
       
       case 'estados':

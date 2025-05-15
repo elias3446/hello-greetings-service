@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { getReports, filterReports, sortReports } from '@/controller/CRUD/report/reportController';
+import { obtenerReportes, filtrarReportes, ordenarReportes } from '@/controller/CRUD/report/reportController';
 import { Link } from 'react-router-dom';
 import { MapPin, Calendar, Search, Plus } from 'lucide-react';
 import { Reporte, SortOption } from '@/types/tipos';
@@ -32,15 +32,15 @@ const ListaReportes = () => {
   ];
 
   // Obtener reportes
-  const reportes = getReports();
+  const reportes = obtenerReportes();
   
   // Filtrar reportes por término de búsqueda
   const filteredReportes = searchTerm
-    ? filterReports({ search: searchTerm })
+    ? filtrarReportes({ search: searchTerm })
     : reportes;
   
   // Ordenar reportes
-  const sortedReportes = sortReports(filteredReportes, sortBy.id, sortBy.direction);
+  const sortedReportes = ordenarReportes(filteredReportes, sortBy.id, sortBy.direction);
 
   // Manejar cambio de ordenamiento
   const handleSortChange = (option: SortOption) => {

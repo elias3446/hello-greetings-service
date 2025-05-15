@@ -2,7 +2,7 @@ import { Usuario, Reporte } from '@/types/tipos';
 import { updateUser } from '@/controller/CRUD/user/userController';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
-import { filterReports, updateReport } from '@/controller/CRUD/report/reportController';
+import { filtrarReportes, actualizarReporte } from '@/controller/CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';
 
 type EstadoUsuario = 'activo' | 'inactivo' | 'bloqueado';
@@ -29,7 +29,7 @@ export const actualizarEstadoUsuario = async (
     });
 
     // 1. Obtener los reportes asignados antes de actualizar el estado
-    const reportesAsignados = filterReports({ userId: usuario.id });
+    const reportesAsignados = filtrarReportes({ userId: usuario.id });
     console.log('Reportes asignados encontrados:', reportesAsignados.length);
 
     // 2. Actualizar el estado del usuario
@@ -67,7 +67,7 @@ export const actualizarEstadoUsuario = async (
         });
 
         // Registrar el cambio en el historial manualmente
-        await registrarCambioEstadoReporte(
+        registrarCambioEstadoReporte(
           reporte,
           estadoAnterior,
           estadoNuevo,
@@ -77,7 +77,7 @@ export const actualizarEstadoUsuario = async (
         );
 
         // Desasignar el reporte después de registrar el historial
-        const reporteActualizado = await updateReport(reporte.id, { 
+        const reporteActualizado = actualizarReporte(reporte.id, { 
           asignadoA: undefined,
           historialAsignaciones: [
             ...reporte.historialAsignaciones,
@@ -105,7 +105,7 @@ export const actualizarEstadoUsuario = async (
           estadoNuevo
         });
 
-        await registrarCambioEstadoReporte(
+        registrarCambioEstadoReporte(
           reporte,
           estadoAnterior,
           estadoNuevo,
