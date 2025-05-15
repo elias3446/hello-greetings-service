@@ -6,24 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, 
-  CheckCircle2, 
-  Clock, 
-  BarChart3, 
-  CalendarDays,
+  Clock,
   ArrowRight,
   MapPin,
   BarChart4,
-  Users
+  Users,
+  TriangleAlert,
+  CircleCheckBig,
+  CircleX
 } from 'lucide-react';
 import { reportes } from '@/data/reportes';
 import { estadosReporte } from '@/data/estadosReporte';
-
-const iconosPorTipo: {[key: string]: any} = {
-  pendiente: { icono: Clock, color: 'bg-yellow-100', textColor: '#FFD166' },
-  en_progreso: { icono: BarChart3, color: 'bg-blue-100', textColor: '#118AB2' },
-  completado: { icono: CheckCircle2, color: 'bg-green-100', textColor: '#06D6A0' },
-  cancelado: { icono: CalendarDays, color: 'bg-red-100', textColor: '#EF476F' },
-};
+import { Icons } from '@/components/Icons';
 
 const Index = () => {
   const [reportesPorEstado, setReportesPorEstado] = useState<{
@@ -95,21 +89,12 @@ const Index = () => {
 
           {Object.entries(reportesPorEstado).map(([estadoId, estado]) => {
             const estadoOriginal = estadosReporte.find(e => e.id === estadoId);
-            const tipo = estadoOriginal?.nombre.toLowerCase().replace(/ /g, '_') || 'default';
-            
-            const iconoInfo = iconosPorTipo[tipo] || { 
-              icono: FileText, 
-              color: 'bg-gray-100', 
-              textColor: '#555' 
-            };
-            
-            const Icono = iconoInfo.icono;
-            const colorFondo = iconoInfo.color;
+            const Icono = Icons[estadoOriginal?.icono || 'default'];
             
             return (
               <Card key={estadoId}>
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className={`${colorFondo} p-3 rounded-full`}>
+                  <div className="bg-gray-100 p-3 rounded-full">
                     <Icono className="h-5 w-5" style={{ color: estado.color }} />
                   </div>
                   <div>
