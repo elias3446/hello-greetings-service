@@ -7,10 +7,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getRoles } from '@/controller/CRUD/roleController';
-import { updateUser } from '@/controller/CRUD/userController';
+import { updateUser } from '@/controller/CRUD/user/userController';
 import { toast } from '@/components/ui/sonner';
 import { Usuario, Rol } from '@/types/tipos';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 
 interface RoleSelectorProps {
   userId: string;

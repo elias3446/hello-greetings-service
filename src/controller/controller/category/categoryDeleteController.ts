@@ -1,5 +1,5 @@
 import { deleteCategory } from '@/controller/CRUD/categoryController';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { Reporte, Usuario } from '@/types/tipos';
 import { reportes } from '@/data/reportes';
 

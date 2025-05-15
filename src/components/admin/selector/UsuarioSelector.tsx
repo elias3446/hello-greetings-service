@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getUsers } from '@/controller/CRUD/userController';
+import { getUsers } from '@/controller/CRUD/user/userController';
 import { Usuario } from '@/types/tipos';
 import { Badge } from "@/components/ui/badge";
 

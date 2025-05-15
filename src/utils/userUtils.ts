@@ -1,8 +1,8 @@
 import { Usuario } from '@/types/tipos';
 import { UserFormData } from '@/types/user';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/reportController';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
+import { filterReports } from '@/controller/CRUD/report/reportController';
 
 // Ordenar usuarios
 export const sortUsers = (users: Usuario[], sortBy: string, direction: 'asc' | 'desc'): Usuario[] => {

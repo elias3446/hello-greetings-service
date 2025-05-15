@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
-import { createUser, updateUser, getUserById } from '@/controller/CRUD/userController';
+import { createUser, updateUser, getUserById } from '@/controller/CRUD/user/userController';
 import { roles } from '@/data/roles';
 import { UserFormData, UserFormState, FormMode } from '@/types/user';
 import { DEFAULT_FORM_VALUES, formSchema } from '@/utils/userConstants';
 import { hasUserChanges, getSystemUser, handleUserStateChange } from '@/utils/userUtils';
 import { Usuario } from '@/types/tipos';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { crearUsuario } from '@/controller/controller/user/newUser';
 import { actualizarUsuario } from '@/controller/controller/user/userUpdateController';
 

@@ -24,7 +24,7 @@ import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getReportById, createReport, updateReport } from '@/controller/CRUD/reportController';
+import { getReportById, createReport, updateReport } from '@/controller/CRUD/report/reportController';
 import { getCategories } from '@/controller/CRUD/categoryController';
 import { categorias } from '@/data/categorias';
 import { estadosReporte } from '@/data/estadosReporte';

@@ -11,7 +11,7 @@ import { Calendar, Edit, ArrowLeft, FileText, CheckCircle, AlertTriangle, User, 
 import { getCategoryById, getReportesPorCategoria } from '@/controller/CRUD/categoryController';
 import { toast } from '@/components/ui/sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
-import { filterReports } from '@/controller/CRUD/reportController';
+import { filterReports } from '@/controller/CRUD/report/reportController';
 import { actividadesCategoria } from '@/data/actividades';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import ActividadItem from '@/components/layout/ActividadItem';

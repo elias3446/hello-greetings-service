@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCategories } from '@/controller/CRUD/categoryController';
-import { getReports } from '@/controller/CRUD/reportController';
+import { getReports } from '@/controller/CRUD/report/reportController';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import { Categoria, EstadoReporte } from '@/types/tipos';
 import { 

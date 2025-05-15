@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { actividadesReporte } from '@/data/actividades';
-import { getActividadesReporte } from '@/controller/CRUD/actividadReporteController';
+import { getActividadesReporte } from '@/controller/CRUD/report/actividadReporteController';
 import { usuarios } from '@/data/usuarios';
 import type { Reporte } from '@/types/tipos';
 import { CircleDot } from 'lucide-react';

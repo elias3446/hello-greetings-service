@@ -1,6 +1,6 @@
 import { Categoria, EstadoReporte } from '@/types/tipos';
 import { getCategories } from '@/controller/CRUD/categoryController';
-import { getReports } from '@/controller/CRUD/reportController';
+import { getReports } from '@/controller/CRUD/report/reportController';
 import { getEstados } from '@/controller/CRUD/estadoController';
 
 // Interface for grouped states

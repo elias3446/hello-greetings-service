@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getReports } from '@/controller/CRUD/reportController';
+import { getReports } from '@/controller/CRUD/report/reportController';
 import { getEstados } from '@/controller/CRUD/estadoController';
 import { Reporte, EstadoReporte } from '@/types/tipos';
 import { 
@@ -66,7 +66,7 @@ const DashboardReportes = () => {
       return acc;
     }, {});
 
-    setReportesPorCategoria(Object.values(categorias).filter(cat => cat.value > 0));
+    setReportesPorCategoria((Object.values(categorias) as {name: string, value: number, color: string}[]).filter(cat => cat.value > 0));
 
     // Reportes por prioridad
     const prioridades = reportesData.reduce((acc: { [key: string]: { name: string, value: number, color: string } }, reporte) => {
@@ -84,7 +84,7 @@ const DashboardReportes = () => {
       return acc;
     }, {});
 
-    setReportesPorPrioridad(Object.values(prioridades).filter(pri => pri.value > 0));
+    setReportesPorPrioridad((Object.values(prioridades) as {name: string, value: number, color: string}[]).filter(pri => pri.value > 0));
 
     // Reportes recientes (últimos 5)
     const recientes = [...reportesData]

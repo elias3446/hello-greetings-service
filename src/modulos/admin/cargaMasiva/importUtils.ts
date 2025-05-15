@@ -1,5 +1,5 @@
-import { createUser } from '@/controller/CRUD/userController';
-import { createReport } from '@/controller/CRUD/reportController';
+import { createUser } from '@/controller/CRUD/user/userController';
+import { createReport } from '@/controller/CRUD/report/reportController';
 import { createCategory } from '@/controller/CRUD/categoryController';
 import { createRole } from '@/controller/CRUD/roleController';
 import { createEstado } from '@/controller/CRUD/estadoController';

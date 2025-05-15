@@ -1,8 +1,8 @@
 import { Usuario } from '@/types/tipos';
-import { updateUser } from '@/controller/CRUD/userController';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/reportController';
+import { updateUser } from '@/controller/CRUD/user/userController';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
+import { filterReports } from '@/controller/CRUD/report/reportController';
 import { actualizarRolUsuario } from './userRoleController';
 import { actualizarEstadoUsuario } from './userStateController';
 import { toast } from '@/components/ui/sonner';

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getReportById } from '@/controller/CRUD/reportController';
+import { getReportById } from '@/controller/CRUD/report/reportController';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
 import { ArrowLeft } from 'lucide-react';

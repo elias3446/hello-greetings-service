@@ -1,7 +1,7 @@
-import { Reporte } from '../../types/tipos';
-import { reportes } from '../../data/reportes';
-import { agregarAsignacion } from './historialAsignacionController';
-import { registrarCambioEstado } from './historialEstadosUsuario';
+import { Reporte } from '@/types/tipos';
+import { reportes } from '@/data/reportes';
+import { agregarAsignacion } from '@/controller/CRUD/user/historialAsignacionController';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 
 // Obtener todos los reportes
 export const getReports = (): Reporte[] => {

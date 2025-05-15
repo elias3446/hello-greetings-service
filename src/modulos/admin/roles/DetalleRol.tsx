@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from '@/components/ui/sonner';
 import { permisosDisponibles } from '@/data/permisos';
 import { getRoleById, updateRole } from '@/controller/CRUD/roleController';
-import { getUsers } from '@/controller/CRUD/userController';
+import { getUsers } from '@/controller/CRUD/user/userController';
 import { 
   ArrowLeft, 
   Edit, 

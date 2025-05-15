@@ -1,8 +1,8 @@
 import { Usuario, Reporte } from '@/types/tipos';
-import { deleteUser } from '@/controller/CRUD/userController';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
-import { filterReports } from '@/controller/CRUD/reportController';
+import { deleteUser } from '@/controller/CRUD/user/userController';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
+import { filterReports } from '@/controller/CRUD/report/reportController';
 import { toast } from '@/components/ui/sonner';
 
 /**

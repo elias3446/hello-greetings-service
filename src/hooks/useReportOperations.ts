@@ -2,8 +2,8 @@ import React from 'react';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
 import { getReports, deleteReport } from '@/controller/CRUD/reportController';
-import { registrarCambioEstadoReporte } from '@/controller/CRUD/historialEstadosReporte';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 
 export const useReportOperations = (
   setReportes: React.Dispatch<React.SetStateAction<Reporte[]>>,

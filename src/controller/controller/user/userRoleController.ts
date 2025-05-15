@@ -1,6 +1,6 @@
 import { Usuario } from '@/types/tipos';
-import { updateUser } from '@/controller/CRUD/userController';
-import { registrarCambioEstado } from '@/controller/CRUD/historialEstadosUsuario';
+import { updateUser } from '@/controller/CRUD/user/userController';
+import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { getRoleById } from '@/controller/CRUD/roleController';
 
 /**

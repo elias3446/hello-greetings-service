@@ -7,8 +7,8 @@ import {
   Shield, 
   Activity 
 } from 'lucide-react';
-import { getReports } from '@/controller/CRUD/reportController';
-import { getUsers } from '@/controller/CRUD/userController';
+import { getReports } from '@/controller/CRUD/report/reportController';
+import { getUsers } from '@/controller/CRUD/user/userController';
 import { getCategories } from '@/controller/CRUD/categoryController';
 import { getRoles } from '@/controller/CRUD/roleController';
 import { getEstados } from '@/controller/CRUD/estadoController';

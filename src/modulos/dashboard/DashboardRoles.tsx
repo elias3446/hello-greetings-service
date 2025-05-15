@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getRoles } from '@/controller/CRUD/roleController';
-import { getUsers } from '@/controller/CRUD/userController';
+import { getUsers } from '@/controller/CRUD/user/userController';
 import { Rol } from '@/types/tipos';
 import { 
   BarChart, 
