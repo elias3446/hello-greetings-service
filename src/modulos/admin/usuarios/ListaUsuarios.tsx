@@ -5,8 +5,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useUsuarioState, useUsuarioData, useUsuarioFilters, useUsuarioHandlers } from '@/hooks/useUsuario';
 import { UsuarioTableHeader, LoadingRow, EmptyStateRow, UsuarioRow, PaginationComponent } from '@/components/admin/usuarios/UsuarioComponents';
 import { getFieldValue } from '@/utils/usuarioUtils';
-import { SORT_OPTIONS, FILTER_OPTIONS, ITEMS_PER_PAGE } from '@/utils/userListConstants';
-import { calculatePagination, getUniqueRoles } from '@/utils/userListUtils';
+import { SORT_OPTIONS, FILTER_OPTIONS} from '@/utils/userListConstants';
+import { calculatePagination } from '@/utils/userListUtils';
 import { actualizarRolUsuario } from '@/controller/controller/user/userRoleController';
 import { actualizarEstadoUsuario } from '@/controller/controller/user/userStateController';
 import { eliminarUsuario } from '@/controller/controller/user/userDeleteController';

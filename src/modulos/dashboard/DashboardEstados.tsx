@@ -37,9 +37,9 @@ const DashboardEstados = () => {
 
     // Reportes por estado
     const reportesPorEstado = estadosData.map(estado => ({
-      name: estado.nombre,
+        name: estado.nombre,
       value: reportesData.filter(r => r.estado.id === estado.id).length,
-      color: estado.color
+        color: estado.color
     }));
 
     // Reportes por tipo de estado
