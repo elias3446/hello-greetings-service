@@ -1,4 +1,4 @@
-import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte, HistorialEstadoCategoria } from '@/types/tipos';
+import { ActividadUsuario, ActividadReporte, ActividadCategoria, HistorialAsignacion, HistorialEstadoUsuario, HistorialEstadoReporte, HistorialEstadoCategoria, HistorialActividadCategoria } from '@/types/tipos';
 import { usuarios } from './usuarios';
 import { reportes } from './reportes';
 import { categorias } from './categorias';
@@ -784,3 +784,61 @@ export const historialEstadosCategoria: HistorialEstadoCategoria[] = [
     tipoAccion: 'cambio_estado',
   }
 ];
+
+// Datos de ejemplo para el historial de actividades de categorías
+export const historialActividadCategoria: HistorialActividadCategoria[] = [
+  {
+    id: '1',
+    categoria: categorias[0],
+    tipoActividad: 'creacion',
+    descripcion: 'Creación de la categoría',
+    fechaActividad: new Date('2023-01-01T10:00:00'),
+    usuarioResponsable: usuarios[0],
+    detalles: {
+      comentario: 'Categoría creada correctamente'
+    },
+    activo: true
+  },
+  {
+    id: '2',
+    categoria: categorias[0],
+    tipoActividad: 'modificacion',
+    descripcion: 'Actualización del nombre de la categoría',
+    fechaActividad: new Date('2023-01-15T14:30:00'),
+    usuarioResponsable: usuarios[1],
+    detalles: {
+      campo: 'nombre',
+      valorAnterior: 'Categoría antigua',
+      valorNuevo: categorias[0].nombre,
+      comentario: 'Se actualizó el nombre para mayor claridad'
+    },
+    activo: true
+  },
+  {
+    id: '3',
+    categoria: categorias[1],
+    tipoActividad: 'cambio_estado',
+    descripcion: 'Cambio de estado de la categoría',
+    fechaActividad: new Date('2023-02-05T09:15:00'),
+    usuarioResponsable: usuarios[0],
+    detalles: {
+      campo: 'activo',
+      valorAnterior: 'false',
+      valorNuevo: 'true',
+      comentario: 'Se reactivó la categoría por demanda de usuarios'
+    },
+    activo: true
+  },
+  {
+    id: '4',
+    categoria: categorias[2],
+    tipoActividad: 'eliminacion',
+    descripcion: 'Eliminación lógica de la categoría',
+    fechaActividad: new Date('2023-03-10T16:45:00'),
+    usuarioResponsable: usuarios[1],
+    detalles: {
+      comentario: 'Categoría eliminada por obsolescencia'
+    },
+    activo: true
+  }
+]; 

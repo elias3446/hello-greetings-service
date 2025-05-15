@@ -1,8 +1,7 @@
-
 import { Categoria, Prioridad } from '../types/tipos';
 import { FileText, Shield, AlertTriangle, MapPin, Construction } from 'lucide-react';
 import { usuarios } from './usuarios';
-import { actividadesCategoria } from './actividades';
+
 export const categorias: Categoria[] = [
   {
     id: '1',
@@ -14,7 +13,6 @@ export const categorias: Categoria[] = [
     fechaActualizacion: new Date('2025-04-25T08:30:00'),
     fechaEliminacion: new Date('2025-04-25T08:30:00'),
     usuarioCreador: usuarios[0],
-    actividades: actividadesCategoria,
     activo: true,
   },
   {
@@ -27,7 +25,6 @@ export const categorias: Categoria[] = [
     fechaActualizacion: new Date('2025-04-25T08:30:00'),
     fechaEliminacion: new Date('2025-04-25T08:30:00'),
     usuarioCreador: usuarios[0],
-    actividades: actividadesCategoria,
     activo: true,
   },
   {
@@ -40,7 +37,6 @@ export const categorias: Categoria[] = [
     fechaActualizacion: new Date('2025-04-25T08:30:00'),
     fechaEliminacion: new Date('2025-04-25T08:30:00'),
     usuarioCreador: usuarios[0],
-    actividades: actividadesCategoria,
     activo: true,
   },
   {
@@ -53,7 +49,6 @@ export const categorias: Categoria[] = [
     fechaActualizacion: new Date('2025-04-25T08:30:00'),
     fechaEliminacion: new Date('2025-04-25T08:30:00'),
     usuarioCreador: usuarios[0],
-    actividades: actividadesCategoria,
     activo: true,
   },
   {
@@ -66,7 +61,6 @@ export const categorias: Categoria[] = [
     fechaActualizacion: new Date('2025-04-25T08:30:00'),
     fechaEliminacion: new Date('2025-04-25T08:30:00'),
     usuarioCreador: usuarios[0],
-    actividades: actividadesCategoria,
     activo: true,
   },
 ];
