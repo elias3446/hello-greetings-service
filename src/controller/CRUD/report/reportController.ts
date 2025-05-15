@@ -78,6 +78,7 @@ export const filterReports = (criteria: {
   search?: string;
   categoryId?: string;
   statusId?: string;
+  estadoId?: string;
   userId?: string;
 }): Reporte[] => {
   let filteredReports = [...reportes];
@@ -97,8 +98,9 @@ export const filterReports = (criteria: {
     filteredReports = filteredReports.filter(report => report.categoria?.id === criteria.categoryId);
   }
   
-  if (criteria.statusId) {
-    filteredReports = filteredReports.filter(report => report.estado.id === criteria.statusId);
+  if (criteria.statusId || criteria.estadoId) {
+    const idEstado = criteria.statusId || criteria.estadoId;
+    filteredReports = filteredReports.filter(report => report.estado.id === idEstado);
   }
   
   if (criteria.userId) {

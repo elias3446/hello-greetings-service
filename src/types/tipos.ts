@@ -107,6 +107,7 @@ export interface EstadoReporte {
   icono: string;
   color: string;
   fechaCreacion: Date;
+  fechaActualizacion?: Date;
   activo: boolean;
   historialEstados?: HistorialEstado[];
 }
