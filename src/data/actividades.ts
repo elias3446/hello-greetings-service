@@ -380,6 +380,7 @@ export const historialEstadosReporte: HistorialEstadoReporte[] = [
         password: 'hashed_password',
       },  
       historialAsignaciones: [],
+      historialEstados: [],
       fechaCreacion: new Date('2023-01-01'),
       activo: true
     },
@@ -464,6 +465,7 @@ export const historialEstadosReporte: HistorialEstadoReporte[] = [
         fechaCreacion: new Date('2023-01-01'),
       },
       historialAsignaciones: [],
+      historialEstados: [],
       fechaCreacion: new Date('2023-01-01'),
       activo: true
     },
@@ -550,6 +552,7 @@ export const historialEstadosReporteEjemplo: HistorialEstadoReporte[] = [
         fechaCreacion: new Date('2023-01-01')
       },
       historialAsignaciones: [],
+      historialEstados: [],
       fechaCreacion: new Date('2023-01-01'),
       fechaActualizacion: new Date('2023-01-02'),
       fechaInicio: new Date('2023-01-01'),
@@ -635,6 +638,7 @@ export const historialEstadosReporteEjemplo: HistorialEstadoReporte[] = [
         fechaCreacion: new Date('2023-01-01')
       },
       historialAsignaciones: [],
+      historialEstados: [],
       fechaCreacion: new Date('2023-01-01'),
       fechaActualizacion: new Date('2023-01-03'),
       fechaInicio: new Date('2023-01-01'),
