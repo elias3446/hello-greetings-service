@@ -26,15 +26,19 @@ import {
 import { Input } from '@/components/ui/input';
 import Pagination from '@/components/layout/Pagination';
 import { EstadoReporte } from '@/types/tipos';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { getEstados, updateEstado, deleteEstado } from '@/controller/CRUD/estado/estadoController';
 import FilterByValues from '@/components/common/FilterByValues';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
+import SearchFilterBar from '@/components/SearchFilterBar/SearchFilterBar';
+import { exportToCSV } from '@/utils/exportUtils';
 
 const ListaEstados: React.FC = () => {
   const navigate = useNavigate();
   const [estados, setEstados] = useState<EstadoReporte[]>([]);
   const [filteredEstados, setFilteredEstados] = useState<EstadoReporte[]>([]);
+  const [filteredData, setFilteredData] = useState<EstadoReporte[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [tipoFilter, setTipoFilter] = useState<string | null>(null);
@@ -54,103 +58,13 @@ const ListaEstados: React.FC = () => {
       const data = getEstados();
       setEstados(data);
       setFilteredEstados(data);
+      setFilteredData(data);
       setIsLoading(false);
     } catch (error) {
       toast.error("Error al cargar estados");
       setIsLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    // Aplicar filtros, búsqueda y ordenamiento
-    let result = [...estados];
-
-    // Aplicar filtro de búsqueda
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        estado => estado.nombre.toLowerCase().includes(term) ||
-                estado.fechaCreacion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase().includes(term) ||
-                estado.activo.toString().toLowerCase().includes(term) ||
-                estado.id.toString().toLowerCase().includes(term) ||
-                (estado.descripcion && estado.descripcion.toLowerCase().includes(term)) ||
-                estado.color.toLowerCase().includes(term)
-      );
-    }
-
-    // Separar los valores de filtro por tipo
-    const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
-    const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
-
-    // Aplicar filtro de valores (si hay valores seleccionados)
-    if (filterValues.length > 0) {
-      result = result.filter(estado => 
-        filterValues.includes(getFieldValue(estado, sortBy))
-      );
-    }
-
-    // Aplicar filtro de estados sobre el resultado anterior
-    if (filterStates.length > 0) {
-      result = result.filter(estado => 
-        filterStates.includes(estado.activo ? 'Activo' : 'Inactivo')
-      );
-    }
-
-    // Aplicar ordenamiento
-    result.sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case 'nombre':
-          comparison = a.nombre.localeCompare(b.nombre);
-          break;
-        case 'descripcion':
-          comparison = (a.descripcion || '').localeCompare(b.descripcion || '');
-          break;
-        case 'color':
-          comparison = a.color.localeCompare(b.color);
-          break;
-        case 'fechaCreacion':
-          const fechaA = a.fechaCreacion instanceof Date ? a.fechaCreacion : new Date(a.fechaCreacion);
-          const fechaB = b.fechaCreacion instanceof Date ? b.fechaCreacion : new Date(b.fechaCreacion);
-          comparison = fechaA.getTime() - fechaB.getTime();
-          break;
-        default:
-          comparison = 0;
-      }
-
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-
-    setFilteredEstados(result);
-    setCurrentPage(1);
-  }, [estados, searchTerm, sortBy, sortDirection, selectedFilterValues]);
-
-  // Función para obtener el valor del campo según el campo actual
-  const getFieldValue = (estado: EstadoReporte, field: string): string => {
-    switch (field) {
-      case 'nombre':
-        return estado.nombre;
-      case 'descripcion':
-        return estado.descripcion || 'Sin descripción';
-      case 'color':
-        return estado.color;
-      case 'fechaCreacion':
-        return estado.fechaCreacion instanceof Date ? 
-          estado.fechaCreacion.toLocaleDateString('es-ES') : 
-          new Date(estado.fechaCreacion).toLocaleDateString('es-ES');
-      case 'estado':
-        return estado.activo ? 'Activo' : 'Inactivo';
-      default:
-        return '';
-    }
-  };
-
-  // Paginación
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentEstados = filteredEstados.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredEstados.length / itemsPerPage);
 
   const handleEstadoChange = (estadoId: string) => {
     const estado = estados.find(e => e.id === estadoId);
@@ -173,11 +87,6 @@ const ListaEstados: React.FC = () => {
       }
     }
   };
-
-
-
-
-
 
   const handleSelectEstado = (estadoId: string, checked: boolean) => {
     setSelectedEstados(prev => {
@@ -206,9 +115,67 @@ const ListaEstados: React.FC = () => {
   // Determinar si algunos estados están seleccionados
   const isSomeSelected = filteredEstados.some(estado => selectedEstados.has(estado.id));
 
+  const handleFilterChange = (newData: any[], filters: any) => {
+    setFilteredData(newData);
+    setFilteredEstados(newData);
+    setCurrentPage(1);
+  };
+
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentEstados = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const ATTRIBUTES = [
+    { label: "Nombre", value: "nombre", type: "string" as "string" },
+    { label: "Descripción", value: "descripcion", type: "string" as "string" },
+    { label: "Color", value: "color", type: "string" as "string" },
+    { label: "Fecha Creación", value: "fechaCreacion", type: "date" as "date" },
+  ];
+
+  const PROPERTY_FILTERS = [
+    { label: "Estado", value: "activo", property: "activo", type: "boolean" as "boolean" },
+  ];
+
+  const handleExport = (data: any[]) => {
+    try {
+      exportToCSV(
+        data,
+        `informes-${new Date().toLocaleDateString().replace(/\//g, '-')}`,
+        Object.fromEntries(ATTRIBUTES.map(attr => [attr.value, attr.label]))
+      );
+      toast.success(`Se han exportado ${data.length} registros en formato CSV`);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      toast.error("No se pudo completar la exportación de datos");
+    }
+  };
+
+  const handleNavigate = () => {
+    console.log("Navegación a nueva pantalla");
+    // Ejemplo de navegación - Puedes cambiarlo por la ruta que necesites
+    // navigate("/detalles");
+    toast.info("Aquí iría la navegación a otra pantalla");
+  };
+  
   return (
     <div>
       <div className="space-y-4">
+
+
+          <SearchFilterBar
+            data={estados}
+            onFilterChange={handleFilterChange}
+            attributes={ATTRIBUTES}
+            propertyFilters={PROPERTY_FILTERS}
+            searchPlaceholder="Buscar estados..."
+            resultLabel="estados"
+            exportLabel="Exportar CSV"
+            exportFunction={handleExport}
+            navigateFunction={handleNavigate}
+            navigateLabel="Nuevo Estado"
+          />
 
         {selectedEstados.size > 0 && (
           <div className="flex items-center gap-4 p-4 rounded-md border">
@@ -338,7 +305,7 @@ const ListaEstados: React.FC = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-          totalItems={filteredEstados.length}
+          totalItems={filteredData.length}
           itemsPerPage={itemsPerPage}
         />
       </div>
