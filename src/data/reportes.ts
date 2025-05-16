@@ -125,5 +125,30 @@ export const reportes: Reporte[] = [
     historialAsignaciones: [historialAsignaciones[0]],
     fechaInicio: new Date('2024-01-19'),
     activo: true
-  }
+  },
+  {
+    id: '6',
+    titulo: 'Grafiti en pared',
+    descripcion: 'Grafiti no autorizado en pared de edificio público',
+    ubicacion: {
+      id: '6',
+      direccion: 'Edificio Municipal',
+      latitud: 19.4331,
+      longitud: -99.1337,
+      referencia: 'Edificio Municipal',
+      fechaCreacion: new Date('2024-01-20'),  
+      activo: true
+    },
+    categoria: categorias[4],
+    estado: estadosReporte[4],
+    prioridad: prioridades[2],
+    imagenes: ['https://picsum.photos/300/200?random=6'],
+    fechaCreacion: new Date('2024-01-20'),
+    usuarioCreador: usuarios[1],
+    asignadoA: usuarios[2],
+    historialAsignaciones: [historialAsignaciones[0]],
+    fechaInicio: new Date('2024-01-20'),
+    activo: true
+  } 
+
 ];
