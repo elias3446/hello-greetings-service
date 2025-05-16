@@ -25,7 +25,7 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import Pagination from '@/components/layout/Pagination';
 import { filterCategories, getCategories, getReportesPorCategoria, sortCategories, updateCategory } from '@/controller/CRUD/category/categoryController';
 import { toast } from 'sonner';
 import FilterByValues from '@/components/common/FilterByValues';
@@ -59,15 +59,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { Categoria } from '@/types/tipos';
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState(getCategories());
-  const [filteredCategorias, setFilteredCategorias] = useState(categorias);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'nombre' | 'descripcion' | 'reportes' | 'estado' | 'fecha'>('nombre');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
+
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [currentField, setCurrentField] = useState<string | undefined>('nombre');
@@ -80,6 +80,8 @@ const ListaCategorias: React.FC = () => {
   const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
+  const [filteredCategorias, setFilteredCategorias] = useState<Categoria[]>([]);
+  const itemsPerPage = 5;
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -152,10 +154,10 @@ const ListaCategorias: React.FC = () => {
   }, [categorias, searchTerm, sortBy, sortDirection, selectedFilterValues]);
 
   // Paginación
-  const indexOfLastCategoria = currentPage * categoriasPerPage;
-  const indexOfFirstCategoria = indexOfLastCategoria - categoriasPerPage;
-  const currentCategorias = filteredCategorias.slice(indexOfFirstCategoria, indexOfLastCategoria);
-  const totalPages = Math.ceil(filteredCategorias.length / categoriasPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCategorias = filteredCategorias.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredCategorias.length / itemsPerPage);
 
   // Función para obtener el valor del campo según el campo actual
   const getFieldValue = (categoria: any, field: string): string => {
@@ -423,11 +425,18 @@ const ListaCategorias: React.FC = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCategorias(new Set(currentCategorias.map(categoria => categoria.id)));
+      setSelectedCategorias(new Set(filteredCategorias.map(categoria => categoria.id)));
     } else {
       setSelectedCategorias(new Set());
     }
   };
+
+  // Determinar si todos los estados filtrados están seleccionados
+  const isAllSelected = filteredCategorias.length > 0 && 
+    filteredCategorias.every(categoria => selectedCategorias.has(categoria.id));
+
+  // Determinar si algunos estados están seleccionados
+  const isSomeSelected = filteredCategorias.some(categoria => selectedCategorias.has(categoria.id));
 
   const handleDeleteClick = (categoriaId: string) => {
     setCategoriasAEliminar([categoriaId]);
@@ -519,7 +528,8 @@ const ListaCategorias: React.FC = () => {
               <TableRow className="bg-gray-50">
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedCategorias.size === currentCategorias.length && currentCategorias.length > 0}
+                    checked={isAllSelected}
+                    indeterminate={isSomeSelected && !isAllSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Seleccionar todas las categorías"
                   />
@@ -619,68 +629,13 @@ const ListaCategorias: React.FC = () => {
         </div>
         
         {/* Paginación */}
-        {filteredCategorias.length > categoriasPerPage && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Página {currentPage} de {totalPages}
-            </div>
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => 
-                    page === 1 || 
-                    page === totalPages || 
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  )
-                  .map((page, i, array) => {
-                    // Determinar si necesitamos mostrar puntos suspensivos
-                    const showEllipsisBefore = i > 0 && array[i - 1] !== page - 1;
-                    const showEllipsisAfter = i < array.length - 1 && array[i + 1] !== page + 1;
-                    
-                    return (
-                      <React.Fragment key={page}>
-                        {showEllipsisBefore && (
-                          <PaginationItem>
-                            <span className="flex h-9 w-9 items-center justify-center text-gray-400">...</span>
-                          </PaginationItem>
-                        )}
-                        
-                        <PaginationItem>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                        
-                        {showEllipsisAfter && (
-                          <PaginationItem>
-                            <span className="flex h-9 w-9 items-center justify-center text-gray-400">...</span>
-                          </PaginationItem>
-                        )}
-                      </React.Fragment>
-                    );
-                  })
-                }
-                
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredCategorias.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
