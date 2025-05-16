@@ -789,30 +789,17 @@ const ListaReportesAdmin: React.FC = () => {
         />
 
         {selectedReportes.size > 0 && (
-          <div className="space-y-2 p-3 bg-gray-50 rounded-md border">
-            <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-4 p-4 rounded-md border">
+            <div className="flex-1">
               <span className="text-sm font-medium text-gray-700">
                 {selectedReportes.size} {selectedReportes.size === 1 ? 'reporte seleccionado' : 'reportes seleccionados'}
               </span>
-              <Button
-                onClick={() => {
-                  setSelectedReportes(new Set());
-                  setSelectedCategoriaId('');
-                  setSelectedEstado(getEstados()[0]);
-                  setSelectedUsuarioId('');
-                  setSelectedPrioridadId('');
-                  setSelectedActivo(true);
-                }}
-                variant="outline"
-                size="sm"
-              >
-                Cancelar
-              </Button>
             </div>
+
             <div className="grid grid-cols-3 gap-4">
-              <div className="flex items-center gap-1">
-                <div className="w-[160px]">
-                  <Select
+            <div className="flex items-center gap-4">
+        <div className="w-[200px]">
+                   <Select
                     value={selectedCategoriaId}
                     onValueChange={setSelectedCategoriaId}
                   >
@@ -838,9 +825,8 @@ const ListaReportesAdmin: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-1">
-                <div className="w-[160px]">
-                  <Select
+              <div className="flex items-center gap-4">
+              <div className="w-[200px]">                  <Select
                     value={selectedEstado.id}
                     onValueChange={(value) => {
                       const estado = getEstados().find(e => e.id === value);
@@ -869,9 +855,8 @@ const ListaReportesAdmin: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-1">
-                <div className="w-[160px]">
-                  <Select
+              <div className="flex items-center gap-4">
+              <div className="w-[200px]">                  <Select
                     value={selectedUsuarioId}
                     onValueChange={setSelectedUsuarioId}
                   >
@@ -901,9 +886,8 @@ const ListaReportesAdmin: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-1">
-                <div className="w-[160px]">
-                  <Select
+              <div className="flex items-center gap-4">
+              <div className="w-[200px]">                  <Select
                     value={selectedPrioridadId}
                     onValueChange={setSelectedPrioridadId}
                   >
@@ -930,9 +914,8 @@ const ListaReportesAdmin: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-1">
-                <div className="w-[160px]">
-                  <Select
+              <div className="flex items-center gap-4">
+              <div className="w-[200px]">                  <Select
                     value={selectedActivo ? 'activo' : 'inactivo'}
                     onValueChange={(value) => setSelectedActivo(value === 'activo')}
                   >
@@ -955,7 +938,7 @@ const ListaReportesAdmin: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-4">
                 <Button
                   onClick={handleBulkDelete}
                   variant="destructive"
@@ -965,8 +948,24 @@ const ListaReportesAdmin: React.FC = () => {
                   Eliminar Seleccionados
                 </Button>
               </div>
+
+            
             </div>
-          </div>
+            <Button
+                onClick={() => {
+                  setSelectedReportes(new Set());
+                  setSelectedCategoriaId('');
+                  setSelectedEstado(getEstados()[0]);
+                  setSelectedUsuarioId('');
+                  setSelectedPrioridadId('');
+                  setSelectedActivo(true);
+                }}
+                variant="outline"
+                size="sm"
+              >
+                Cancelar
+              </Button>
+            </div>
         )}
 
       <div className="rounded-md border">
@@ -1037,7 +1036,7 @@ const ListaReportesAdmin: React.FC = () => {
                       }}
                       disabled={!reporte.activo}
                     >
-                      <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <SelectTrigger className={`w-[180px] focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <SelectValue>{reporte.categoria?.nombre || 'Sin categoría'}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -1062,7 +1061,7 @@ const ListaReportesAdmin: React.FC = () => {
                       }}
                       disabled={!reporte.activo}
                     >
-                      <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <SelectTrigger className={`w-[180px] focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <SelectValue>{reporte.estado.nombre}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -1089,7 +1088,7 @@ const ListaReportesAdmin: React.FC = () => {
                       }}
                       disabled={!reporte.activo}
                     >
-                      <SelectTrigger className={`w-full bg-white border-none focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <SelectTrigger className={`w-[180px] focus:ring-0 focus:outline-none ${!reporte.activo ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <SelectValue>{reporte.asignadoA ? `${reporte.asignadoA.nombre} ${reporte.asignadoA.apellido}` : 'No asignado'}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>

@@ -28,6 +28,9 @@ export const sortUsers = (users: Usuario[], sortBy: string, direction: 'asc' | '
         const fechaB = b.fechaCreacion instanceof Date ? b.fechaCreacion : new Date(b.fechaCreacion);
         comparison = fechaA.getTime() - fechaB.getTime();
         break;
+      case 'estado':
+        comparison = a.estado.localeCompare(b.estado);
+        break;
       default:
         comparison = 0;
     }

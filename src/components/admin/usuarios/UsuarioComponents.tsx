@@ -73,8 +73,9 @@ export const UsuarioRow: React.FC<UsuarioRowProps & { onSelect: (id: string, che
       </Link>
     </TableCell>
     <TableCell>{usuario.email}</TableCell>
-    <TableCell >
-      {usuario.roles && usuario.roles.length > 0 && (
+
+    <TableCell>
+    {usuario.roles && usuario.roles.length > 0 && (
         <div className={usuario.estado === 'bloqueado' ? 'pointer-events-none opacity-50' : ''}>
         <RoleSelector
           userId={usuario.id}

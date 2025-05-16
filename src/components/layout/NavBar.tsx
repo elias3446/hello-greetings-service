@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Globe, LayoutDashboard, Map, FileText, Settings,
-  HelpCircle, PlusCircle, Bell
+  HelpCircle, PlusCircle, Bell, Sun, Moon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useTheme } from 'next-themes';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const navLinks = [
     { to: '/dashboard', label: 'Panel', icon: LayoutDashboard },
@@ -66,6 +68,17 @@ const NavBar = () => {
                 3
               </span>
             </button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label="Cambiar tema"
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
 
             <Avatar className="h-7 w-7 sm:h-9 sm:w-9 hover:opacity-80 transition-opacity">
               <AvatarImage

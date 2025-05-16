@@ -16,7 +16,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   onCancel
 }) => {
   return selectedUsers.size > 0 ? (
-    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+    <div className="flex items-center gap-4 p-4 rounded-md border">
       <div className="flex-1">
         <span className="text-sm font-medium text-gray-700">
           {selectedUsers.size} {selectedUsers.size === 1 ? 'usuario seleccionado' : 'usuarios seleccionados'}

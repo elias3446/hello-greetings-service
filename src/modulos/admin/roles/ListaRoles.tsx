@@ -299,7 +299,7 @@ const ListaRoles = () => {
         <div className="rounded-md border">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50">
+              <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
                     checked={isAllSelected}
