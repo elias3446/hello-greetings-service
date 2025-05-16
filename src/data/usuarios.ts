@@ -67,4 +67,17 @@ export const usuarios: Usuario[] = [
     intentosFallidos: 0,
     password: 'usuario',
   },
+  {
+    id: '6',
+    nombre: 'Ana',
+    apellido: 'López',
+    email: 'ana@ejemplo.com',
+    roles: [roles[3]],
+    fechaCreacion: new Date('2023-03-25'),
+    estado: 'activo',
+    tipo: 'usuario',
+    permisos: roles[3].permisos,
+    intentosFallidos: 0,
+    password: 'usuario',
+  },  
 ];
