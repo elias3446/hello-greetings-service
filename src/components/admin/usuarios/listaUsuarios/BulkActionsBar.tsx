@@ -2,18 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
-
-interface BulkActionsBarProps {
-  selectedUsers: Set<string>;
-  selectedRoleId: string;
-  selectedEstado: 'activo' | 'inactivo';
-  onRoleChange: (userId: string, roleId: string) => Promise<void>;
-  onEstadoChange: (value: 'activo' | 'inactivo') => void;
-  onBulkRoleUpdate: () => void;
-  onBulkEstadoUpdate: () => void;
-  onBulkDelete: () => void;
-  onCancel: () => void;
-}
+import { BulkActionsBarProps } from '@/props/admin/usuarios/PrpListaUsuarios';
 
 const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   selectedUsers,
@@ -26,7 +15,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   onBulkDelete,
   onCancel
 }) => {
-  return (
+  return selectedUsers.size > 0 ? (
     <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
       <div className="flex-1">
         <span className="text-sm font-medium text-gray-700">
@@ -83,7 +72,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
         </Button>
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default BulkActionsBar; 

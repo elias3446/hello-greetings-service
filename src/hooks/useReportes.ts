@@ -142,16 +142,20 @@ export const useReportesData = (
   return filteredReportes;
 };
 
-export const usePagination = (items: Reporte[], itemsPerPage: number) => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const totalPages = Math.ceil(items.length / itemsPerPage);
+export const usePagination = (items: Reporte[], itemsPerPage: number, currentPage: number, setCurrentPage: (page: number) => void) => {
+  const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
 
+  // Reset to page 1 if current page is greater than total pages
+  React.useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage, setCurrentPage]);
+
   return {
-    currentPage,
-    setCurrentPage,
     totalPages,
     currentItems,
   };

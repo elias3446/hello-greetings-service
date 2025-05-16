@@ -27,8 +27,9 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { actualizarEstadoActivoReporte } from '@/controller/controller/report/reportActiveController';
 import { prioridades } from '@/data/categorias';
 import { actualizarPrioridadReporte } from '@/controller/controller/report/reportPriorityController';
+import Pagination from '@/components/layout/Pagination';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 const SORT_OPTIONS: SortOption[] = [
   { value: 'titulo', label: 'Título' },
@@ -72,6 +73,8 @@ const ListaReportesAdmin: React.FC = () => {
     setCurrentField,
     selectedFilterValues,
     setSelectedFilterValues,
+    currentPage,
+    setCurrentPage,
   } = useReportesState();
 
   const [selectedReportes, setSelectedReportes] = useState<Set<string>>(new Set());
@@ -83,7 +86,12 @@ const ListaReportesAdmin: React.FC = () => {
   const [selectedPrioridadId, setSelectedPrioridadId] = useState<string>('');
 
   const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
-  const { currentPage, setCurrentPage, totalPages, currentItems } = usePagination(filteredData, ITEMS_PER_PAGE);
+  const { totalPages, currentItems } = usePagination(
+    filteredData,
+    ITEMS_PER_PAGE,
+    currentPage,
+    setCurrentPage
+  );
 
   React.useEffect(() => {
     setIsLoading(true);
@@ -128,9 +136,8 @@ const ListaReportesAdmin: React.FC = () => {
   }, [state?.initialFilters]);
 
   React.useEffect(() => {
-    setFilteredReportes(filteredData);
     setCurrentPage(1);
-  }, [filteredData]);
+  }, [filteredData, setCurrentPage]);
 
   const handleSelectReporte = (reporteId: string, checked: boolean) => {
     setSelectedReportes(prev => {
@@ -146,11 +153,19 @@ const ListaReportesAdmin: React.FC = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedReportes(new Set(currentItems.map(reporte => reporte.id)));
+      setSelectedReportes(new Set(filteredData.map(reporte => reporte.id)));
     } else {
       setSelectedReportes(new Set());
     }
   };
+
+  const isAllSelected = React.useMemo(() => {
+    return filteredData.length > 0 && filteredData.every(reporte => selectedReportes.has(reporte.id));
+  }, [filteredData, selectedReportes]);
+
+  const isSomeSelected = React.useMemo(() => {
+    return filteredData.some(reporte => selectedReportes.has(reporte.id));
+  }, [filteredData, selectedReportes]);
 
   const handleBulkEstadoUpdate = async () => {
     if (selectedReportes.size === 0) {
@@ -960,7 +975,8 @@ const ListaReportesAdmin: React.FC = () => {
               <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedReportes.size === currentItems.length && currentItems.length > 0}
+                    checked={isAllSelected}
+                    indeterminate={isSomeSelected && !isAllSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Seleccionar todos los reportes"
                   />
@@ -1114,29 +1130,13 @@ const ListaReportesAdmin: React.FC = () => {
           </Table>
         </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            Anterior
-          </Button>
-          <span className="text-sm">
-            Página {currentPage} de {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Siguiente
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredData.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+      />
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

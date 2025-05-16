@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
 import SearchFilterBar from '@/components/layout/SearchFilterBar';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useUsuarioState, useUsuarioData, useUsuarioFilters, useUsuarioHandlers } from '@/hooks/useUsuario';
 import { UsuarioTableHeader, LoadingRow, EmptyStateRow, UsuarioRow, PaginationComponent } from '@/components/admin/usuarios/UsuarioComponents';
 import { getFieldValue } from '@/utils/usuarioUtils';
@@ -12,20 +11,21 @@ import { actualizarEstadoUsuario } from '@/controller/controller/user/userStateC
 import { eliminarUsuario } from '@/controller/controller/user/userDeleteController';
 import { toast } from '@/components/ui/sonner';
 import { Usuario } from '@/types/tipos';
-import RoleSelector from '@/components/admin/selector/RoleSelector';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useLocation } from 'react-router-dom';
 import BulkActionsBar from '@/components/admin/usuarios/listaUsuarios/BulkActionsBar';
 import DeleteUserDialog from '@/components/admin/usuarios/listaUsuarios/DeleteUserDialog';
+import Pagination from '@/components/layout/Pagination';
 
 const ListaUsuarios: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(1);
   const [state, actions] = useUsuarioState();
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [selectedRoleId, setSelectedRoleId] = useState<string>('');
   const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
   const [usuariosAEliminar, setUsuariosAEliminar] = useState<Usuario[]>([]);
-  
+  const [filteredUsuarios, setFilteredUsuarios] = useState<Usuario[]>([]);
+  const itemsPerPage = 5;
+
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -33,7 +33,10 @@ const ListaUsuarios: React.FC = () => {
   useUsuarioFilters(state, actions);
   const handlers = useUsuarioHandlers(state, actions);
 
-  const { currentUsuarios, totalPages } = calculatePagination(state.filteredUsuarios, state.currentPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsuarios = filteredUsuarios.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUsuarios.length / itemsPerPage);
 
   // Count results
   const filteredCount = state.filteredUsuarios.length;
@@ -53,15 +56,23 @@ const ListaUsuarios: React.FC = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(new Set(currentUsuarios.map(user => user.id)));
+      setSelectedUsers(new Set(filteredUsuarios.map(user => user.id)));
     } else {
       setSelectedUsers(new Set());
     }
   };
 
+  useEffect(() => {
+    setFilteredUsuarios(state.usuarios);
+    setCurrentPage(1);
+  }, [state.usuarios]);
+
   // Agregar esta función para determinar si todos los usuarios están seleccionados
-  const isAllSelected = currentUsuarios.length > 0 && 
-    currentUsuarios.every(user => selectedUsers.has(user.id));
+  const isAllSelected = filteredUsuarios.length > 0 && 
+    filteredUsuarios.every(user => selectedUsers.has(user.id));
+
+  // Agregar esta función para determinar si algunos usuarios están seleccionados
+  const isSomeSelected = filteredUsuarios.some(user => selectedUsers.has(user.id));
 
   const handleBulkEstadoUpdate = async () => {
     if (selectedUsers.size === 0) {
@@ -492,7 +503,7 @@ const ListaUsuarios: React.FC = () => {
     <div className="space-y-6">
         <SearchFilterBar
           searchTerm={state.searchTerm}
-        onSearchChange={actions.setSearchTerm}
+          onSearchChange={actions.setSearchTerm}
           statusFilter={state.statusFilter}
           onStatusFilterChange={actions.setStatusFilter}
           roleFilter={state.roleFilter}
@@ -507,18 +518,15 @@ const ListaUsuarios: React.FC = () => {
           onNewItem={handleNuevoUsuario}
           items={state.usuarios}
           getFieldValue={getFieldValue}
-        showNewButton={true}
-        newButtonLabel="Nuevo usuario"
-        showExportButton={true}
+          newButtonLabel="Nuevo usuario"
           sortOptions={SORT_OPTIONS}
           filteredCount={filteredCount}
           totalCount={totalCount}
           itemLabel="usuarios"
           filterOptions={FILTER_OPTIONS}
-        searchPlaceholder="Buscar usuarios..."
+          searchPlaceholder="Buscar usuarios..."
         />
 
-        {selectedUsers.size > 0 && (
           <BulkActionsBar
             selectedUsers={selectedUsers}
             selectedRoleId={selectedRoleId}
@@ -537,7 +545,6 @@ const ListaUsuarios: React.FC = () => {
               setSelectedEstado('activo');
             }}
           />
-        )}
 
         <div className="rounded-md border">
           <Table>
@@ -567,12 +574,14 @@ const ListaUsuarios: React.FC = () => {
           </Table>
         </div>
         
-        <PaginationComponent
-          currentPage={state.currentPage}
+                {/* Paginación */}
+          <Pagination
+          currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={actions.setCurrentPage}
+          onPageChange={setCurrentPage}
+          totalItems={filteredUsuarios.length}
+          itemsPerPage={itemsPerPage}
         />
-
       <DeleteUserDialog
         open={state.showDeleteDialog}
         onOpenChange={actions.setShowDeleteDialog}

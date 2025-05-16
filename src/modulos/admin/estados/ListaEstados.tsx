@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import Pagination from '@/components/layout/Pagination';
 import { EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
 import { getEstados, updateEstado, deleteEstado } from '@/controller/CRUD/estado/estadoController';
@@ -46,7 +46,7 @@ const ListaEstados: React.FC = () => {
   const [currentField, setCurrentField] = useState<string | undefined>('nombre');
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const [selectedEstados, setSelectedEstados] = useState<Set<string>>(new Set());
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -270,11 +270,18 @@ const ListaEstados: React.FC = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedEstados(new Set(currentEstados.map(estado => estado.id)));
+      setSelectedEstados(new Set(filteredEstados.map(estado => estado.id)));
     } else {
       setSelectedEstados(new Set());
     }
   };
+
+  // Determinar si todos los estados filtrados están seleccionados
+  const isAllSelected = filteredEstados.length > 0 && 
+    filteredEstados.every(estado => selectedEstados.has(estado.id));
+
+  // Determinar si algunos estados están seleccionados
+  const isSomeSelected = filteredEstados.some(estado => selectedEstados.has(estado.id));
 
   return (
     <div>
@@ -332,7 +339,8 @@ const ListaEstados: React.FC = () => {
               <TableRow className="bg-gray-50">
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedEstados.size === currentEstados.length && currentEstados.length > 0}
+                    checked={isAllSelected}
+                    indeterminate={isSomeSelected && !isAllSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Seleccionar todos los estados"
                   />
@@ -430,68 +438,13 @@ const ListaEstados: React.FC = () => {
         </div>
         
         {/* Paginación */}
-        {filteredEstados.length > itemsPerPage && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Página {currentPage} de {totalPages}
-            </div>
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => 
-                    page === 1 || 
-                    page === totalPages || 
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  )
-                  .map((page, i, array) => {
-                    // Determinar si necesitamos mostrar puntos suspensivos
-                    const showEllipsisBefore = i > 0 && array[i - 1] !== page - 1;
-                    const showEllipsisAfter = i < array.length - 1 && array[i + 1] !== page + 1;
-                    
-                    return (
-                      <React.Fragment key={page}>
-                        {showEllipsisBefore && (
-                          <PaginationItem>
-                            <span className="flex h-9 w-9 items-center justify-center text-gray-400">...</span>
-                          </PaginationItem>
-                        )}
-                        
-                        <PaginationItem>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                        
-                        {showEllipsisAfter && (
-                          <PaginationItem>
-                            <span className="flex h-9 w-9 items-center justify-center text-gray-400">...</span>
-                          </PaginationItem>
-                        )}
-                      </React.Fragment>
-                    );
-                  })
-                }
-                
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredEstados.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
     </div>
   );

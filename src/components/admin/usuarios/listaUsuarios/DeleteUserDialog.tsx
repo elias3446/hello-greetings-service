@@ -9,15 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-interface DeleteUserDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  usuarioAEliminar?: { nombre: string; apellido: string };
-  usuariosAEliminar: any[];
-  onConfirm: () => void;
-  onCancel: () => void;
-}
+import { DeleteUserDialogProps } from '@/props/admin/usuarios/PrpListaUsuarios';
 
 const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
   open,
