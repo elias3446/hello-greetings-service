@@ -200,10 +200,23 @@ const ListaRoles = () => {
   };
 
   const ATTRIBUTES = [
-    { label: "Nombre", value: "nombre", type: "string" as "string" },
-    { label: "Descripción", value: "descripcion", type: "string" as "string" },
-    { label: "Permisos", value: "permisos", type: "object" as "object" },
-    { label: "Fecha Creación", value: "fechaCreacion", type: "date" as "date" },
+    { label: "Nombre", value: "nombre", type: "string" as const },
+    { label: "Descripción", value: "descripcion", type: "string" as const },
+    { 
+      label: "Permisos", 
+      value: "permisos", 
+      type: "object" as const,
+      getValue: (item: any) => item.permisos,
+      formatValue: (value: any) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        if (Array.isArray(value)) {
+          return value.map(p => typeof p === 'string' ? p : p.nombre).join(', ');
+        }
+        return typeof value === 'object' ? value.nombre : '';
+      }
+    },
+    { label: "Fecha Creación", value: "fechaCreacion", type: "date" as const },
   ];
 
   const PROPERTY_FILTERS = [

@@ -229,7 +229,22 @@ export function SearchFilterBar<T>({
             return values.some(filterValue => datesMatch(itemValue, filterValue));
           }
           
-          // Formatear el valor para comparación
+          // Si el valor es un array (como permisos), verificar si alguno de los valores seleccionados está en el array
+          if (Array.isArray(itemValue)) {
+            return values.some(filterValue => {
+              return itemValue.some(v => {
+                let formattedValue: string;
+                if (attrInfo?.formatValue) {
+                  formattedValue = attrInfo.formatValue(v);
+                } else {
+                  formattedValue = formatValue(v);
+                }
+                return formattedValue === filterValue;
+              });
+            });
+          }
+          
+          // Para valores no-array, formatear y comparar
           let formattedValue: string;
           if (attrInfo?.formatValue) {
             formattedValue = attrInfo.formatValue(itemValue);
@@ -237,7 +252,6 @@ export function SearchFilterBar<T>({
             formattedValue = formatValue(itemValue);
           }
           
-          // Verificar si el valor formateado está en los valores seleccionados
           return values.includes(formattedValue);
         });
       }

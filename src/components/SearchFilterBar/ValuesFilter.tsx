@@ -37,27 +37,38 @@ export function ValuesFilter<T>({
           try {
             let value;
             
-            // Si el atributo es de tipo function, usar getValue si está disponible
-            if (attrInfo?.type === 'function' && attrInfo.getValue) {
+            // Si el atributo tiene getValue, usarlo
+            if (attrInfo?.getValue) {
               value = attrInfo.getValue(item);
             } else {
               value = (item as any)[selectedSortAttribute];
             }
             
             if (value !== undefined && value !== null) {
-              let formattedValue: string;
-              
-              // Si el atributo tiene formatValue, usarlo
-              if (attrInfo?.formatValue) {
-                formattedValue = attrInfo.formatValue(value);
+              // Si el valor es un array, procesar cada elemento
+              if (Array.isArray(value)) {
+                value.forEach(v => {
+                  let formattedValue: string;
+                  if (attrInfo?.formatValue) {
+                    formattedValue = attrInfo.formatValue(v);
+                  } else {
+                    formattedValue = formatValue(v);
+                  }
+                  if (formattedValue && formattedValue !== '[Objeto]' && formattedValue !== '[object Object]') {
+                    uniqueValues.add(formattedValue);
+                  }
+                });
               } else {
-                // Si no, usar el formatValue genérico
-                formattedValue = formatValue(value);
-              }
-              
-              // Solo agregar si el valor formateado es válido
-              if (formattedValue && formattedValue !== '[Objeto]' && formattedValue !== '[object Object]') {
-                uniqueValues.add(formattedValue);
+                // Si no es un array, procesar como valor único
+                let formattedValue: string;
+                if (attrInfo?.formatValue) {
+                  formattedValue = attrInfo.formatValue(value);
+                } else {
+                  formattedValue = formatValue(value);
+                }
+                if (formattedValue && formattedValue !== '[Objeto]' && formattedValue !== '[object Object]') {
+                  uniqueValues.add(formattedValue);
+                }
               }
             }
           } catch (error) {
