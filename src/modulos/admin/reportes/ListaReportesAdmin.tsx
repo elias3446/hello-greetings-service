@@ -24,11 +24,12 @@ import { usuarios } from '@/data/usuarios';
 import { getSystemUser } from '@/utils/userUtils';
 import { Pencil, Trash2 } from 'lucide-react';
 import { actualizarEstadoActivoReporte } from '@/controller/controller/report/reportActiveController';
-import { prioridades } from '@/data/categorias';
+import { categorias, prioridades } from '@/data/categorias';
 import { actualizarPrioridadReporte } from '@/controller/controller/report/reportPriorityController';
 import Pagination from '@/components/layout/Pagination';
+import { SearchFilterBar } from '@/components/SearchFilterBar/SearchFilterBar';
 
-const ITEMS_PER_PAGE = 5;
+const itemsPerPage = 5;
 
 const SORT_OPTIONS: SortOption[] = [
   { value: 'titulo', label: 'Título' },
@@ -75,7 +76,7 @@ const ListaReportesAdmin: React.FC = () => {
     currentPage,
     setCurrentPage,
   } = useReportesState();
-
+  const [estados, setEstados] = useState<Reporte[]>([]);
   const [selectedReportes, setSelectedReportes] = useState<Set<string>>(new Set());
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>('');
   const [selectedEstado, setSelectedEstado] = useState<EstadoReporte>(getEstados()[0]);
@@ -83,56 +84,21 @@ const ListaReportesAdmin: React.FC = () => {
   const [selectedActivo, setSelectedActivo] = useState<boolean>(true);
   const [reportesAEliminar, setReportesAEliminar] = useState<Reporte[]>([]);
   const [selectedPrioridadId, setSelectedPrioridadId] = useState<string>('');
-
-  const filteredData = useReportesData(reportes, searchTerm, sortBy, sortDirection, selectedFilterValues);
-  const { totalPages, currentItems } = usePagination(
-    filteredData,
-    ITEMS_PER_PAGE,
-    currentPage,
-    setCurrentPage
-  );
+  const [filteredData, setFilteredData] = useState<Reporte[]>([]);
+  const [filteredEstados, setFilteredEstados] = useState<Reporte[]>([]);
 
   React.useEffect(() => {
     setIsLoading(true);
     try {
       const data = obtenerReportes();
       setReportes(data);
-      setFilteredReportes(data);
-
-      // Aplicar filtros iniciales si existen
-      if (state?.initialFilters) {
-        const { categoria } = state.initialFilters;
-        if (categoria && categoria.length > 0) {
-          const categoriaSeleccionada = getCategories().find(c => c.id === categoria[0]);
-          if (categoriaSeleccionada) {
-            // Forzar la actualización de los filtros
-            const filterValue = `categoria:${categoriaSeleccionada.nombre}`;
-            console.log('Setting initial filter:', filterValue);
-            
-            // Asegurar que el filtro se aplique antes de actualizar el estado
-            setSelectedFilterValues([filterValue]);
-            setCategoriaFilter(categoriaSeleccionada.nombre);
-            
-            // Asegurar que el filtro se aplique inmediatamente
-            const filteredData = data.filter(reporte => 
-              reporte.categoria?.nombre === categoriaSeleccionada.nombre
-            );
-            setFilteredReportes(filteredData);
-
-            // Forzar la actualización del estado de los filtros
-            setTimeout(() => {
-              console.log('Forcing filter update with:', filterValue);
-              setSelectedFilterValues([filterValue]);
-            }, 100);
-          }
-        }
-      }
+      setFilteredData(data);
+      setIsLoading(false);
     } catch (error) {
       toast.error("Error al cargar reportes");
-    } finally {
       setIsLoading(false);
     }
-  }, [state?.initialFilters]);
+  }, []);
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -669,12 +635,123 @@ const ListaReportesAdmin: React.FC = () => {
     }
   };
 
+  const handleFilterChange = (newData: any[], filters: any) => {
+    setFilteredData(newData);
+    setCurrentPage(1);
+  };
 
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+
+  const ATTRIBUTES = [
+    { label: "Título", value: "titulo", type: "string" as const },
+    { 
+      label: "Asignado a", 
+      value: "asignadoA", 
+      type: "object" as const, 
+      getValue: (item: any) => item.asignadoA,
+      formatValue: (value: any) => {
+        if (!value) return 'No asignado';
+        return `${value.nombre} ${value.apellido}`;
+      }
+    },
+    { label: "Fecha", value: "fechaCreacion", type: "date" as const },
+    { 
+      label: "Ubicación", 
+      value: "ubicacion", 
+      type: "object" as const, 
+      getValue: (item: any) => item.ubicacion,
+      formatValue: (value: any) => value?.direccion || 'Sin ubicación'
+    },
+  ];
+
+  const PROPERTY_FILTERS = [
+    { 
+      label: "Activo", 
+      value: "activo", 
+      property: "activo", 
+      type: "boolean" as const,
+      formatValue: (value: boolean) => value ? 'Activo' : 'Inactivo'
+    },
+    { 
+      label: "Categoría", 
+      value: "categoria", 
+      property: "categoria", 
+      type: "object" as const, 
+      getValue: (item: any) => {
+        if (!item.categoria) return 'Sin categoría';
+        return item.categoria.nombre || 'Sin categoría';
+      },
+      formatValue: (value: any) => {
+        if (!value) return 'Sin categoría';
+        if (typeof value === 'string') return value;
+        return value.nombre || 'Sin categoría';
+      }
+    },
+    { 
+      label: "Estado", 
+      value: "estado", 
+      property: "estado", 
+      type: "object" as const, 
+      getValue: (item: any) => {
+        if (!item.estado) return 'Sin estado';
+        return item.estado.nombre || 'Sin estado';
+      },
+      formatValue: (value: any) => {
+        if (!value) return 'Sin estado';
+        if (typeof value === 'string') return value;
+        return value.nombre || 'Sin estado';
+      }
+    },
+    { 
+      label: "Prioridad", 
+      value: "prioridad", 
+      property: "prioridad", 
+      type: "object" as const, 
+      getValue: (item: any) => {
+        if (!item.prioridad) return 'Sin prioridad';
+        return item.prioridad.nombre || 'Sin prioridad';
+      },
+      formatValue: (value: any) => {
+        if (!value) return 'Sin prioridad';
+        if (typeof value === 'string') return value;
+        return value.nombre || 'Sin prioridad';
+      }
+    }
+  ];
+
+  const handleExport = (data: any[]) => {
+    try {
+      exportToCSV(data);
+      toast.success(`Se han exportado ${data.length} registros en formato CSV`);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      toast.error("No se pudo completar la exportación de datos");
+    }
+  };
+
+  const handleNavigate = () => {
+    console.log("Navegación a nueva pantalla");
+    // Ejemplo de navegación - Puedes cambiarlo por la ruta que necesites
+    // navigate("/detalles");
+    toast.info("Aquí iría la navegación a otra pantalla");
+  };
 
 
   return (
     <div className="space-y-6">
-
+      <SearchFilterBar
+        data={reportes}
+        onFilterChange={handleFilterChange}
+        attributes={ATTRIBUTES}
+        propertyFilters={PROPERTY_FILTERS}
+        searchPlaceholder="Buscar reportes..."
+        resultLabel="reportes"
+        exportLabel="Exportar CSV"
+        exportFunction={handleExport}
+        navigateFunction={handleNavigate}
+        navigateLabel="Nuevo Reporte"
+      />
         {selectedReportes.size > 0 && (
           <div className="flex items-center gap-4 p-4 rounded-md border">
             <div className="flex-1">
@@ -883,14 +960,14 @@ const ListaReportesAdmin: React.FC = () => {
                   Cargando reportes...
                 </TableCell>
               </TableRow>
-            ) : currentItems.length === 0 ? (
+            ) : filteredData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-4">
                   No se encontraron reportes
                 </TableCell>
               </TableRow>
             ) : (
-              currentItems.map((reporte) => (
+              filteredData.map((reporte) => (
                 <TableRow key={reporte.id}>
                   <TableCell>
                     <Checkbox
@@ -1021,7 +1098,7 @@ const ListaReportesAdmin: React.FC = () => {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
         totalItems={filteredData.length}
-        itemsPerPage={ITEMS_PER_PAGE}
+        itemsPerPage={itemsPerPage}
       />
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

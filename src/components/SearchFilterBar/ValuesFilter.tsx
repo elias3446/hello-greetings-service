@@ -35,25 +35,29 @@ export function ValuesFilter<T>({
         
         dataToUse.forEach(item => {
           try {
+            let value;
+            
             // Si el atributo es de tipo function, usar getValue si está disponible
             if (attrInfo?.type === 'function' && attrInfo.getValue) {
-              const calculatedValue = attrInfo.getValue(item);
-              if (calculatedValue !== undefined && calculatedValue !== null) {
-                uniqueValues.add(String(calculatedValue));
-              }
-              return;
+              value = attrInfo.getValue(item);
+            } else {
+              value = (item as any)[selectedSortAttribute];
             }
             
-            let value = (item as any)[selectedSortAttribute];
-            
             if (value !== undefined && value !== null) {
-              if (Array.isArray(value)) {
-                value.forEach(v => uniqueValues.add(formatValue(v)));
+              let formattedValue: string;
+              
+              // Si el atributo tiene formatValue, usarlo
+              if (attrInfo?.formatValue) {
+                formattedValue = attrInfo.formatValue(value);
               } else {
-                const formattedValue = formatValue(value);
-                if (formattedValue) {
-                  uniqueValues.add(formattedValue);
-                }
+                // Si no, usar el formatValue genérico
+                formattedValue = formatValue(value);
+              }
+              
+              // Solo agregar si el valor formateado es válido
+              if (formattedValue && formattedValue !== '[Objeto]' && formattedValue !== '[object Object]') {
+                uniqueValues.add(formattedValue);
               }
             }
           } catch (error) {
@@ -66,7 +70,7 @@ export function ValuesFilter<T>({
         // Ordenar valores según el tipo
         if (attrInfo?.type === 'date') {
           valueArray.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-        } else if (attrInfo?.type === 'function' || attrInfo?.type === 'number') {
+        } else if (attrInfo?.type === 'number') {
           valueArray.sort((a, b) => {
             const numA = parseFloat(a);
             const numB = parseFloat(b);

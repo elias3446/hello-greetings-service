@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -9,6 +8,7 @@ import { X } from "lucide-react";
 import { PropertiesFilterProps } from "./types";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatValue } from "./utils";
 
 export function PropertiesFilter<T>({
   propertyFilters,
@@ -27,35 +27,70 @@ export function PropertiesFilter<T>({
   // Extraer valores únicos para la propiedad seleccionada usando los datos originales
   useEffect(() => {
     if (selectedProperty) {
-      // Utilizamos los datos originales, no los filtrados
       const dataToUse = data;
+      const propInfo = propertyFilters.find(prop => prop.property === selectedProperty);
       
       if (dataToUse.length > 0) {
         const uniqueValues = new Set<string>();
         
         dataToUse.forEach(item => {
-          const value = (item as any)[selectedProperty];
-          if (value !== undefined && value !== null) {
-            if (Array.isArray(value)) {
-              value.forEach(v => uniqueValues.add(String(v)));
+          try {
+            let value;
+            
+            // Si la propiedad tiene getValue, usarlo
+            if (propInfo?.getValue) {
+              value = propInfo.getValue(item);
             } else {
-              uniqueValues.add(String(value));
+              value = (item as any)[selectedProperty];
             }
+            
+            if (value !== undefined && value !== null) {
+              let formattedValue: string;
+              
+              // Si la propiedad tiene formatValue, usarlo
+              if (propInfo?.formatValue) {
+                formattedValue = propInfo.formatValue(value);
+              } else {
+                // Si no, usar el formatValue genérico
+                formattedValue = formatValue(value);
+              }
+              
+              // Solo agregar si el valor formateado es válido
+              if (formattedValue && formattedValue !== '[Objeto]' && formattedValue !== '[object Object]') {
+                uniqueValues.add(formattedValue);
+              }
+            }
+          } catch (error) {
+            console.error("Error extracting property value:", error);
           }
         });
         
-        setPropertyValues(Array.from(uniqueValues).sort());
+        let valueArray = Array.from(uniqueValues);
+        
+        // Ordenar valores según el tipo
+        if (propInfo?.type === 'date') {
+          valueArray.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        } else if (propInfo?.type === 'number') {
+          valueArray.sort((a, b) => {
+            const numA = parseFloat(a);
+            const numB = parseFloat(b);
+            return isNaN(numA) || isNaN(numB) ? a.localeCompare(b) : numA - numB;
+          });
+        } else {
+          valueArray.sort();
+        }
+        
+        setPropertyValues(valueArray);
       } else {
         setPropertyValues([]);
       }
 
-      // Verificar si todos los valores están seleccionados
       const currentValues = selectedProperties[selectedProperty] || [];
       setSelectAll(currentValues.length === 0);
     } else {
       setPropertyValues([]);
     }
-  }, [selectedProperty, data, selectedProperties]); // Usar data en lugar de filteredData
+  }, [selectedProperty, data, selectedProperties, propertyFilters]);
   
   // Manejar cambios en la selección de valores
   const handleValueToggle = (value: string) => {

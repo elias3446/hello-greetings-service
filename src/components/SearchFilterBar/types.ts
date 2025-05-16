@@ -5,13 +5,18 @@
 export interface Attribute {
   label: string;
   value: string;
-  type?: 'string' | 'number' | 'date' | 'object' | 'function';
+  type: "string" | "number" | "date" | "boolean" | "object" | "function";
   getValue?: (item: any) => any;
+  formatValue?: (value: any) => string;
 }
 
 export interface PropertyFilter {
   label: string;
+  value: string;
   property: string;
+  type: 'string' | 'number' | 'date' | 'boolean' | 'object' | 'function';
+  getValue?: (item: any) => any;
+  formatValue?: (value: any) => string;
 }
 
 export type SortDirection = 'asc' | 'desc';

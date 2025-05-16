@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for the SearchFilterBar component
  */
@@ -21,12 +20,9 @@ export const formatValue = (value: any): string => {
   // Para valores calculados que son funciones
   if (typeof value === 'function') {
     try {
-      // Intentar ejecutar la función sin parámetros si es posible
       const result = value();
-      // Formatear el resultado de la función
       return formatValue(result);
     } catch (e) {
-      // Si no se puede ejecutar, mostrar que es un valor calculado
       return '[Valor calculado]';
     }
   }
@@ -34,69 +30,73 @@ export const formatValue = (value: any): string => {
   if (typeof value === 'object') {
     // If it's a Date object
     if (value instanceof Date) {
-      // Format to "14 ene 2025" style
       return format(value, 'd MMM yyyy', { locale: es });
     }
     
     // Handle arrays
     if (Array.isArray(value)) {
       if (value.length === 0) return '[]';
-      
-      // Check if the array contains permission-like objects
-      if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
-        // Si los elementos tienen una propiedad 'nombre', extraer y unir
-        if (value[0].nombre && typeof value[0].nombre === 'string') {
-          // Return comma-separated list of permission names
-          return value.map(item => item.nombre).join(', ');
-        }
-        
-        // Si los elementos tienen una propiedad 'id' con formato de permiso
-        if (value[0].id && typeof value[0].id === 'string' && value[0].id.includes('_')) {
-          // Formatear los permisos con formato "Acción Recurso"
-          return value.map(item => {
-            const parts = item.id.split('_');
-            const action = parts[0];
-            const resource = parts.slice(1).join(' ');
-            return `${action.charAt(0).toUpperCase() + action.slice(1)} ${resource}`;
-          }).join(', ');
-        }
-      }
-      
       return value.map(item => formatValue(item)).join(', ');
     }
     
     // Try to convert objects to a meaningful string representation
     try {
-      // Handle permission objects with specific properties
-      // Primary check for objects with nombre property which should be displayed
+      // Handle objects with nombre property
       if (value.nombre && typeof value.nombre === 'string') {
         return value.nombre;
       }
       
-      // Check for common properties that might represent the object's name or id
-      if (value.name) return value.name;
-      if (value.title) return value.title;
-      if (value.label) return value.label;
-      
-      // For permission objects, extract only the permission name without prefix
-      if (value.id && typeof value.id === 'string' && (
-        value.id.startsWith('ver_') || 
-        value.id.startsWith('editar_') || 
-        value.id.startsWith('eliminar_') ||
-        value.id.startsWith('crear_')
-      )) {
-        // Convert "ver_usuario" to "Ver usuario" (capitalize first letter and remove underscore)
-        const parts = value.id.split('_');
-        const action = parts[0];
-        const resource = parts.slice(1).join(' ');
-        return `${action.charAt(0).toUpperCase() + action.slice(1)} ${resource}`;
+      // Handle objects with name property
+      if (value.name && typeof value.name === 'string') {
+        return value.name;
       }
       
-      // Regular ID handling
-      if (value.id) return String(value.id);
+      // Handle objects with title property
+      if (value.title && typeof value.title === 'string') {
+        return value.title;
+      }
       
-      // If no meaningful property found, use JSON stringify with limited depth
-      // Avoid returning entire JSON object
+      // Handle objects with label property
+      if (value.label && typeof value.label === 'string') {
+        return value.label;
+      }
+      
+      // Handle objects with direccion property
+      if (value.direccion && typeof value.direccion === 'string') {
+        return value.direccion;
+      }
+      
+      // Handle objects with id property
+      if (value.id && typeof value.id === 'string') {
+        return value.id;
+      }
+      
+      // If no meaningful property found, try to stringify the object
+      const stringified = JSON.stringify(value);
+      if (stringified !== '{}') {
+        return stringified;
+      }
+      
+      // Si el objeto tiene propiedades pero no las podemos formatear directamente
+      const keys = Object.keys(value);
+      if (keys.length > 0) {
+        // Intentar obtener el primer valor no nulo
+        for (const key of keys) {
+          const val = value[key];
+          if (val !== null && val !== undefined) {
+            if (typeof val === 'string') {
+              return val;
+            }
+            if (typeof val === 'object' && val !== null) {
+              const formatted = formatValue(val);
+              if (formatted && formatted !== '[Objeto]' && formatted !== '[object Object]') {
+                return formatted;
+              }
+            }
+          }
+        }
+      }
+      
       return '[Objeto]';
     } catch (e) {
       console.error("Error formatting object:", e);

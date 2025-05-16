@@ -211,7 +211,14 @@ export function SearchFilterBar<T>({
             return values.includes(String(calculatedValue));
           }
           
-          const itemValue = (item as any)[attribute];
+          let itemValue;
+          
+          // Si el atributo tiene getValue, usarlo
+          if (attrInfo?.getValue) {
+            itemValue = attrInfo.getValue(item);
+          } else {
+            itemValue = (item as any)[attribute];
+          }
           
           // No filtrar si el valor no existe
           if (itemValue === undefined || itemValue === null) return false;
@@ -222,38 +229,16 @@ export function SearchFilterBar<T>({
             return values.some(filterValue => datesMatch(itemValue, filterValue));
           }
           
-          // Special handling for arrays of objects (like multiple permissions)
-          if (Array.isArray(itemValue) && itemValue.length > 0 && typeof itemValue[0] === 'object') {
-            return values.some(filterValue => 
-              itemValue.some(val => {
-                if (typeof val === 'object' && val !== null) {
-                  return objectMatches(val, filterValue);
-                }
-                return formatValue(val) === filterValue;
-              })
-            );
+          // Formatear el valor para comparación
+          let formattedValue: string;
+          if (attrInfo?.formatValue) {
+            formattedValue = attrInfo.formatValue(itemValue);
+          } else {
+            formattedValue = formatValue(itemValue);
           }
           
-          // Manejo especial para filtrado por objetos
-          if (attrInfo?.type === 'object' || (typeof itemValue === 'object' && itemValue !== null && !(itemValue instanceof Date) && !Array.isArray(itemValue))) {
-            return values.some(filterValue => objectMatches(itemValue, filterValue));
-          }
-          
-          // Para arrays, verificar si algún elemento coincide
-          if (Array.isArray(itemValue)) {
-            return values.some(filterValue => 
-              itemValue.some(val => {
-                if (typeof val === 'object' && val !== null) {
-                  return objectMatches(val, filterValue);
-                }
-                return formatValue(val) === filterValue;
-              })
-            );
-          }
-          
-          // Para tipos primitivos, comparar directamente
-          const formattedItemValue = formatValue(itemValue);
-          return values.some(filterValue => filterValue === formattedItemValue);
+          // Verificar si el valor formateado está en los valores seleccionados
+          return values.includes(formattedValue);
         });
       }
     });
@@ -262,25 +247,29 @@ export function SearchFilterBar<T>({
     Object.entries(filters.selectedProperties).forEach(([property, values]) => {
       if (values.length > 0) {
         results = results.filter(item => {
-          const itemValue = (item as any)[property];
+          const propInfo = propertyFilters.find(prop => prop.property === property);
           
-          // Manejo especial para funciones calculadas
-          if (typeof itemValue === 'function') {
-            try {
-              const result = itemValue();
-              if (Array.isArray(result)) {
-                return result.some(val => values.includes(String(val)));
-              }
-              return values.includes(String(result));
-            } catch (e) {
-              return false;
-            }
+          // Si la propiedad tiene getValue, usarlo
+          let itemValue;
+          if (propInfo?.getValue) {
+            itemValue = propInfo.getValue(item);
+          } else {
+            itemValue = (item as any)[property];
           }
           
-          if (Array.isArray(itemValue)) {
-            return itemValue.some(val => values.includes(String(val)));
+          // No filtrar si el valor no existe
+          if (itemValue === undefined || itemValue === null) return false;
+          
+          // Formatear el valor para comparación
+          let formattedValue: string;
+          if (propInfo?.formatValue) {
+            formattedValue = propInfo.formatValue(itemValue);
+          } else {
+            formattedValue = formatValue(itemValue);
           }
-          return values.includes(String(itemValue));
+          
+          // Verificar si el valor formateado está en los valores seleccionados
+          return values.includes(formattedValue);
         });
       }
     });
@@ -349,7 +338,7 @@ export function SearchFilterBar<T>({
     if (onFilterChange) {
       onFilterChange(results, filters);
     }
-  }, [filters, data, onFilterChange, selectedAttribute, sortDirection, attributes]);
+  }, [filters, data, onFilterChange, selectedAttribute, sortDirection, attributes, propertyFilters]);
   
   // Manejador de cambios de búsqueda
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
