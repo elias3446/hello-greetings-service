@@ -1,4 +1,3 @@
-
 /**
  * Tipos para el componente SearchFilterBar
  */

@@ -33,6 +33,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import SearchFilterBar from '@/components/SearchFilterBar/SearchFilterBar';
 import { exportToCSV } from '@/utils/exportUtils';
+import { getReportesPorCategoria } from '@/controller/CRUD/category/categoryController';
 
 const ListaEstados: React.FC = () => {
   const navigate = useNavigate();

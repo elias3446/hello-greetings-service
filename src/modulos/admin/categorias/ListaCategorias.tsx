@@ -58,7 +58,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Categoria } from '@/types/tipos';
+import { Categoria, Rol } from '@/types/tipos';
+import SearchFilterBar from '@/components/SearchFilterBar/SearchFilterBar';
+import { exportToCSV } from '@/utils/exportUtils';
+
 const ListaCategorias: React.FC = () => {
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState(getCategories());
@@ -66,7 +69,7 @@ const ListaCategorias: React.FC = () => {
   const [sortBy, setSortBy] = useState<'nombre' | 'descripcion' | 'reportes' | 'estado' | 'fecha'>('nombre');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [filteredData, setFilteredData] = useState<Categoria[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [currentField, setCurrentField] = useState<string | undefined>('nombre');
@@ -320,10 +323,65 @@ const ListaCategorias: React.FC = () => {
     setShowDeleteDialog(true);
   };
 
+  const handleFilterChange = (newData: any[], filters: any) => {
+    setFilteredData(newData);
+    setFilteredCategorias(newData);
+    setCurrentPage(1);
+  };
+
+  const ATTRIBUTES = [
+    { label: "Nombre", value: "nombre", type: "string" as "string" },
+    { label: "Descripción", value: "descripcion", type: "string" as "string" },
+    { 
+      label: "Reportes", 
+      value: "reportes", 
+      type: "number" as "number",
+      getValue: (item: any) => getReportesPorCategoria(item.id)
+    },
+    { label: "Fecha Creación", value: "fechaCreacion", type: "date" as "date" },
+  ];
+
+  const PROPERTY_FILTERS = [
+    { label: "Estado", value: "activo", property: "activo", type: "boolean" as "boolean" },
+  ];
+
+  const handleExport = (data: any[]) => {
+    try {
+      exportToCSV(
+        data,
+        `informes-${new Date().toLocaleDateString().replace(/\//g, '-')}`,
+        Object.fromEntries(ATTRIBUTES.map(attr => [attr.value, attr.label]))
+      );
+      toast.success(`Se han exportado ${data.length} registros en formato CSV`);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      toast.error("No se pudo completar la exportación de datos");
+    }
+  };
+
+  const handleNavigate = () => {
+    console.log("Navegación a nueva pantalla");
+    // Ejemplo de navegación - Puedes cambiarlo por la ruta que necesites
+    // navigate("/detalles");
+    toast.info("Aquí iría la navegación a otra pantalla");
+  };
+  
+
   return (
     <div>
       <div className="space-y-4">
-
+      <SearchFilterBar
+            data={categorias}
+            onFilterChange={handleFilterChange}
+            attributes={ATTRIBUTES}
+            propertyFilters={PROPERTY_FILTERS}
+            searchPlaceholder="Buscar categorías..."
+            resultLabel="categorías"
+            exportLabel="Exportar CSV"
+            exportFunction={handleExport}
+            navigateFunction={handleNavigate}
+            navigateLabel="Nueva Categoría"
+          />
         {selectedCategorias.size > 0 && (
           <div className="flex items-center gap-4 p-4rounded-md border">
             <div className="flex-1">

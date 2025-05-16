@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -9,6 +8,7 @@ import { X } from "lucide-react";
 import { ValuesFilterProps, Attribute } from "./types";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatValue } from "./utils";
 
 export function ValuesFilter<T>({
   attributes,
@@ -37,14 +37,50 @@ export function ValuesFilter<T>({
           const value = (item as any)[selectedSortAttribute];
           if (value !== undefined && value !== null) {
             if (Array.isArray(value)) {
-              value.forEach(v => uniqueValues.add(String(v)));
+              value.forEach(v => uniqueValues.add(formatValue(v)));
             } else {
-              uniqueValues.add(String(value));
+              uniqueValues.add(formatValue(value));
             }
           }
         });
         
-        setAttributeValues(Array.from(uniqueValues).sort());
+        // Get the selected attribute info to determine if we need special sorting
+        const attrInfo = attributes.find(attr => attr.value === selectedSortAttribute);
+        let valueArray = Array.from(uniqueValues);
+        
+        // Special handling for dates - sort chronologically
+        if (attrInfo?.type === 'date') {
+          try {
+            // For date values that might be in different formats, try to convert to Date objects first
+            // Then format consistently for display
+            const dateMap = new Map<string, Date>();
+            valueArray.forEach(dateStr => {
+              const originalDate = new Date(dateStr);
+              if (!isNaN(originalDate.getTime())) {
+                // Store original date for sorting
+                dateMap.set(dateStr, originalDate);
+              }
+            });
+            
+            // Sort by date if possible
+            valueArray.sort((a, b) => {
+              const dateA = dateMap.get(a);
+              const dateB = dateMap.get(b);
+              if (dateA && dateB) {
+                return dateA.getTime() - dateB.getTime();
+              }
+              return a.localeCompare(b);
+            });
+          } catch (e) {
+            console.error("Error sorting dates:", e);
+            valueArray.sort();
+          }
+        } else {
+          // For non-dates, simple alphabetical sort
+          valueArray.sort();
+        }
+        
+        setAttributeValues(valueArray);
       } else {
         setAttributeValues([]);
       }
@@ -55,7 +91,7 @@ export function ValuesFilter<T>({
     } else {
       setAttributeValues([]);
     }
-  }, [selectedSortAttribute, data, selectedValues]); // Usar data en lugar de filteredData
+  }, [selectedSortAttribute, data, selectedValues, attributes]);
   
   // Handle value toggle selection
   const handleValueToggle = (value: string) => {

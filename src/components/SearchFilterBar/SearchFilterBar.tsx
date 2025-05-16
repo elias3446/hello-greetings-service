@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SearchFilterBarProps, SortDirection } from "./types";
 import { toast } from "@/hooks/use-toast";
+import { datesMatch, objectMatches } from "./utils";
 
 /**
  * SearchFilterBar - Componente reutilizable para búsqueda y filtrado avanzado
@@ -89,9 +90,33 @@ export function SearchFilterBar<T>({
       if (values.length > 0) {
         results = results.filter(item => {
           const itemValue = (item as any)[attribute];
-          if (Array.isArray(itemValue)) {
-            return itemValue.some(val => values.includes(String(val)));
+          
+          // Manejo especial para filtrado por fecha
+          const attrInfo = attributes.find(attr => attr.value === attribute);
+          
+          if (attrInfo?.type === 'date' && itemValue instanceof Date) {
+            // Usar la función datesMatch para comparar fechas
+            return values.some(filterValue => datesMatch(itemValue, filterValue));
           }
+          
+          // Manejo especial para filtrado por objetos
+          if (attrInfo?.type === 'object' || (typeof itemValue === 'object' && itemValue !== null && !(itemValue instanceof Date) && !Array.isArray(itemValue))) {
+            return values.some(filterValue => objectMatches(itemValue, filterValue));
+          }
+          
+          // Para arrays, verificar si algún elemento coincide
+          if (Array.isArray(itemValue)) {
+            return values.some(filterValue => 
+              itemValue.some(val => {
+                if (typeof val === 'object' && val !== null) {
+                  return objectMatches(val, filterValue);
+                }
+                return String(val) === filterValue;
+              })
+            );
+          }
+          
+          // Para tipos primitivos
           return values.includes(String(itemValue));
         });
       }

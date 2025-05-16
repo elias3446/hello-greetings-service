@@ -22,14 +22,16 @@ import Pagination from '@/components/layout/Pagination';
 import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
 import { obtenerRoles } from '@/controller/CRUD/role/roleController';
-import type { Rol } from '@/types/tipos';
+import type { EstadoReporte, Rol } from '@/types/tipos';
 import { Checkbox } from '@/components/ui/checkbox';
-
+import SearchFilterBar from '@/components/SearchFilterBar/SearchFilterBar';
+import { exportToCSV } from '@/utils/exportUtils';
 const ListaRoles = () => {
   const navigate = useNavigate();
   const [roles, setRoles] = useState<Rol[]>([]);
   const [filteredRoles, setFilteredRoles] = useState<Rol[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState<Rol[]>([]);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('nombre');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -191,9 +193,61 @@ const ListaRoles = () => {
   // Determinar si algunos roles están seleccionados
   const isSomeSelected = filteredRoles.some(role => selectedRoles.has(role.id));
 
+  const handleFilterChange = (newData: any[], filters: any) => {
+    setFilteredData(newData);
+    setFilteredRoles(newData);
+    setCurrentPage(1);
+  };
+
+  const ATTRIBUTES = [
+    { label: "Nombre", value: "nombre", type: "string" as "string" },
+    { label: "Descripción", value: "descripcion", type: "string" as "string" },
+    { label: "Permisos", value: "permisos", type: "object" as "object" },
+    { label: "Fecha Creación", value: "fechaCreacion", type: "date" as "date" },
+  ];
+
+  const PROPERTY_FILTERS = [
+    { label: "Estado", value: "activo", property: "activo", type: "boolean" as "boolean" },
+      ];
+
+  const handleExport = (data: any[]) => {
+    try {
+      exportToCSV(
+        data,
+        `informes-${new Date().toLocaleDateString().replace(/\//g, '-')}`,
+        Object.fromEntries(ATTRIBUTES.map(attr => [attr.value, attr.label]))
+      );
+      toast.success(`Se han exportado ${data.length} registros en formato CSV`);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      toast.error("No se pudo completar la exportación de datos");
+    }
+  };
+
+  const handleNavigate = () => {
+    console.log("Navegación a nueva pantalla");
+    // Ejemplo de navegación - Puedes cambiarlo por la ruta que necesites
+    // navigate("/detalles");
+    toast.info("Aquí iría la navegación a otra pantalla");
+  };
+  
   return (
     <div>
       <div className="space-y-4">
+
+        
+      <SearchFilterBar
+            data={roles}
+            onFilterChange={handleFilterChange}
+            attributes={ATTRIBUTES}
+            propertyFilters={PROPERTY_FILTERS}
+            searchPlaceholder="Buscar roles..."
+            resultLabel="roles"
+            exportLabel="Exportar CSV"
+            exportFunction={handleExport}
+            navigateFunction={handleNavigate}
+            navigateLabel="Nuevo Rol"
+          />
 
         {selectedRoles.size > 0 && (
           <div className="flex items-center gap-4 p-4 rounded-md border">
