@@ -18,7 +18,7 @@ import {
   Check,
   X
 } from 'lucide-react';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import Pagination from '@/components/layout/Pagination';
 import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
 import { obtenerRoles } from '@/controller/CRUD/role/roleController';
@@ -39,7 +39,7 @@ const ListaRoles = () => {
   const [currentField, setCurrentField] = useState<string | undefined>();
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const sortOptions = [
     { value: 'nombre', label: 'Nombre' },
@@ -235,11 +235,18 @@ const ListaRoles = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRoles(new Set(currentRoles.map(role => role.id)));
+      setSelectedRoles(new Set(filteredRoles.map(role => role.id)));
     } else {
       setSelectedRoles(new Set());
     }
   };
+
+  // Determinar si todos los roles filtrados están seleccionados
+  const isAllSelected = filteredRoles.length > 0 && 
+    filteredRoles.every(role => selectedRoles.has(role.id));
+
+  // Determinar si algunos roles están seleccionados
+  const isSomeSelected = filteredRoles.some(role => selectedRoles.has(role.id));
 
   return (
     <div>
@@ -295,7 +302,8 @@ const ListaRoles = () => {
               <TableRow className="bg-gray-50">
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedRoles.size === currentRoles.length && currentRoles.length > 0}
+                    checked={isAllSelected}
+                    indeterminate={isSomeSelected && !isAllSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label="Seleccionar todos los roles"
                   />
@@ -398,54 +406,13 @@ const ListaRoles = () => {
         </div>
         
         {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
-              Página {currentPage} de {totalPages}
-            </div>
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => 
-                    page === 1 || 
-                    page === totalPages || 
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  )
-                  .map((page, index, array) => (
-                    <React.Fragment key={page}>
-                      {index > 0 && array[index - 1] !== page - 1 && (
-                        <PaginationItem>
-                          <PaginationLink>...</PaginationLink>
-                        </PaginationItem>
-                      )}
-                      <PaginationItem>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(page)}
-                          isActive={currentPage === page}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    </React.Fragment>
-                  ))}
-                
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredRoles.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
     </div>
   );
