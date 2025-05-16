@@ -9,7 +9,8 @@ import {
   ArrowDownIcon,
   DownloadIcon,
   CheckIcon,
-  UserPlus
+  UserPlus,
+  ArrowUpDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -19,6 +20,21 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from '@/components/ui/command';
 
 interface SortOption {
   value: string;
@@ -179,21 +195,32 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Sort Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                {sortDirection === 'asc' ? <ArrowUpIcon className="h-4 w-4" /> : <ArrowDownIcon className="h-4 w-4" />}
-                Ordenar por: {sortOptions.find(option => option.value === sortBy)?.label}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {sortOptions.map(option => (
-                <DropdownMenuItem key={option.value} onClick={() => handleSortChange(option.value)}>
-                  {option.label} {sortBy === option.value && <CheckIcon className="h-4 w-4 ml-auto" />}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Select
+              value={sortBy}
+              onValueChange={onSortByChange}
+            >
+              <SelectTrigger className="w-[180px] bg-background">
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onSortDirectionChange}
+              className="h-10 w-10"
+            >
+              {sortDirection === 'asc' ? <ArrowUpDown className="h-4 w-4" /> : <ArrowUpDown className="h-4 w-4" />}
+            </Button>
+          </div>
 
           {/* Value Filter */}
           <DropdownMenu>
@@ -203,7 +230,7 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                 Valores {filterState.values.length > 0 && <Badge variant="secondary">!</Badge>}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 bg-background">
               {sortBy ? (
                 <div className="p-2">
                   <h4 className="mb-2 text-sm font-medium">{sortOptions.find(o => o.value === sortBy)?.label}</h4>
@@ -249,7 +276,7 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                 Filtros {filterState.filters.length > 0 && <Badge variant="secondary">!</Badge>}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-background">
               {filterOptions.map((option) => {
                 const filterValues = getFilterValues(option.value);
                 const selectedValue = filterState.filters.find(f => f.startsWith(option.value + ':'))?.split(':')[1];

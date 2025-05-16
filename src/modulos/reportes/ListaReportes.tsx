@@ -88,7 +88,7 @@ const ListaReportes = () => {
                 <Link
                   key={reporte.id}
                   to={`/reportes/${reporte.id}`}
-                  className="block border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="block border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-2">
@@ -114,11 +114,11 @@ const ListaReportes = () => {
                     
                     <div className="flex flex-wrap items-center gap-2">
                       {reporte.categoria ? (
-                        <Badge variant="outline" className="bg-gray-100">
+                        <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800">
                           {reporte.categoria.nombre}
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-gray-100">
+                        <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800">
                           Sin categoría
                         </Badge>
                       )}
