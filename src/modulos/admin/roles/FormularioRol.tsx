@@ -249,7 +249,7 @@ const FormularioRol = ({ modo }: FormularioRolProps) => {
                                       value="admin"
                                       checked={field.value === "admin"}
                                       onChange={() => field.onChange("admin")}
-                                      className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                                      className="h-4 w-4 border-gray-300 text-primary focus:ring-primary dark:bg-gray-800 dark:text-gray-400"
                                     />
                                     <label htmlFor="admin" className="text-sm text-gray-700">Administrativo</label>
                                   </div>
@@ -264,7 +264,7 @@ const FormularioRol = ({ modo }: FormularioRolProps) => {
                         control={form.control}
                         name="activo"
                         render={({ field }) => (
-                          <FormItem className="bg-gray-50 rounded-lg p-4">
+                          <FormItem className="bg-gray-50 rounded-lg p-4 dark:bg-gray-800 dark:text-gray-400">
                             <div className="flex justify-between items-center">
                               <div>
                                 <FormLabel className="text-base">Rol activo</FormLabel>
@@ -386,12 +386,12 @@ const FormularioRol = ({ modo }: FormularioRolProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md dark:bg-gray-800 dark:text-blue-400">
                     <Shield className="h-5 w-5 text-blue-600" />
                     <p className="text-sm">Asigne solo los permisos necesarios siguiendo el principio de mínimo privilegio.</p>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md dark:bg-gray-800 dark:text-amber-400">
                     <Shield className="h-5 w-5 text-amber-600" />
                     <p className="text-sm">Los roles administrativos deben asignarse con precaución.</p>
                   </div>

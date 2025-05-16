@@ -4,7 +4,7 @@ import { FileText, MapPin } from 'lucide-react';
 
 const Hero = () => {
   return (
-    <div className="text-center py-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+    <div className="text-center py-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 rounded-lg">
       <h1 className="text-3xl font-bold mb-2">Plataforma de Gestión de Reportes Georreferenciados</h1>
       <p className="text-lg text-muted-foreground mb-6">
         Sistema para el mejoramiento, seguimiento y control de reportes basado en geolocalización

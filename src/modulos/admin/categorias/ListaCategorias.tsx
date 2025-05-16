@@ -477,7 +477,7 @@ const ListaCategorias: React.FC = () => {
         />
 
         {selectedCategorias.size > 0 && (
-          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+          <div className="flex items-center gap-4 p-4rounded-md border">
             <div className="flex-1">
               <span className="text-sm font-medium text-gray-700">
                 {selectedCategorias.size} {selectedCategorias.size === 1 ? 'categoría seleccionada' : 'categorías seleccionadas'}

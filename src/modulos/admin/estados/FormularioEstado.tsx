@@ -181,7 +181,7 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                         control={form.control}
                         name="activo"
                         render={({ field }) => (
-                          <FormItem className="bg-gray-50 rounded-lg p-4">
+                          <FormItem className="bg-gray-50 rounded-lg p-4 dark:bg-gray-800 dark:text-gray-400">
                             <div className="flex justify-between items-center">
                               <div>
                                 <FormLabel className="text-base">Estado Activo</FormLabel>
@@ -229,12 +229,12 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
                             <FormControl>
                               <div className="flex flex-col items-center space-y-4">
                                 {selectedIcon && SelectedIcon ? (
-                                  <div className="p-4 rounded-lg bg-gray-50 border flex flex-col items-center">
+                                  <div className="p-4 rounded-lg bg-gray-50 border dark:bg-gray-800 dark:text-gray-400 flex flex-col items-center">
                                     <SelectedIcon size={48} className="text-blue-500" />
                                     <span className="mt-2 text-sm font-medium">{selectedIcon}</span>
                                   </div>
                                 ) : (
-                                  <div className="p-4 rounded-lg bg-gray-50 border flex items-center justify-center w-24 h-24 text-gray-300">
+                                  <div className="p-4 rounded-lg bg-gray-50 border dark:bg-gray-800 dark:text-gray-400 flex items-center justify-center w-24 h-24 text-gray-300">
                                     Sin selección
                                   </div>
                                 )}
@@ -309,12 +309,12 @@ const FormularioEstado: React.FC<FormularioEstadoProps> = ({ modo }) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md dark:bg-gray-800 dark:text-blue-400">
                     <Shield className="h-5 w-5 text-blue-600" />
                     <p className="text-sm">Usa colores distintivos para cada tipo de estado para mejorar la experiencia visual.</p>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md dark:bg-gray-800 dark:text-amber-400">
                     <Shield className="h-5 w-5 text-amber-600" />
                     <p className="text-sm">Los estados son fundamentales para el seguimiento del ciclo de vida de los reportes.</p>
                   </div>

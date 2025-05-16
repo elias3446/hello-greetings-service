@@ -189,7 +189,7 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
                         control={form.control}
                         name="activo"
                         render={({ field }) => (
-                          <FormItem className="bg-gray-50 rounded-lg p-4">
+                          <FormItem className="bg-gray-50 rounded-lg p-4 dark:bg-gray-800 dark:text-gray-400">
                             <div className="flex justify-between items-center">
                               <div>
                                 <FormLabel className="text-base">Categoría activa</FormLabel>
@@ -237,12 +237,12 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
                             <FormControl>
                               <div className="flex flex-col items-center space-y-4">
                                 {selectedIcon && SelectedIcon ? (
-                                  <div className="p-4 rounded-lg bg-gray-50 border flex flex-col items-center">
+                                  <div className="p-4 rounded-lg bg-gray-50 border dark:bg-gray-800 dark:text-gray-400 flex flex-col items-center">
                                     <SelectedIcon size={48} className="text-blue-500" />
                                     <span className="mt-2 text-sm font-medium">{selectedIcon}</span>
                                   </div>
                                 ) : (
-                                  <div className="p-4 rounded-lg bg-gray-50 border flex items-center justify-center w-24 h-24 text-gray-300">
+                                  <div className="p-4 rounded-lg bg-gray-50 border dark:bg-gray-800 dark:text-gray-400 flex items-center justify-center w-24 h-24 text-gray-300">
                                     Sin selección
                                   </div>
                                 )}
@@ -317,12 +317,12 @@ const FormularioCategoria = ({ modo }: FormularioCategoriaProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md dark:bg-gray-800 dark:text-blue-400">
                     <FileText className="h-5 w-5 text-blue-600" />
                     <p className="text-sm">Las categorías ayudan a organizar y filtrar los reportes en la aplicación.</p>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md dark:bg-gray-800 dark:text-amber-400">
                     <Shield className="h-5 w-5 text-amber-600" />
                     <p className="text-sm">Utiliza colores distintivos para facilitar la identificación visual.</p>
                   </div>

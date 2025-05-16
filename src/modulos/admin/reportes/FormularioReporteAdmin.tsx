@@ -451,7 +451,7 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                         control={form.control}
                         name="activo"
                         render={({ field }) => (
-                          <FormItem className="bg-gray-50 rounded-lg p-4">
+                          <FormItem className="bg-gray-50 rounded-lg p-4 dark:bg-gray-800 dark:text-gray-400">
                             <div className="flex justify-between items-center">
                               <div>
                                 <FormLabel className="text-base">Reporte activo</FormLabel>
@@ -621,12 +621,12 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 text-blue-800 rounded-md dark:bg-gray-800 dark:text-blue-400">
                     <Map className="h-5 w-5 text-blue-600" />
                     <p className="text-sm">Recuerde ubicar con precisión el punto en el mapa para facilitar la atención.</p>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md">
+                  <div className="flex items-center gap-3 p-3 bg-amber-50 text-amber-800 rounded-md dark:bg-gray-800 dark:text-amber-400">
                     <ClipboardList className="h-5 w-5 text-amber-600" />
                     <p className="text-sm">Una descripción clara y detallada agiliza la resolución del reporte.</p>
                   </div>

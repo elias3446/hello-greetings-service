@@ -315,7 +315,7 @@ const ListaEstados: React.FC = () => {
         />
 
         {selectedEstados.size > 0 && (
-          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
+          <div className="flex items-center gap-4 p-4 rounded-md border">
             <div className="flex-1">
               <span className="text-sm font-medium text-gray-700">
                 {selectedEstados.size} {selectedEstados.size === 1 ? 'estado seleccionado' : 'estados seleccionados'}
@@ -336,7 +336,7 @@ const ListaEstados: React.FC = () => {
         <div className="rounded-md border">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow >
                 <TableHead className="w-[50px]">
                   <Checkbox
                     checked={isAllSelected}
