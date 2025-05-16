@@ -16,6 +16,8 @@ import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useLocation } from 'react-router-dom';
+import BulkActionsBar from '@/components/admin/usuarios/listaUsuarios/BulkActionsBar';
+import DeleteUserDialog from '@/components/admin/usuarios/listaUsuarios/DeleteUserDialog';
 
 const ListaUsuarios: React.FC = () => {
   const [state, actions] = useUsuarioState();
@@ -56,6 +58,10 @@ const ListaUsuarios: React.FC = () => {
       setSelectedUsers(new Set());
     }
   };
+
+  // Agregar esta función para determinar si todos los usuarios están seleccionados
+  const isAllSelected = currentUsuarios.length > 0 && 
+    currentUsuarios.every(user => selectedUsers.has(user.id));
 
   const handleBulkEstadoUpdate = async () => {
     if (selectedUsers.size === 0) {
@@ -347,14 +353,22 @@ const ListaUsuarios: React.FC = () => {
   };
 
   const handleDeleteUser = (usuario: Usuario) => {
+    setUsuariosAEliminar([]); // Limpiar usuarios a eliminar masivamente
     actions.setUsuarioAEliminar(usuario);
     actions.setShowDeleteDialog(true);
   };
 
   const handleBulkDelete = () => {
     const usuariosSeleccionados = state.usuarios.filter(user => selectedUsers.has(user.id));
+    actions.setUsuarioAEliminar(null); // Limpiar usuario individual
     setUsuariosAEliminar(usuariosSeleccionados);
     actions.setShowDeleteDialog(true);
+  };
+
+  const handleCancelDelete = () => {
+    actions.setUsuarioAEliminar(null);
+    setUsuariosAEliminar([]);
+    actions.setShowDeleteDialog(false);
   };
 
   const confirmarEliminacion = async () => {
@@ -397,6 +411,12 @@ const ListaUsuarios: React.FC = () => {
             actions.setFilteredUsuarios(prevUsuarios => 
               prevUsuarios.filter(user => user.id !== usuario.id)
             );
+            // Remover el usuario de la selección
+            setSelectedUsers(prev => {
+              const newSelected = new Set(prev);
+              newSelected.delete(usuario.id);
+              return newSelected;
+            });
           } else {
             errorCount++;
           }
@@ -441,15 +461,23 @@ const ListaUsuarios: React.FC = () => {
           actions.setFilteredUsuarios(prevUsuarios => 
             prevUsuarios.filter(user => user.id !== state.usuarioAEliminar?.id)
           );
+          // Remover el usuario de la selección
+          setSelectedUsers(prev => {
+            const newSelected = new Set(prev);
+            if (state.usuarioAEliminar?.id) {
+              newSelected.delete(state.usuarioAEliminar.id);
+            }
+            return newSelected;
+          });
+          toast.success('Usuario eliminado correctamente');
         }
       }
     } catch (error) {
       console.error('Error al eliminar los usuarios:', error);
       toast.error('Error al eliminar los usuarios');
     } finally {
-      actions.setShowDeleteDialog(false);
-      actions.setUsuarioAEliminar(null);
-      setUsuariosAEliminar([]);
+      handleCancelDelete();
+      // Limpiar la selección después de la eliminación
       setSelectedUsers(new Set());
     }
   };
@@ -491,74 +519,32 @@ const ListaUsuarios: React.FC = () => {
         />
 
         {selectedUsers.size > 0 && (
-          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md border">
-            <div className="flex-1">
-              <span className="text-sm font-medium text-gray-700">
-                {selectedUsers.size} {selectedUsers.size === 1 ? 'usuario seleccionado' : 'usuarios seleccionados'}
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-[200px]">
-                <RoleSelector
-                  userId="bulk-update"
-                  currentRoleId={selectedRoleId}
-                  onRoleChange={async (_, roleId) => {
-                    setSelectedRoleId(roleId);
-                    return Promise.resolve();
-                  }}
-                  autoUpdate={false}
-                />
-              </div>
-              <Button
-                onClick={handleBulkRoleUpdate}
-                disabled={!selectedRoleId}
-                variant="default"
-              >
-                Actualizar Roles
-              </Button>
-              <div className="w-[200px]">
-                <Select
-                  value={selectedEstado}
-                  onValueChange={(value: 'activo' | 'inactivo') => setSelectedEstado(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="activo">Activo</SelectItem>
-                    <SelectItem value="inactivo">Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                onClick={handleBulkEstadoUpdate}
-                variant="default"
-              >
-                Actualizar Estados
-              </Button>
-              <Button
-                onClick={handleBulkDelete}
-                variant="destructive"
-              >
-                Eliminar Seleccionados
-              </Button>
-              <Button
-                onClick={() => {
-                  setSelectedUsers(new Set());
-                  setSelectedRoleId('');
-                  setSelectedEstado('activo');
-                }}
-                variant="outline"
-              >
-                Cancelar
-              </Button>
-            </div>
-          </div>
+          <BulkActionsBar
+            selectedUsers={selectedUsers}
+            selectedRoleId={selectedRoleId}
+            selectedEstado={selectedEstado}
+            onRoleChange={async (_, roleId) => {
+              setSelectedRoleId(roleId);
+              return Promise.resolve();
+            }}
+            onEstadoChange={(value) => setSelectedEstado(value)}
+            onBulkRoleUpdate={handleBulkRoleUpdate}
+            onBulkEstadoUpdate={handleBulkEstadoUpdate}
+            onBulkDelete={handleBulkDelete}
+            onCancel={() => {
+              setSelectedUsers(new Set());
+              setSelectedRoleId('');
+              setSelectedEstado('activo');
+            }}
+          />
         )}
 
         <div className="rounded-md border">
           <Table>
-            <UsuarioTableHeader onSelectAll={handleSelectAll} />
+            <UsuarioTableHeader 
+              onSelectAll={handleSelectAll} 
+              isAllSelected={isAllSelected}
+            />
             <TableBody>
               {state.isLoading ? (
                 <LoadingRow />
@@ -587,34 +573,14 @@ const ListaUsuarios: React.FC = () => {
           onPageChange={actions.setCurrentPage}
         />
 
-      <AlertDialog open={state.showDeleteDialog} onOpenChange={actions.setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {usuariosAEliminar.length > 0 ? (
-                <>
-                  Esta acción no se puede deshacer. Se eliminarán permanentemente {usuariosAEliminar.length} usuarios seleccionados.
-                </>
-              ) : (
-                <>
-                  Esta acción no se puede deshacer. Se eliminará permanentemente el usuario{' '}
-                  <span className="font-semibold">{state.usuarioAEliminar?.nombre} {state.usuarioAEliminar?.apellido}</span>.
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmarEliminacion}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteUserDialog
+        open={state.showDeleteDialog}
+        onOpenChange={actions.setShowDeleteDialog}
+        usuarioAEliminar={state.usuarioAEliminar}
+        usuariosAEliminar={usuariosAEliminar}
+        onConfirm={confirmarEliminacion}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

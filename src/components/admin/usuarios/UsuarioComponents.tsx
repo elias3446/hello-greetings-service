@@ -10,11 +10,15 @@ import { UsuarioRowProps, PaginationProps } from '@/types/usuario';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
 import { Checkbox } from '@/components/ui/checkbox';
 
-export const UsuarioTableHeader: React.FC<{ onSelectAll: (checked: boolean) => void }> = ({ onSelectAll }) => (
+export const UsuarioTableHeader: React.FC<{ 
+  onSelectAll: (checked: boolean) => void;
+  isAllSelected: boolean;
+}> = ({ onSelectAll, isAllSelected }) => (
   <TableHeader>
     <TableRow className="bg-gray-50">
       <TableHead className="w-[50px]">
         <Checkbox
+          checked={isAllSelected}
           onCheckedChange={onSelectAll}
           aria-label="Seleccionar todos"
         />
