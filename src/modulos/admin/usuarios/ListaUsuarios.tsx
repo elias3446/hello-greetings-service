@@ -20,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { FileDown, Plus } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import FilterByValues from '@/components/common/FilterByValues';
+import SearchFilterBar from '@/components/SearchFilterBar/SearchFilterBar';
+import { exportToCSV } from '@/utils/exportUtils';
 
 const ListaUsuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -298,9 +300,61 @@ const ListaUsuarios: React.FC = () => {
     }
   };
 
+  const handleFilterChange = (newData: any[], filters: any) => {
+    setFilteredUsuarios(newData);
+    setCurrentPage(1);
+  };
+  
+  const ATTRIBUTES = [
+    { label: "Nombre", value: "nombre", type: "string" as const },
+    { label: "Email", value: "email", type: "string" as const },
+    { label: "Fecha Creación", value: "fechaCreacion", type: "date" as const },
+    ];
+
+  const PROPERTY_FILTERS = [
+    { label: "Rol", value: "roles", property: "roles", type: "object" as const,
+      getValue: (item: any) => item.roles,
+      formatValue: (value: any) => value.map((rol: any) => rol.nombre).join(', ')
+    },
+    { label: "Estado", value: "estado", property: "estado", type: "string" as const },
+    ];
+
+  const handleExport = (data: any[]) => {
+    try {
+      exportToCSV(
+        data,
+        `informes-${new Date().toLocaleDateString().replace(/\//g, '-')}`,
+        Object.fromEntries(ATTRIBUTES.map(attr => [attr.value, attr.label]))
+      );
+      toast.success(`Se han exportado ${data.length} registros en formato CSV`);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      toast.error("No se pudo completar la exportación de datos");
+    }
+  };
+
+  const handleNavigate = () => {
+    console.log("Navegación a nueva pantalla");
+    // Ejemplo de navegación - Puedes cambiarlo por la ruta que necesites
+    // navigate("/detalles");
+    toast.info("Aquí iría la navegación a otra pantalla");
+  };
 
   return (
     <div className="space-y-4">
+
+<SearchFilterBar
+            data={usuarios}
+            onFilterChange={handleFilterChange}
+            attributes={ATTRIBUTES}
+            propertyFilters={PROPERTY_FILTERS}
+            searchPlaceholder="Buscar usuarios..."
+            resultLabel="usuarios"
+            exportLabel="Exportar CSV"
+            exportFunction={handleExport}
+            navigateFunction={handleNavigate}
+            navigateLabel="Nuevo Usuario"
+          />
 
       {selectedUsers.size > 0 && (
         <BulkActionsBar
