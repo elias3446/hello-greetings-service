@@ -57,6 +57,18 @@ const ListaUsuarios: React.FC = () => {
     loadUsuarios();
   }, []);
 
+  // Paginación
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentItems = filteredUsuarios.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredUsuarios.length / ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   // Aplicar filtros y ordenamiento
   useEffect(() => {
     let result = [...usuarios];
@@ -108,14 +120,12 @@ const ListaUsuarios: React.FC = () => {
     // Aplicar ordenamiento
     result = sortUsers(result, sortBy, sortDirection);
     setFilteredUsuarios(result);
-    setCurrentPage(1);
+    
+    // Solo resetear la página si cambian los filtros o la búsqueda
+    if (searchTerm || selectedFilterValues.length > 0 || sortBy || sortDirection) {
+      setCurrentPage(1);
+    }
   }, [usuarios, searchTerm, sortBy, sortDirection, selectedFilterValues]);
-
-
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentUsuarios = filteredUsuarios.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsuarios.length / ITEMS_PER_PAGE);
 
   const handleSelectUser = (userId: string, checked: boolean) => {
     setSelectedUsers(prev => {
@@ -140,7 +150,6 @@ const ListaUsuarios: React.FC = () => {
   const isAllSelected = filteredUsuarios.length > 0 && 
     filteredUsuarios.every(user => selectedUsers.has(user.id));
   const isSomeSelected = filteredUsuarios.some(user => selectedUsers.has(user.id));
-
 
   const handleEstadoChange = async (userId: string) => {
     const usuario = usuarios.find(user => user.id === userId);
@@ -400,10 +409,10 @@ const ListaUsuarios: React.FC = () => {
           <TableBody>
             {isLoading ? (
               <LoadingRow />
-            ) : filteredUsuarios.length === 0 ? (
+            ) : currentItems.length === 0 ? (
               <EmptyStateRow />
             ) : (
-              currentUsuarios.map((usuario) => (
+              currentItems.map((usuario) => (
                 <UsuarioRow
                   key={usuario.id}
                   usuario={usuario}
@@ -422,7 +431,7 @@ const ListaUsuarios: React.FC = () => {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         totalItems={filteredUsuarios.length}
         itemsPerPage={ITEMS_PER_PAGE}
       />
