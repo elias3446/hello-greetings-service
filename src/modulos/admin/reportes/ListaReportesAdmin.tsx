@@ -4,7 +4,6 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Reporte, Usuario, Categoria, EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
 import { obtenerReportes, obtenerReportePorId, actualizarReporte } from '@/controller/CRUD/report/reportController';
-import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { registrarCambioEstado } from '@/controller/CRUD/user/historialEstadosUsuario';
 import { SortOption, FilterOption } from '@/types/reportes';
@@ -670,123 +669,11 @@ const ListaReportesAdmin: React.FC = () => {
     }
   };
 
-  const handleToggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
 
-  const handleFilterChange = (values: any[]) => {
-    console.log('Filter values changed:', values);
-    // Asegurar que los valores se actualicen correctamente
-    setSelectedFilterValues(values);
-    
-    // Separar los valores de filtro y los valores normales
-    const filterValues = values.filter(v => v.includes(':'));
-    const normalValues = values.filter(v => !v.includes(':'));
 
-    console.log('Processing filters:', { filterValues, normalValues });
-
-    // Aplicar los filtros a los reportes
-    const filteredReportes = reportes.filter(reporte => {
-      // Verificar filtros específicos
-      for (const filter of filterValues) {
-        const [type, value] = filter.split(':');
-        switch (type) {
-          case 'categoria':
-            if (reporte.categoria?.nombre !== value) return false;
-            break;
-          case 'estado':
-            if (reporte.estado.nombre !== value) return false;
-            break;
-          case 'prioridad':
-            if (reporte.prioridad?.nombre !== value) return false;
-            break;
-          case 'activo':
-            if (reporte.activo !== (value === 'true')) return false;
-            break;
-        }
-      }
-
-      // Verificar valores normales
-      if (normalValues.length > 0) {
-        const reporteValue = getFieldValue(reporte, sortBy);
-        if (!normalValues.includes(reporteValue)) return false;
-      }
-
-      return true;
-    });
-
-    console.log('Filtered reportes:', filteredReportes);
-    setFilteredReportes(filteredReportes);
-
-    // Actualizar los filtros específicos para la UI
-    const categoriaFilter = filterValues.find(v => v.startsWith('categoria:'));
-    if (categoriaFilter) {
-      setCategoriaFilter(categoriaFilter.split(':')[1]);
-    } else {
-      setCategoriaFilter(null);
-    }
-
-    const estadoFilter = filterValues.find(v => v.startsWith('estado:'));
-    if (estadoFilter) {
-      setEstadoFilter(estadoFilter.split(':')[1]);
-    } else {
-      setEstadoFilter(null);
-    }
-  };
-
-  const handleExportReportes = () => {
-    exportToCSV(filteredData);
-  };
 
   return (
     <div className="space-y-6">
-        <SearchFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={estadoFilter}
-          onStatusFilterChange={setEstadoFilter}
-          roleFilter={categoriaFilter}
-          onRoleFilterChange={setCategoriaFilter}
-          sortBy={sortBy}
-          onSortByChange={setSortBy}
-          sortDirection={sortDirection}
-          onSortDirectionChange={handleToggleSortDirection}
-          onCurrentFieldChange={setCurrentField}
-          onFilterChange={handleFilterChange}
-          onExport={handleExportReportes}
-          onNewItem={() => navigate('/admin/reportes/nuevo')}
-          items={reportes}
-          getFieldValue={(reporte, field) => {
-            if (field === 'activo') {
-              return reporte.activo ? 'true' : 'false';
-            }
-            if (field === 'estado') {
-              return reporte.estado.nombre;
-            }
-            if (field === 'categoria') {
-              return reporte.categoria?.nombre || 'Sin categoría';
-            }
-            if (field === 'prioridad') {
-              return reporte.prioridad?.nombre || 'Sin prioridad';
-            }
-            return getFieldValue(reporte, field);
-          }}
-          showNewButton={true}
-          newButtonLabel="Nuevo Reporte"
-          showExportButton={true}
-          sortOptions={SORT_OPTIONS}
-          filteredCount={filteredData.length}
-          totalCount={reportes.length}
-          itemLabel="reportes"
-          filterOptions={[
-            { value: 'estado', label: 'Estado' },
-            { value: 'categoria', label: 'Categoría' },
-            { value: 'prioridad', label: 'Prioridad' },
-            { value: 'activo', label: 'Estado' }
-          ]}
-          searchPlaceholder="Buscar reportes..."
-          initialFilters={selectedFilterValues}
-        />
 
         {selectedReportes.size > 0 && (
           <div className="flex items-center gap-4 p-4 rounded-md border">

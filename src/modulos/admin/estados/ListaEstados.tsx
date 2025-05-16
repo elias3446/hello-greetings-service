@@ -29,7 +29,6 @@ import { EstadoReporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
 import { getEstados, updateEstado, deleteEstado } from '@/controller/CRUD/estado/estadoController';
 import FilterByValues from '@/components/common/FilterByValues';
-import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const ListaEstados: React.FC = () => {
@@ -47,17 +46,6 @@ const ListaEstados: React.FC = () => {
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const [selectedEstados, setSelectedEstados] = useState<Set<string>>(new Set());
   const itemsPerPage = 5;
-
-  const sortOptions = [
-    { value: 'nombre', label: 'Nombre' },
-    { value: 'descripcion', label: 'Descripción' },
-    { value: 'color', label: 'Color' },
-    { value: 'fechaCreacion', label: 'Fecha creación' }
-  ];
-
-  const filterOptions = [
-    { value: 'estado', label: 'Estado' }
-  ];
 
   useEffect(() => {
     // Cargar estados
@@ -186,75 +174,10 @@ const ListaEstados: React.FC = () => {
     }
   };
 
-  const handleToggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
 
-  const handleFilterChange = (values: any[]) => {
-    // Separar los valores en filtros de estado y valores normales
-    const estadoFilters = values.filter(value => value.startsWith('estado:'));
-    const normalFilters = values.filter(value => !value.includes(':'));
 
-    // Si hay valores normales, reemplazar todos los valores normales anteriores
-    if (normalFilters.length > 0) {
-      setSelectedFilterValues(prev => 
-        [...prev.filter(value => value.startsWith('estado:')), ...normalFilters]
-      );
-    } else {
-      // Si no hay valores normales, mantener solo los filtros de estado
-      setSelectedFilterValues(estadoFilters);
-    }
-  };
 
-  const handleExportEstados = () => {
-    // Implementación para exportar estados
-    const data = filteredEstados.map(estado => ({
-      nombre: estado.nombre,
-      descripcion: estado.descripcion || '',
-      color: estado.color,
-      fechaCreacion: new Date(estado.fechaCreacion).toLocaleDateString('es-ES'),
-      estado: estado.activo ? 'Activo' : 'Inactivo'
-    }));
-    
-    const csvContent = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'estados_export.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success('Datos exportados correctamente');
-  };
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter(null);
-    setTipoFilter(null);
-    setSortBy('nombre');
-    setSortDirection('asc');
-    // Mantener los filtros de estado al limpiar
-    setSelectedFilterValues(prev => 
-      prev.filter(value => value.startsWith('estado:'))
-    );
-    setCurrentField('nombre');
-  };
-
-  // Contar los resultados después de aplicar los filtros
-  const filteredCount = filteredEstados.length;
-  const totalCount = estados.length;
-
-  const handleNuevoEstado = () => {
-    navigate('/admin/estados/nuevo');
-  };
 
   const handleSelectEstado = (estadoId: string, checked: boolean) => {
     setSelectedEstados(prev => {
@@ -286,33 +209,6 @@ const ListaEstados: React.FC = () => {
   return (
     <div>
       <div className="space-y-4">
-        {/* Barra de búsqueda y acciones */}
-        <SearchFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          roleFilter={null}
-          onRoleFilterChange={() => {}}
-          sortBy={sortBy}
-          onSortByChange={setSortBy}
-          sortDirection={sortDirection}
-          onSortDirectionChange={handleToggleSortDirection}
-          onCurrentFieldChange={setCurrentField}
-          onFilterChange={handleFilterChange}
-          onExport={handleExportEstados}
-          onNewItem={handleNuevoEstado}
-          items={estados}
-          getFieldValue={getFieldValue}
-          newButtonLabel="Nuevo Estado"
-          sortOptions={sortOptions}
-          filteredCount={filteredEstados.length}
-          totalCount={estados.length}
-          itemLabel="estados"
-          filterOptions={[
-            { value: 'estado', label: 'Estado' }
-          ]}
-        />
 
         {selectedEstados.size > 0 && (
           <div className="flex items-center gap-4 p-4 rounded-md border">

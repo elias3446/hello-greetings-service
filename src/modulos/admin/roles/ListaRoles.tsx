@@ -23,7 +23,6 @@ import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/sonner';
 import { obtenerRoles } from '@/controller/CRUD/role/roleController';
 import type { Rol } from '@/types/tipos';
-import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const ListaRoles = () => {
@@ -40,16 +39,6 @@ const ListaRoles = () => {
   const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const itemsPerPage = 5;
-
-  const sortOptions = [
-    { value: 'nombre', label: 'Nombre' },
-    { value: 'descripcion', label: 'Descripción' },
-    { value: 'fechaCreacion', label: 'Fecha creación' }
-  ];
-
-  const filterOptions = [
-    { value: 'estado', label: 'Estado' }
-  ];
 
   useEffect(() => {
     // Cargar roles
@@ -151,52 +140,6 @@ const ListaRoles = () => {
     }
   };
 
-  const handleToggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
-
-  const handleFilterChange = (values: any[]) => {
-    setSelectedFilterValues(values);
-  };
-
-  const handleExportRoles = () => {
-    // Implementación para exportar roles
-    const data = filteredRoles.map(rol => ({
-      nombre: rol.nombre,
-      descripcion: rol.descripcion || '',
-      fechaCreacion: rol.fechaCreacion instanceof Date ? 
-        rol.fechaCreacion.toLocaleDateString('es-ES') : 
-        new Date(rol.fechaCreacion).toLocaleDateString('es-ES'),
-      estado: rol.activo ? 'Activo' : 'Inactivo'
-    }));
-    
-    const csvContent = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'roles_export.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success('Datos exportados correctamente');
-  };
-
-  const handleNuevoRol = () => {
-    navigate('/admin/roles/nuevo');
-  };
-
-  const handleViewDetails = (rolId: string) => {
-    navigate(`/admin/roles/${rolId}`);
-  };
-
   // Función para manejar la eliminación de roles
   const handleDeleteRole = (rolId: string, nombreRol: string) => {
     // For now, just show a toast message (implementation pending)
@@ -251,32 +194,6 @@ const ListaRoles = () => {
   return (
     <div>
       <div className="space-y-4">
-        <SearchFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          roleFilter={null}
-          onRoleFilterChange={() => {}}
-          sortBy={sortBy}
-          onSortByChange={setSortBy}
-          sortDirection={sortDirection}
-          onSortDirectionChange={handleToggleSortDirection}
-          onCurrentFieldChange={setCurrentField}
-          onFilterChange={handleFilterChange}
-          onExport={handleExportRoles}
-          onNewItem={handleNuevoRol}
-          items={roles}
-          getFieldValue={getFieldValue}
-          showNewButton={true}
-          newButtonLabel="Nuevo Rol"
-          showExportButton={true}
-          sortOptions={sortOptions}
-          filteredCount={filteredRoles.length}
-          totalCount={roles.length}
-          itemLabel="roles"
-          filterOptions={filterOptions}
-        />
 
         {selectedRoles.size > 0 && (
           <div className="flex items-center gap-4 p-4 rounded-md border">

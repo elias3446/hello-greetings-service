@@ -59,7 +59,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, setImages, maxIma
     <div>
       <label className="block mb-1 font-medium">Images <span className="text-muted-foreground">(Optional)</span></label>
       <div
-        className="border-2 border-dashed border-gray-300 rounded-lg p-6 dark:border-gray-700 dark:bg-gray-800 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition min-h-[120px] relative"
+        className="border-2 border-dashed border-gray-300 rounded-lg p-6 dark:border-gray-700 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition min-h-[120px] relative"
         onDrop={handleDrop}
         onDragOver={e => e.preventDefault()}
         onClick={handleOpenFileDialog}

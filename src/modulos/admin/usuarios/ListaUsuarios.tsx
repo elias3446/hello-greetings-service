@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableHeader, TableRow, TableHead } from '@/components/ui/table';
-import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { UsuarioTableHeader, LoadingRow, EmptyStateRow, UsuarioRow } from '@/components/admin/usuarios/UsuarioComponents';
 import { getFieldValue } from '@/utils/usuarioUtils';
 import { SORT_OPTIONS, FILTER_OPTIONS, ITEMS_PER_PAGE } from '@/utils/userListConstants';
@@ -20,6 +19,7 @@ import { normalizeText } from '@/utils/usuarioUtils';
 import { Button } from '@/components/ui/button';
 import { FileDown, Plus } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import FilterByValues from '@/components/common/FilterByValues';
 
 const ListaUsuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -35,9 +35,7 @@ const ListaUsuarios: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState<Usuario | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [selectedFilterValues, setSelectedFilterValues] = useState<any[]>([]);
 
   // Cargar usuarios
   useEffect(() => {
@@ -79,11 +77,38 @@ const ListaUsuarios: React.FC = () => {
       });
     }
 
+    // Separar los valores de filtro por tipo
+    const filterValues = selectedFilterValues.filter(value => !value.includes(':'));
+    const filterStates = selectedFilterValues.filter(value => value.startsWith('estado:')).map(value => value.split(':')[1]);
+    const filterRoles = selectedFilterValues.filter(value => value.startsWith('rol:')).map(value => value.split(':')[1]);
+
+    // Aplicar filtro de valores (si hay valores seleccionados)
+    if (filterValues.length > 0) {
+      result = result.filter(usuario => 
+        filterValues.includes(getFieldValue(usuario, sortBy))
+      );
+    }
+
+    // Aplicar filtro de estados
+    if (filterStates.length > 0) {
+      result = result.filter(usuario => 
+        filterStates.includes(usuario.estado)
+      );
+    }
+
+    // Aplicar filtro de roles
+    if (filterRoles.length > 0) {
+      result = result.filter(usuario => 
+        usuario.roles.some(rol => filterRoles.includes(rol.nombre))
+      );
+    }
+
     // Aplicar ordenamiento
     result = sortUsers(result, sortBy, sortDirection);
     setFilteredUsuarios(result);
     setCurrentPage(1);
-  }, [usuarios, searchTerm, sortBy, sortDirection]);
+  }, [usuarios, searchTerm, sortBy, sortDirection, selectedFilterValues]);
+
 
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -114,9 +139,6 @@ const ListaUsuarios: React.FC = () => {
     filteredUsuarios.every(user => selectedUsers.has(user.id));
   const isSomeSelected = filteredUsuarios.some(user => selectedUsers.has(user.id));
 
-  const handleToggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
 
   const handleEstadoChange = async (userId: string) => {
     const usuario = usuarios.find(user => user.id === userId);
@@ -276,40 +298,9 @@ const ListaUsuarios: React.FC = () => {
     }
   };
 
-  const handleNuevoUsuario = () => {
-    navigate('/admin/usuarios/nuevo', { 
-      state: { from: location.pathname } 
-    });
-  };
 
   return (
-    <div className="space-y-6">
-
-      <SearchFilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        sortDirection={sortDirection}
-        onSortDirectionChange={handleToggleSortDirection}
-        sortOptions={SORT_OPTIONS}
-        filterOptions={FILTER_OPTIONS}
-        filteredCount={filteredUsuarios.length}
-        totalCount={usuarios.length}
-        itemLabel="usuarios"
-        searchPlaceholder="Buscar usuarios..."
-        statusFilter={null}
-        onStatusFilterChange={() => {}}
-        roleFilter={null}
-        onRoleFilterChange={() => {}}
-        onCurrentFieldChange={() => {}}
-        onFilterChange={() => {}}
-        onExport={() => {}}
-        onNewItem={handleNuevoUsuario}
-        items={usuarios}
-        getFieldValue={getFieldValue}
-        newButtonLabel="Nuevo usuario"
-      />
+    <div className="space-y-4">
 
       {selectedUsers.size > 0 && (
         <BulkActionsBar

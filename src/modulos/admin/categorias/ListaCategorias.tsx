@@ -29,7 +29,6 @@ import Pagination from '@/components/layout/Pagination';
 import { filterCategories, getCategories, getReportesPorCategoria, sortCategories, updateCategory } from '@/controller/CRUD/category/categoryController';
 import { toast } from 'sonner';
 import FilterByValues from '@/components/common/FilterByValues';
-import SearchFilterBar from '@/components/layout/SearchFilterBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { actualizarEstadoCategoria } from '@/controller/controller/category/actualizarEstadoCategoria';
 import { getSystemUser } from '@/utils/userUtils';
@@ -82,18 +81,6 @@ const ListaCategorias: React.FC = () => {
   const [selectedEstado, setSelectedEstado] = useState<'activo' | 'inactivo'>('activo');
   const [filteredCategorias, setFilteredCategorias] = useState<Categoria[]>([]);
   const itemsPerPage = 5;
-
-  const sortOptions = [
-    { value: 'nombre', label: 'Nombre' },
-    { value: 'descripcion', label: 'Descripción' },
-    { value: 'reportes', label: 'Reportes' },
-    { value: 'estado', label: 'Estado' },
-    { value: 'fecha', label: 'Fecha creación' }
-  ];
-
-  const filterOptions = [
-    { value: 'estado', label: 'Estado' }
-  ];
 
   useEffect(() => {
     // Cargar categorías
@@ -177,68 +164,7 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
-  const handleToggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
 
-  const handleFilterChange = (values: any[]) => {
-    setSelectedFilterValues(values);
-  };
-
-  const handleExport = () => {
-    // Implementación de exportación
-    const data = filteredCategorias.map(cat => {
-      return {
-        id: cat.id,
-        nombre: cat.nombre,
-        descripcion: cat.descripcion || '',
-        numReportes: getReportesPorCategoria(cat.id),
-        estado: cat.activo ? 'Activo' : 'Inactivo',
-        fechaCreacion: cat.fechaCreacion instanceof Date 
-          ? cat.fechaCreacion.toLocaleDateString('es-ES') 
-          : new Date(cat.fechaCreacion).toLocaleDateString('es-ES')
-      };
-    });
-
-    // Crear CSV
-    const headers = ['ID', 'Nombre', 'Descripción', 'Num. Reportes', 'Estado', 'Fecha Creación'];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(row => [
-        row.id,
-        `"${row.nombre}"`,
-        `"${row.descripcion}"`,
-        row.numReportes,
-        row.estado,
-        row.fechaCreacion
-      ].join(','))
-    ].join('\n');
-
-    // Crear y descargar el archivo
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `categorias-${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success('Archivo exportado correctamente');
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter(null);
-    setSortBy('nombre');
-    setSortDirection('asc');
-    setSelectedFilterValues([]);
-    setCurrentField('nombre');
-  };
-
-  const handleNuevaCategoria = () => {
-    navigate('/admin/categorias/nuevo');
-  };
 
   // New function to toggle category status
   const handleEstadoChange = async (categoriaId: string) => {
@@ -315,52 +241,6 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
-  const handleBulkUpdate = async (nuevoEstado: boolean) => {
-    if (selectedCategorias.size === 0) return;
-
-    setIsUpdating(true);
-    try {
-      const categoriasSeleccionadas = categorias.filter(cat => selectedCategorias.has(cat.id));
-      const resultados = await Promise.all(
-        categoriasSeleccionadas.map(categoria =>
-          actualizarEstadoCategoria(
-            categoria,
-            nuevoEstado,
-            getSystemUser(),
-            `Actualización masiva de estado a ${nuevoEstado ? 'Activo' : 'Inactivo'}`
-          )
-        )
-      );
-
-      const exitosos = resultados.filter(Boolean).length;
-      const fallidos = resultados.length - exitosos;
-
-      if (exitosos > 0) {
-        toast.success(`${exitosos} categorías actualizadas correctamente`);
-        // Actualizar la lista de categorías
-        setCategorias(prevCategorias =>
-          prevCategorias.map(cat => {
-            if (selectedCategorias.has(cat.id)) {
-              return { ...cat, activo: nuevoEstado };
-            }
-            return cat;
-          })
-        );
-      }
-
-      if (fallidos > 0) {
-        toast.error(`${fallidos} categorías no pudieron ser actualizadas`);
-      }
-
-      setSelectedCategorias(new Set());
-      setShowBulkUpdateDialog(false);
-    } catch (error) {
-      toast.error('Error al actualizar las categorías');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   const handleBulkEstadoUpdate = async () => {
     if (selectedCategorias.size === 0) return;
 
@@ -407,9 +287,6 @@ const ListaCategorias: React.FC = () => {
     }
   };
 
-  // Contar los resultados después de aplicar los filtros
-  const filteredCount = filteredCategorias.length;
-  const totalCount = categorias.length;
 
   const handleSelectCategoria = (categoriaId: string, checked: boolean) => {
     setSelectedCategorias(prev => {
@@ -443,38 +320,9 @@ const ListaCategorias: React.FC = () => {
     setShowDeleteDialog(true);
   };
 
-  const handleSortByChange = (value: string) => {
-    setSortBy(value as 'nombre' | 'descripcion' | 'reportes' | 'estado' | 'fecha');
-  };
-
   return (
     <div>
       <div className="space-y-4">
-        {/* Barra de búsqueda y acciones */}
-        <SearchFilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          roleFilter={null}
-          onRoleFilterChange={() => {}}
-          sortBy={sortBy}
-          onSortByChange={handleSortByChange}
-          sortDirection={sortDirection}
-          onSortDirectionChange={handleToggleSortDirection}
-          onCurrentFieldChange={setCurrentField}
-          onFilterChange={handleFilterChange}
-          onExport={handleExport}
-          onNewItem={handleNuevaCategoria}
-          items={categorias}
-          getFieldValue={getFieldValue}
-          newButtonLabel="Nueva Categoría"
-          sortOptions={sortOptions}
-          filteredCount={filteredCount}
-          totalCount={totalCount}
-          itemLabel="categorías"
-          filterOptions={filterOptions}
-        />
 
         {selectedCategorias.size > 0 && (
           <div className="flex items-center gap-4 p-4rounded-md border">
