@@ -19,7 +19,13 @@ import {
 import { cn } from "@/lib/utils";
 import { SearchFilterBarProps, SortDirection } from "./types";
 import { toast } from "@/hooks/use-toast";
-import { datesMatch, objectMatches } from "./utils";
+import { 
+  datesMatch, 
+  objectMatches, 
+  formatValue, 
+  splitSearchTerms,
+  calculatedValueMatches 
+} from "./utils";
 
 /**
  * SearchFilterBar - Componente reutilizable para búsqueda y filtrado avanzado
@@ -68,20 +74,128 @@ export function SearchFilterBar<T>({
     
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
+      // Split the search term into individual parts if it contains commas or permission prefixes
+      const searchTerms = splitSearchTerms(filters.searchTerm.toLowerCase());
+      
       results = results.filter(item => {
-        // Buscar en todos los campos del objeto
-        return Object.entries(item as object).some(([key, value]) => {
-          if (typeof value === "string") {
-            return value.toLowerCase().includes(searchLower);
-          } else if (typeof value === "number") {
-            return value.toString().includes(searchLower);
-          } else if (value instanceof Date) {
-            // Usar el formato correcto para buscar en fechas
-            const formattedDate = formatDate(value).toLowerCase();
-            return formattedDate.includes(searchLower);
-          }
-          return false;
-        });
+        // If we have multiple search terms, check if any match the item
+        if (searchTerms.length > 1) {
+          return Object.entries(item as object).some(([key, value]) => {
+            // Check if any of the search terms match this value
+            return searchTerms.some(term => {
+              // Para valores calculados (funciones)
+              if (typeof value === 'function') {
+                try {
+                  const calculatedValue = value();
+                  // Si el valor calculado es un número u otro tipo primitivo
+                  if (typeof calculatedValue !== 'object' || calculatedValue === null) {
+                    return String(calculatedValue).toLowerCase().includes(term);
+                  }
+                  // Si el valor calculado es un objeto, usamos formatValue
+                  const formattedCalculated = formatValue(calculatedValue).toLowerCase();
+                  return formattedCalculated.includes(term);
+                } catch (e) {
+                  return false;
+                }
+              }
+              
+              if (typeof value === "string") {
+                return value.toLowerCase().includes(term);
+              } else if (typeof value === "number") {
+                return value.toString().includes(term);
+              } else if (value instanceof Date) {
+                // Usar el formato correcto para buscar en fechas
+                const formattedDate = formatDate(value).toLowerCase();
+                return formattedDate.includes(term);
+              } else if (Array.isArray(value)) {
+                // Search in arrays (like arrays of permission objects)
+                return value.some(val => {
+                  if (typeof val === 'object' && val !== null) {
+                    // Format the object and check if it matches the search term
+                    const formattedVal = formatValue(val).toLowerCase();
+                    return formattedVal.includes(term);
+                  }
+                  return String(val).toLowerCase().includes(term);
+                });
+              } else if (typeof value === 'object' && value !== null) {
+                // Format the object and check if it matches the search term
+                const formattedVal = formatValue(value).toLowerCase();
+                return formattedVal.includes(term);
+              }
+              return false;
+            });
+          });
+        } else {
+          // Use the original search logic for single search terms
+          return Object.entries(item as object).some(([key, value]) => {
+            // Para valores calculados (funciones)
+            if (typeof value === 'function') {
+              try {
+                const calculatedValue = value();
+                // Si el valor calculado es un número u otro tipo primitivo
+                if (typeof calculatedValue !== 'object' || calculatedValue === null) {
+                  return String(calculatedValue).toLowerCase().includes(searchLower);
+                }
+                // Si el valor calculado es un objeto, usamos formatValue
+                const formattedCalculated = formatValue(calculatedValue).toLowerCase();
+                return formattedCalculated.includes(searchLower);
+              } catch (e) {
+                console.error("Error al buscar en valor calculado:", e);
+                return false;
+              }
+            }
+            
+            if (typeof value === "string") {
+              return value.toLowerCase().includes(searchLower);
+            } else if (typeof value === "number") {
+              return value.toString().includes(searchLower);
+            } else if (value instanceof Date) {
+              // Usar el formato correcto para buscar en fechas
+              const formattedDate = formatDate(value).toLowerCase();
+              return formattedDate.includes(searchLower);
+            } else if (typeof value === 'object' && value !== null) {
+              // Para objetos, usar formatValue para obtener una representación de texto
+              try {
+                // Manejo especial para arrays de objetos (como permisos múltiples)
+                if (Array.isArray(value)) {
+                  // Verificar si algún objeto en el array coincide con la búsqueda
+                  return value.some(item => {
+                    if (typeof item === 'object' && item !== null) {
+                      // Para objetos con propiedad "nombre" (como permisos)
+                      if (item.nombre && typeof item.nombre === 'string') {
+                        return item.nombre.toLowerCase().includes(searchLower);
+                      }
+                      // Para objetos con propiedad "id" (como prefijos de permisos)
+                      if (item.id && typeof item.id === 'string') {
+                        // Convertir "ver_usuario" a "Ver usuario" para búsqueda
+                        if (item.id.includes('_')) {
+                          const parts = item.id.split('_');
+                          const action = parts[0];
+                          const resource = parts.slice(1).join(' ');
+                          const formatted = `${action.charAt(0).toUpperCase() + action.slice(1)} ${resource}`;
+                          return formatted.toLowerCase().includes(searchLower);
+                        }
+                        return item.id.toLowerCase().includes(searchLower);
+                      }
+                      // Para otros objetos, intentar formatear
+                      const formatted = formatValue(item).toLowerCase();
+                      return formatted.includes(searchLower);
+                    }
+                    return String(item).toLowerCase().includes(searchLower);
+                  });
+                } else {
+                  // Para objetos individuales (no arrays)
+                  const formattedObj = formatValue(value).toLowerCase();
+                  return formattedObj.includes(searchLower);
+                }
+              } catch (e) {
+                console.error("Error al buscar en objeto:", e);
+                return false;
+              }
+            }
+            return false;
+          });
+        }
       });
     }
     
@@ -89,14 +203,35 @@ export function SearchFilterBar<T>({
     Object.entries(filters.selectedValues).forEach(([attribute, values]) => {
       if (values.length > 0) {
         results = results.filter(item => {
-          const itemValue = (item as any)[attribute];
-          
-          // Manejo especial para filtrado por fecha
           const attrInfo = attributes.find(attr => attr.value === attribute);
           
+          // Si el atributo es de tipo function y tiene getValue, usar esa función
+          if (attrInfo?.type === 'function' && attrInfo.getValue) {
+            const calculatedValue = attrInfo.getValue(item);
+            return values.includes(String(calculatedValue));
+          }
+          
+          const itemValue = (item as any)[attribute];
+          
+          // No filtrar si el valor no existe
+          if (itemValue === undefined || itemValue === null) return false;
+          
+          // Manejo especial para filtrado por fecha
           if (attrInfo?.type === 'date' && itemValue instanceof Date) {
             // Usar la función datesMatch para comparar fechas
             return values.some(filterValue => datesMatch(itemValue, filterValue));
+          }
+          
+          // Special handling for arrays of objects (like multiple permissions)
+          if (Array.isArray(itemValue) && itemValue.length > 0 && typeof itemValue[0] === 'object') {
+            return values.some(filterValue => 
+              itemValue.some(val => {
+                if (typeof val === 'object' && val !== null) {
+                  return objectMatches(val, filterValue);
+                }
+                return formatValue(val) === filterValue;
+              })
+            );
           }
           
           // Manejo especial para filtrado por objetos
@@ -111,13 +246,14 @@ export function SearchFilterBar<T>({
                 if (typeof val === 'object' && val !== null) {
                   return objectMatches(val, filterValue);
                 }
-                return String(val) === filterValue;
+                return formatValue(val) === filterValue;
               })
             );
           }
           
-          // Para tipos primitivos
-          return values.includes(String(itemValue));
+          // Para tipos primitivos, comparar directamente
+          const formattedItemValue = formatValue(itemValue);
+          return values.some(filterValue => filterValue === formattedItemValue);
         });
       }
     });
@@ -127,6 +263,20 @@ export function SearchFilterBar<T>({
       if (values.length > 0) {
         results = results.filter(item => {
           const itemValue = (item as any)[property];
+          
+          // Manejo especial para funciones calculadas
+          if (typeof itemValue === 'function') {
+            try {
+              const result = itemValue();
+              if (Array.isArray(result)) {
+                return result.some(val => values.includes(String(val)));
+              }
+              return values.includes(String(result));
+            } catch (e) {
+              return false;
+            }
+          }
+          
           if (Array.isArray(itemValue)) {
             return itemValue.some(val => values.includes(String(val)));
           }
@@ -147,6 +297,26 @@ export function SearchFilterBar<T>({
         // Si alguno de los valores no existe, ponerlo al final
         if (aValue === undefined || aValue === null) return 1;
         if (bValue === undefined || bValue === null) return -1;
+        
+        // Manejo especial para funciones calculadas
+        if (typeof aValue === 'function' || typeof bValue === 'function') {
+          try {
+            const aResult = typeof aValue === 'function' ? aValue() : aValue;
+            const bResult = typeof bValue === 'function' ? bValue() : bValue;
+            
+            if (typeof aResult === 'number' && typeof bResult === 'number') {
+              return sortDirection === 'asc' ? aResult - bResult : bResult - aResult;
+            }
+            
+            // Si no son números, convertir a string y comparar
+            return sortDirection === 'asc' 
+              ? String(aResult).localeCompare(String(bResult))
+              : String(bResult).localeCompare(String(aResult));
+          } catch (e) {
+            console.error("Error al ordenar funciones calculadas:", e);
+            return 0;
+          }
+        }
         
         let comparison = 0;
         
@@ -252,8 +422,7 @@ export function SearchFilterBar<T>({
       try {
         exportToCSV(
           filteredResults as Record<string, any>[],
-          `export-${new Date().toISOString().split('T')[0]}`,
-          Object.fromEntries(attributes.map(attr => [attr.value, attr.label]))
+`export-${new Date().toISOString().split('T')[0]}`, Object.fromEntries(attributes.map(attr => [attr.value, attr.label]))
         );
         toast({
           title: "Exportación completada",

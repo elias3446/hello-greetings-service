@@ -27,56 +27,52 @@ export function ValuesFilter<T>({
   // Extraer valores únicos para el atributo seleccionado usando los datos originales
   useEffect(() => {
     if (selectedSortAttribute) {
-      // Utilizar siempre los datos originales (data), no los filtrados
       const dataToUse = data;
+      const attrInfo = attributes.find(attr => attr.value === selectedSortAttribute);
       
       if (dataToUse.length > 0) {
         const uniqueValues = new Set<string>();
         
         dataToUse.forEach(item => {
-          const value = (item as any)[selectedSortAttribute];
-          if (value !== undefined && value !== null) {
-            if (Array.isArray(value)) {
-              value.forEach(v => uniqueValues.add(formatValue(v)));
-            } else {
-              uniqueValues.add(formatValue(value));
+          try {
+            // Si el atributo es de tipo function, usar getValue si está disponible
+            if (attrInfo?.type === 'function' && attrInfo.getValue) {
+              const calculatedValue = attrInfo.getValue(item);
+              if (calculatedValue !== undefined && calculatedValue !== null) {
+                uniqueValues.add(String(calculatedValue));
+              }
+              return;
             }
+            
+            let value = (item as any)[selectedSortAttribute];
+            
+            if (value !== undefined && value !== null) {
+              if (Array.isArray(value)) {
+                value.forEach(v => uniqueValues.add(formatValue(v)));
+              } else {
+                const formattedValue = formatValue(value);
+                if (formattedValue) {
+                  uniqueValues.add(formattedValue);
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Error extracting attribute value:", error);
           }
         });
         
-        // Get the selected attribute info to determine if we need special sorting
-        const attrInfo = attributes.find(attr => attr.value === selectedSortAttribute);
         let valueArray = Array.from(uniqueValues);
         
-        // Special handling for dates - sort chronologically
+        // Ordenar valores según el tipo
         if (attrInfo?.type === 'date') {
-          try {
-            // For date values that might be in different formats, try to convert to Date objects first
-            // Then format consistently for display
-            const dateMap = new Map<string, Date>();
-            valueArray.forEach(dateStr => {
-              const originalDate = new Date(dateStr);
-              if (!isNaN(originalDate.getTime())) {
-                // Store original date for sorting
-                dateMap.set(dateStr, originalDate);
-              }
-            });
-            
-            // Sort by date if possible
-            valueArray.sort((a, b) => {
-              const dateA = dateMap.get(a);
-              const dateB = dateMap.get(b);
-              if (dateA && dateB) {
-                return dateA.getTime() - dateB.getTime();
-              }
-              return a.localeCompare(b);
-            });
-          } catch (e) {
-            console.error("Error sorting dates:", e);
-            valueArray.sort();
-          }
+          valueArray.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+        } else if (attrInfo?.type === 'function' || attrInfo?.type === 'number') {
+          valueArray.sort((a, b) => {
+            const numA = parseFloat(a);
+            const numB = parseFloat(b);
+            return isNaN(numA) || isNaN(numB) ? a.localeCompare(b) : numA - numB;
+          });
         } else {
-          // For non-dates, simple alphabetical sort
           valueArray.sort();
         }
         
@@ -85,7 +81,6 @@ export function ValuesFilter<T>({
         setAttributeValues([]);
       }
 
-      // Verificar si todos los valores están seleccionados
       const currentValues = selectedValues[selectedSortAttribute] || [];
       setSelectAll(currentValues.length === 0);
     } else {
@@ -240,3 +235,5 @@ export function ValuesFilter<T>({
     </Popover>
   );
 }
+
+export default ValuesFilter;

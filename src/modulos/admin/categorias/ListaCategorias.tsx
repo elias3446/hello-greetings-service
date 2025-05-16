@@ -334,8 +334,8 @@ const ListaCategorias: React.FC = () => {
     { label: "Descripción", value: "descripcion", type: "string" as "string" },
     { 
       label: "Reportes", 
-      value: "reportes", 
-      type: "number" as "number",
+      value: "numReportes", 
+      type: "function" as "function",
       getValue: (item: any) => getReportesPorCategoria(item.id)
     },
     { label: "Fecha Creación", value: "fechaCreacion", type: "date" as "date" },

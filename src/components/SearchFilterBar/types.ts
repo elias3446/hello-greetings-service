@@ -5,7 +5,8 @@
 export interface Attribute {
   label: string;
   value: string;
-  type?: 'string' | 'number' | 'date' | 'object';
+  type?: 'string' | 'number' | 'date' | 'object' | 'function';
+  getValue?: (item: any) => any;
 }
 
 export interface PropertyFilter {
@@ -76,3 +77,6 @@ export interface PropertiesFilterProps<T> {
   onClear: () => void;
   activeFiltersCount?: number;
 }
+
+// Añadir el nuevo tipo "function" para atributos
+export type AttributeType = "string" | "number" | "date" | "boolean" | "object" | "function";
