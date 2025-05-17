@@ -63,6 +63,18 @@ export const categorias: Categoria[] = [
     usuarioCreador: usuarios[0],
     activo: true,
   },
+  {
+    id: '6',
+    nombre: 'Vialidad',
+    descripcion: 'Problemas con vialidad',
+    color: '#118AB2',
+    icono: 'FileText',
+    fechaCreacion: new Date('2025-04-25T08:30:00'),
+    fechaActualizacion: new Date('2025-04-25T08:30:00'),
+    fechaEliminacion: new Date('2025-04-25T08:30:00'),
+    usuarioCreador: usuarios[0],
+    activo: true,
+  },
 ];
 
 export const prioridades: Prioridad[] = [
