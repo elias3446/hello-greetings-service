@@ -1,13 +1,10 @@
-import React from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { FormularioUsuarioProps } from '@/types/user';
 import { useUserForm } from '@/hooks/useUserForm';
-import { FormHeader, UserProfile } from '@/components/forms/UserFormHeader';
-import { GeneralInfoTab, AccountInfoTab } from '@/components/forms/UserFormTabs';
-import { InfoCard, TipsCard } from '@/components/forms/UserFormCards';
+import FormularioUsuarioHeader from '@/components/admin/usuarios/FormularioUsuario/FormularioUsuarioHeader';
+import FormularioUsuarioContent from '@/components/admin/usuarios/FormularioUsuario/FormularioUsuarioContent';
+import FormularioUsuarioSidebar from '@/components/admin/usuarios/FormularioUsuario/FormularioUsuarioSidebar';
 
 const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
   const { id } = useParams();
@@ -25,39 +22,20 @@ const FormularioUsuario = ({ modo }: FormularioUsuarioProps) => {
   return (
     <div>
       <div className="space-y-6">
-        <FormHeader 
-          modo={modo} 
+        <FormularioUsuarioHeader
+          modo={modo}
           handleCancel={handleCancel}
-          handleSubmit={() => form.handleSubmit(handleSubmit)()}
+          handleSubmit={handleSubmit}
           isSubmitting={isSubmitting}
+          form={form}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            <Card className="overflow-hidden">
-              <UserProfile form={form} />
-
-              <Tabs defaultValue="general" className="p-6">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="general">Información General</TabsTrigger>
-                  <TabsTrigger value="cuenta">Datos de Cuenta</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="general">
-                  <GeneralInfoTab form={form} />
-                </TabsContent>
-                
-                <TabsContent value="cuenta">
-                  <AccountInfoTab form={form} modo={modo} />
-                </TabsContent>
-              </Tabs>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <InfoCard />
-            <TipsCard />
-          </div>
+          <FormularioUsuarioContent
+            form={form}
+            modo={modo}
+          />
+          <FormularioUsuarioSidebar />
         </div>
       </div>
 

@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { DeleteUserDialogProps } from '@/props/admin/usuarios/PrpListaUsuarios';
+import { DeleteUserDialogProps } from '@/props/admin/usuarios/PropListaUsuarios';
 
 const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
   open,

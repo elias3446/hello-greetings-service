@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { obtenerReportePorId } from '@/controller/CRUD/report/reportController';
 import { Reporte } from '@/types/tipos';
 import { toast } from '@/components/ui/sonner';
-import { ArrowLeft } from 'lucide-react';
 import DetalleReporte from '@/modulos/reportes/DetalleReporte';
 
 const DetalleReporteAdmin = () => {

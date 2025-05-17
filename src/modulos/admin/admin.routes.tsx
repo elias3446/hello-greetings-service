@@ -2,12 +2,12 @@ import { Route } from 'react-router-dom';
 import MenuAdmin from './MenuAdmin';
 
 // Importar componentes de usuarios
-import ListaUsuarios from './usuarios/ListaUsuarios';
+import ListaUsuariosWithNavigation from '@/components/admin/usuarios/listaUsuarios/ListaUsuariosWithNavigation';
 import DetalleUsuario from './usuarios/DetalleUsuario';
 import FormularioUsuario from './usuarios/FormularioUsuario';
 
 // Importar componentes de reportes
-import ListaReportesAdmin from './reportes/ListaReportesAdmin';
+import ListaReportesAdminWithNavigation from '@/components/admin/reportes/ListaReportesAdmin/ListaReportesAdminWithNavigation';
 import DetalleReporteAdmin from './reportes/DetalleReporteAdmin';
 import FormularioReporteAdmin from './reportes/FormularioReporteAdmin';
 
@@ -32,14 +32,14 @@ import CargaMasiva from './cargaMasiva/CargaMasiva';
 export const adminRoutes = (
   <Route path="/admin" element={<MenuAdmin />}>
     {/* Rutas de usuarios */}
-    <Route index element={<ListaUsuarios />} />
-    <Route path="usuarios" element={<ListaUsuarios />} />
+    <Route index element={<ListaUsuariosWithNavigation />} />
+    <Route path="usuarios" element={<ListaUsuariosWithNavigation />} />
     <Route path="usuarios/:id" element={<DetalleUsuario />} />
     <Route path="usuarios/nuevo" element={<FormularioUsuario modo="crear" />} />
     <Route path="usuarios/:id/editar" element={<FormularioUsuario modo="editar" />} />
     
     {/* Rutas de reportes admin */}
-    <Route path="reportes" element={<ListaReportesAdmin />} />
+    <Route path="reportes" element={<ListaReportesAdminWithNavigation />} />
     <Route path="reportes/:id" element={<DetalleReporteAdmin />} />
     <Route path="reportes/nuevo" element={<FormularioReporteAdmin modo="crear" />} />
     <Route path="reportes/:id/editar" element={<FormularioReporteAdmin modo="editar" />} />

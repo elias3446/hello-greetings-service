@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RoleSelector from '@/components/admin/selector/RoleSelector';
-import { BulkActionsBarProps } from '@/props/admin/usuarios/PrpListaUsuarios';
+import { BulkActionsBarProps } from '@/props/admin/usuarios/PropListaUsuarios';
 
 const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   selectedUsers,
