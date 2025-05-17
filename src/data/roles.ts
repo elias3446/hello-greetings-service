@@ -45,4 +45,24 @@ export const roles: Rol[] = [
     fechaCreacion: new Date('2025-04-25T08:30:00'),
     activo: true,
   },
+  {
+    id: '5',
+    nombre: 'Ciudadano',
+    descripcion: 'Crea y ve sus propios reportes',
+    permisos: permisosDisponibles.filter(permiso => permiso.id === 'ver_usuario' || permiso.id === 'crear_reporte' || permiso.id === 'ver_reporte' || permiso.id === 'ver_categoria' || permiso.id === 'ver_estado'),
+    color: '#6B7280',  // Gray color
+    tipo: 'usuario',
+    fechaCreacion: new Date('2025-04-25T08:30:00'),
+    activo: true,
+  },  
+  {
+    id: '6',
+    nombre: 'Ciudadano',
+    descripcion: 'Crea y ve sus propios reportes',
+    permisos: permisosDisponibles.filter(permiso => permiso.id === 'ver_usuario' || permiso.id === 'crear_reporte' || permiso.id === 'ver_reporte' || permiso.id === 'ver_categoria' || permiso.id === 'ver_estado'),
+    color: '#6B7280',  // Gray color
+    tipo: 'usuario',
+    fechaCreacion: new Date('2025-04-25T08:30:00'),
+    activo: true,
+  },  
 ];
