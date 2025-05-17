@@ -11,7 +11,6 @@ import { obtenerReportePorId, actualizarReporte } from '@/controller/CRUD/report
 import { obtenerHistorialReporte, registrarCambioEstadoReporte } from '@/controller/CRUD/report/historialEstadosReporte';
 import { toast } from '@/components/ui/sonner';
 import type { Reporte, HistorialEstadoReporte, Rol, Usuario } from '@/types/tipos';
-import MapaBase from '@/components/layout/MapaBase';
 import { ReporteAcciones } from '@/components/reportes/ReporteAcciones';
 import ReporteActividad from '@/components/reportes/ReporteActividad';
 import { AlertDialog, AlertDialogCancel, AlertDialogFooter, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogHeader, AlertDialogAction } from '@/components/ui/alert-dialog';
@@ -230,39 +229,39 @@ const DetalleReporte = () => {
           open={showRoleDialog}
           onOpenChange={setShowRoleDialog}
           reporte={reporte}
-          onUsuarioChange={handleReporteChange}
-        />
+              onUsuarioChange={handleReporteChange}
+            />
         {/* Diálogo para eliminar reporte */}
         <DetalleReporteDeleteDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}
           reporte={reporte}
           onDelete={async () => {
-            const usuarioSistema: Usuario = {
-              id: '0',
-              nombre: 'Sistema',
-              apellido: '',
-              email: 'sistema@example.com',
-              estado: 'activo',
-              tipo: 'usuario',
-              intentosFallidos: 0,
-              password: 'hashed_password',
-              roles: [{
-                id: '1',
-                nombre: 'Administrador',
-                descripcion: 'Rol con acceso total al sistema',
-                color: '#FF0000',
-                tipo: 'admin',
-                fechaCreacion: new Date('2023-01-01'),
-                activo: true
-              }],
-              fechaCreacion: new Date('2023-01-01'),
-            };
-            const success = await eliminarReport(reporte, usuarioSistema);
-            if (success) {
-              navigate('/admin/reportes');
-            }
-          }}
+                const usuarioSistema: Usuario = {
+                  id: '0',
+                  nombre: 'Sistema',
+                  apellido: '',
+                  email: 'sistema@example.com',
+                  estado: 'activo',
+                  tipo: 'usuario',
+                  intentosFallidos: 0,
+                  password: 'hashed_password',
+                  roles: [{
+                    id: '1',
+                    nombre: 'Administrador',
+                    descripcion: 'Rol con acceso total al sistema',
+                    color: '#FF0000',
+                    tipo: 'admin',
+                    fechaCreacion: new Date('2023-01-01'),
+                    activo: true
+                  }],
+                  fechaCreacion: new Date('2023-01-01'),
+                };
+                const success = await eliminarReport(reporte, usuarioSistema);
+                if (success) {
+                  navigate('/admin/reportes');
+                }
+              }}
         />
       </div>
     </>

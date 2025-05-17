@@ -1,7 +1,11 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
-import MapaBase from '@/components/layout/MapaBase';
+import { 
+  MapaReportesMultiples, 
+  MapaReporteEspecifico, 
+  MapaReporteEditable, 
+  MapaNuevaPosicion,
+} from '@/components/MapaBase';
 import { reportes } from '@/data/reportes';
 import type { Reporte } from '@/types/tipos';
 import ReporteInfo from '@/components/reportes/ReporteInfo';
@@ -21,15 +25,10 @@ const Mapa = () => {
     <Layout>
       <div className="grid md:grid-cols-3 gap-4 relative">
         <div className="md:col-span-2">
-          <MapaBase 
+          <MapaReportesMultiples 
             reportes={reportes} 
-            onReporteSelect={handleReporteSelect}
-            altura="70vh"
-            initialPosition={reporteSeleccionado ? [
-              reporteSeleccionado.ubicacion.latitud, 
-              reporteSeleccionado.ubicacion.longitud
-            ] : undefined}
-            forceInitialPosition={!!reporteSeleccionado}
+            height="h-[600px]"
+            onReporteClick={handleReporteSelect}
           />
         </div>
 

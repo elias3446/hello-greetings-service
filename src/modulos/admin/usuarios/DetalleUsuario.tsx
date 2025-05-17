@@ -56,12 +56,12 @@ const DetalleUsuario: React.FC = () => {
             onEditarUsuario={handleEditarUsuario}
           />
           <DetalleUsuarioSidebar
-            usuario={usuario}
+                  usuario={usuario}
             historialEstados={historialEstados}
-            onRoleChange={handleRoleChange}
-            onEstadoChange={handleCambiarEstado}
+                  onRoleChange={handleRoleChange}
+                  onEstadoChange={handleCambiarEstado}
             onDelete={handleDelete}
-          />
+                />
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { toast } from "@/components/ui/sonner";
+import { toast } from '@/components/ui/sonner';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   normalizeText, 
@@ -33,6 +33,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
   const [userCountry, setUserCountry] = useState<string | null>(null);
   const [userLocationLabel, setUserLocationLabel] = useState<string | null>(null);
 
+  // Get user location when userPosition changes
   useEffect(() => {
     const getUserLocation = async () => {
       if (userPosition) {
@@ -48,9 +49,11 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
           
           const data = await response.json();
           
+          // Set simple label for current location
           let locationLabel = "Ubicación actual";
           
           if (data && data.address) {
+            // Get more specific components
             const cityName = data.address.city || data.address.town || data.address.village;
             const roadName = data.address.road;
             
@@ -62,6 +65,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
               locationLabel = roadName;
             }
             
+            // Save country code to filter local results
             if (data.address.country_code) {
               setUserCountry(data.address.country_code);
             }
@@ -79,13 +83,17 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
     getUserLocation();
   }, [userPosition]);
 
+  // Update suggestions when search query changes
   useEffect(() => {
+    // Update predictive suggestions immediately (no API needed)
     const updatedPredictiveSuggestions = getPredictiveSuggestions(searchQuery);
     setPredictiveSuggestions(updatedPredictiveSuggestions);
     
+    // Update popular location suggestions
     const updatedPopularSuggestions = getMatchingPopularLocations(searchQuery);
     setPopularSuggestions(updatedPopularSuggestions);
     
+    // Only search API if there's enough text
     if (searchQuery.trim().length >= 3) {
       const searchLocations = async () => {
         try {
@@ -140,6 +148,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
 
   const handleSelectSuggestion = (suggestion: string) => {
     setSearchQuery(suggestion);
+    // Don't hide suggestions to allow user to see results based on suggestion
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -166,7 +175,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
   };
 
   return (
-    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] w-full max-w-md px-4">
+    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 w-full max-w-md px-4">
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex gap-2">
           <Input
@@ -188,7 +197,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
         </div>
 
         {showSuggestions && (searchQuery.trim() || userPosition) && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border w-full z-[40]">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border w-full">
             {userPosition && userLocationLabel && (
               <div 
                 className="flex items-center gap-2 p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50"
@@ -206,6 +215,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
                 <CommandList>
                   <CommandEmpty>No hay resultados</CommandEmpty>
                   <CommandGroup>
+                    {/* Predictive suggestions for place types */}
                     {predictiveSuggestions.length > 0 && (
                       <div className="p-2 border-b border-gray-100">
                         <div className="text-sm font-medium text-gray-500 px-2 py-1">
@@ -224,6 +234,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
                       </div>
                     )}
 
+                    {/* Popular locations that match the search */}
                     {popularSuggestions.length > 0 && (
                       <div className="p-2 border-b border-gray-100">
                         <div className="text-sm font-medium text-gray-500 px-2 py-1">
@@ -242,6 +253,7 @@ const SearchBar = ({ onSearch, userPosition }: SearchBarProps) => {
                       </div>
                     )}
 
+                    {/* API results */}
                     {suggestions.length > 0 && (
                       <div className="p-2">
                         <div className="text-sm font-medium text-gray-500 px-2 py-1">

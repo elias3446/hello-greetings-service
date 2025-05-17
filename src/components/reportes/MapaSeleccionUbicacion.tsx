@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
-import MapaBase from '@/components/layout/MapaBase';
 import { toast } from '@/components/ui/sonner';
+import MapaNuevaPosicion from '../MapaBase/MapaNuevaPosicion';
 
 interface MapaSeleccionUbicacionProps {
   onUbicacionSeleccionada: (ubicacion: {
@@ -103,8 +102,9 @@ const MapaSeleccionUbicacion = ({
     }
   };
 
-  const handleMapClick = async (lat: number, lng: number) => {
+  const handleMapClick = async (pos: [number, number]) => {
     try {
+      const [lat, lng] = pos;
       // Primero mostramos un estado de carga en el tooltip
       const ubicacionTemporal = {
         latitud: lat,
@@ -142,18 +142,9 @@ const MapaSeleccionUbicacion = ({
   return (
     <div className="space-y-4">
       <div className="h-[400px] w-full rounded-lg overflow-hidden border">
-        <MapaBase
-          reportes={[]}
-          onMapClick={handleMapClick}
-          altura="400px"
-          mostrarMarcadorSeleccion={true}
-          ubicacionSeleccionada={ubicacionSeleccionada}
-          tooltipContent={ubicacionSeleccionada?.direccion}
-          initialUserPosition={userPosition}
-          // Si hay ubicación seleccionada, usamos sus coordenadas como posición inicial
+        <MapaNuevaPosicion
+          onPosicionSeleccionada={handleMapClick}
           initialPosition={ubicacionSeleccionada ? [ubicacionSeleccionada.latitud, ubicacionSeleccionada.longitud] : undefined}
-          // Solo forzamos la posición inicial si hay una ubicación seleccionada
-          forceInitialPosition={!!ubicacionSeleccionada}
         />
       </div>
       {ubicacionSeleccionada && (

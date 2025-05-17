@@ -3,10 +3,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Calendar, MapPin, User } from 'lucide-react';
-import MapaBase from '@/components/layout/MapaBase';
+
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import ReporteActividad from '@/components/reportes/ReporteActividad';
 import type { Reporte } from '@/types/tipos';
+import MapaReporteEspecifico from '@/components/MapaBase/MapaReporteEspecifico';
 
 interface DetalleReporteMainInfoProps {
   reporte: Reporte;
@@ -89,12 +90,10 @@ const DetalleReporteMainInfo: React.FC<DetalleReporteMainInfoProps> = ({ reporte
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-3">Ubicación</h4>
             <div className="h-[300px] rounded-md overflow-hidden border">
-              <MapaBase
-                reportes={[reporte]}
-                altura="300px"
-                initialPosition={[reporte.ubicacion.latitud, reporte.ubicacion.longitud]}
-                forceInitialPosition={true}
-              />
+            <MapaReporteEspecifico 
+              reporte={reporte} 
+              height="h-[600px]" 
+            />
             </div>
           </div>
           <div>
