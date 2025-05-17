@@ -48,4 +48,13 @@ export const estadosReporte: EstadoReporte[] = [
     activo: true,
     icono: 'CircleX'
   },
+  {
+    id: '6',
+    nombre: 'Sin asignar',
+    descripcion: 'Reporte sin asignar a ningún usuario',
+    color: '#6B7280',
+    fechaCreacion: new Date('2025-04-25T08:30:00'),
+    activo: true,
+    icono: 'CircleX'
+  }
 ];
