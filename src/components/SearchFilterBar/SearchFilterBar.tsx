@@ -294,8 +294,14 @@ export function SearchFilterBar<T>({
       const attrType = selectedAttrInfo?.type || 'string';
       
       results = [...results].sort((a, b) => {
-        const aValue = (a as any)[selectedAttribute];
-        const bValue = (b as any)[selectedAttribute];
+        let aValue = (a as any)[selectedAttribute];
+        let bValue = (b as any)[selectedAttribute];
+        
+        // Manejar valores personalizados con getValue si está definido
+        if (selectedAttrInfo?.getValue) {
+          aValue = selectedAttrInfo.getValue(a);
+          bValue = selectedAttrInfo.getValue(b);
+        }
         
         // Si alguno de los valores no existe, ponerlo al final
         if (aValue === undefined || aValue === null) return 1;
@@ -307,18 +313,55 @@ export function SearchFilterBar<T>({
             const aResult = typeof aValue === 'function' ? aValue() : aValue;
             const bResult = typeof bValue === 'function' ? bValue() : bValue;
             
+            // Comparar según el tipo de resultado
             if (typeof aResult === 'number' && typeof bResult === 'number') {
               return sortDirection === 'asc' ? aResult - bResult : bResult - aResult;
+            } else if (aResult instanceof Date && bResult instanceof Date) {
+              return sortDirection === 'asc' 
+                ? aResult.getTime() - bResult.getTime() 
+                : bResult.getTime() - aResult.getTime();
+            } else if (typeof aResult === 'object' && typeof bResult === 'object') {
+              // Para objetos, usar formatValue para comparación
+              const aFormatted = formatValue(aResult);
+              const bFormatted = formatValue(bResult);
+              return sortDirection === 'asc' 
+                ? aFormatted.localeCompare(bFormatted)
+                : bFormatted.localeCompare(aFormatted);
+            } else {
+              // Si no son números ni objetos, convertir a string y comparar
+              return sortDirection === 'asc' 
+                ? String(aResult).localeCompare(String(bResult))
+                : String(bResult).localeCompare(String(aResult));
             }
-            
-            // Si no son números, convertir a string y comparar
-            return sortDirection === 'asc' 
-              ? String(aResult).localeCompare(String(bResult))
-              : String(bResult).localeCompare(String(aResult));
           } catch (e) {
             console.error("Error al ordenar funciones calculadas:", e);
             return 0;
           }
+        }
+        
+        // Manejo especial para objetos
+        if (typeof aValue === 'object' && aValue !== null && 
+            typeof bValue === 'object' && bValue !== null) {
+          // Para fechas
+          if (aValue instanceof Date && bValue instanceof Date) {
+            return sortDirection === 'asc' 
+              ? aValue.getTime() - bValue.getTime() 
+              : bValue.getTime() - aValue.getTime();
+          }
+          
+          // Para objetos con nombre (como permisos)
+          if (aValue.nombre && bValue.nombre) {
+            return sortDirection === 'asc' 
+              ? String(aValue.nombre).localeCompare(String(bValue.nombre)) 
+              : String(bValue.nombre).localeCompare(String(aValue.nombre));
+          }
+          
+          // Para objetos regulares, convertir a string formateado y comparar
+          const aFormatted = formatValue(aValue);
+          const bFormatted = formatValue(bValue);
+          return sortDirection === 'asc' 
+            ? aFormatted.localeCompare(bFormatted) 
+            : bFormatted.localeCompare(aFormatted);
         }
         
         let comparison = 0;
@@ -425,7 +468,8 @@ export function SearchFilterBar<T>({
       try {
         exportToCSV(
           filteredResults as Record<string, any>[],
-`export-${new Date().toISOString().split('T')[0]}`, Object.fromEntries(attributes.map(attr => [attr.value, attr.label]))
+          attributes,
+          `export-${new Date().toISOString().split('T')[0]}`
         );
         toast({
           title: "Exportación completada",
