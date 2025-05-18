@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents, CircleMarker, Circle } from 'react-leaflet';
-import type { MapContainerProps, TileLayerProps } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { cn } from '@/lib/utils';
@@ -132,6 +131,7 @@ function CenterOnUserButton({ userPosition }: { userPosition: [number, number] }
   );
 }
 
+
 export interface MapaBaseProps {
   className?: string;
   height?: string;
@@ -176,7 +176,11 @@ const MapaBase: React.FC<MapaBaseProps> = ({
   return (
     <div className={cn("relative rounded-lg overflow-hidden shadow-lg", height, className)}>
       <MapContainer
-        {...({ center: initialCenter, zoom, scrollWheelZoom: true } as MapContainerProps)}
+        {...({ 
+          center: initialCenter, 
+          zoom, 
+          scrollWheelZoom: true 
+        } as any)}
         style={{ height: '100%', width: '100%', position: 'relative', zIndex: 10 }}
         ref={mapRef}
       >
@@ -184,7 +188,7 @@ const MapaBase: React.FC<MapaBaseProps> = ({
           {...({ 
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          } as TileLayerProps)}
+          } as any)}
         />
         <LocationMarker setUserPosition={setUserPosition} />
         {!isDefaultPosition(userPosition) && (

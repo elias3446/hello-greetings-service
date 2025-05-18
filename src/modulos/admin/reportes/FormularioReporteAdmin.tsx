@@ -42,6 +42,8 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { reportUpdate } from '@/controller/controller/report/reportUpdateController';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { crearReporteCompleto } from '@/controller/controller/report/reporteCreateController';
+import MapaReporteEditable from '@/components/MapaBase/MapaReporteEditable';
+import MapaNuevaPosicion from '@/components/MapaBase/MapaNuevaPosicion';
 
 interface FormularioReporteAdminProps {
   modo: 'crear' | 'editar';
@@ -480,12 +482,52 @@ const FormularioReporteAdmin: React.FC<FormularioReporteAdminProps> = ({ modo })
                     <div className="text-sm text-muted-foreground">
                       Seleccione la ubicación del reporte en el mapa
                     </div>
-                    <MapaSeleccionUbicacion
-                      onUbicacionSeleccionada={handleUbicacionSeleccionada}
-                      ubicacionInicial={ubicacion}
-                      userPosition={userPosition}
-                    />
-                   
+                    {modo === 'editar' && id ? (
+                      <MapaReporteEditable 
+                        reporte={{
+                          id,
+                          titulo: form.watch('titulo'),
+                          descripcion: form.watch('descripcion'),
+                          ubicacion: ubicacion || {
+                            id: '',
+                            latitud: 0,
+                            longitud: 0,
+                            direccion: '',
+                            referencia: '',
+                            fechaCreacion: new Date(),
+                            activo: true
+                          },
+                          categoria: categorias.find(c => c.id === form.watch('categoriaId')) || categorias[0],
+                          estado: estados.find(e => e.id === form.watch('estadoId')) || estados[0],
+                          fechaCreacion: new Date(),
+                          fechaActualizacion: new Date(),
+                          fechaInicio: new Date(),
+                          usuarioCreador: { id: '1', nombre: 'Admin', apellido: 'Sistema', email: 'admin@sistema.com' } as any,
+                          imagenes: [],
+                          activo: form.watch('activo'),
+                          historialAsignaciones: [],
+                          historialEstados: []
+                        }}
+                        height="h-[600px]"
+                        onPosicionActualizada={(pos) => handleUbicacionSeleccionada({
+                          latitud: pos[0],
+                          longitud: pos[1],
+                          direccion: ubicacion?.direccion || '',
+                          referencia: ubicacion?.referencia || ''
+                        })}
+                      />
+                    ) : (
+                      <MapaNuevaPosicion 
+                        height="h-[600px]"
+                        onPosicionSeleccionada={(pos) => handleUbicacionSeleccionada({
+                          latitud: pos[0],
+                          longitud: pos[1],
+                          direccion: ubicacion?.direccion || '',
+                          referencia: ubicacion?.referencia || ''
+                        })}
+                        initialPosition={ubicacion ? [ubicacion.latitud, ubicacion.longitud] : undefined}
+                      />
+                    )}
                   </div>
                 </TabsContent>
 

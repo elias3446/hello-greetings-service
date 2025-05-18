@@ -32,6 +32,7 @@ import MapaSeleccionUbicacion from '@/components/reportes/MapaSeleccionUbicacion
 import type { Reporte, Ubicacion, Usuario } from '@/types/tipos';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { crearReporteCompleto } from '@/controller/controller/report/reporteCreateController';
+import MapaNuevaPosicion from '@/components/MapaBase/MapaNuevaPosicion';
 
 interface FormularioReporteProps {
   modo: 'crear' | 'editar';
@@ -61,6 +62,30 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
       categoriaId: '',
     },
   });
+
+  // Adapter function to convert coordinates to ubicacion
+  const handlePosicionSeleccionada = async (pos: [number, number]) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos[0]}&lon=${pos[1]}&zoom=18&addressdetails=1`
+      );
+      const data = await response.json();
+      handleUbicacionSeleccionada({
+        latitud: pos[0],
+        longitud: pos[1],
+        direccion: data.display_name || `${pos[0]}, ${pos[1]}`,
+        referencia: `Punto seleccionado en ${data.display_name || `${pos[0]}, ${pos[1]}`}`
+      });
+    } catch (error) {
+      console.error('Error al obtener la dirección:', error);
+      handleUbicacionSeleccionada({
+        latitud: pos[0],
+        longitud: pos[1],
+        direccion: `${pos[0]}, ${pos[1]}`,
+        referencia: `Punto seleccionado en ${pos[0]}, ${pos[1]}`
+      });
+    }
+  };
 
   // Handler para actualizar la ubicación
   const handleUbicacionSeleccionada = (ubicacionData: {
@@ -267,10 +292,10 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ modo }) => {
               <FormItem>
                 <FormLabel>Ubicación</FormLabel>
                 <FormControl>
-                  <MapaSeleccionUbicacion
-                    onUbicacionSeleccionada={handleUbicacionSeleccionada}
-                    ubicacionInicial={ubicacion}
-                    userPosition={userPosition}
+                  <MapaNuevaPosicion 
+                    height="h-[600px]"
+                    onPosicionSeleccionada={handlePosicionSeleccionada}
+                    initialPosition={ubicacion ? [ubicacion.latitud, ubicacion.longitud] : undefined}
                   />
                 </FormControl>
                 <FormMessage />

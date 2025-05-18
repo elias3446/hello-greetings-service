@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/sonner';
 import MapaNuevaPosicion from '../MapaBase/MapaNuevaPosicion';
+import MapaReporteEditable from '../MapaBase/MapaReporteEditable';
+import { Reporte } from '@/types/tipos';
 
 interface MapaSeleccionUbicacionProps {
   onUbicacionSeleccionada: (ubicacion: {
@@ -139,13 +141,64 @@ const MapaSeleccionUbicacion = ({
     }
   };
 
+  const handlePosicionActualizada = (posicion: [number, number]) => {
+    console.log('Posición actualizada:', posicion);
+  };
+
   return (
     <div className="space-y-4">
       <div className="h-[400px] w-full rounded-lg overflow-hidden border">
-        <MapaNuevaPosicion
-          onPosicionSeleccionada={handleMapClick}
-          initialPosition={ubicacionSeleccionada ? [ubicacionSeleccionada.latitud, ubicacionSeleccionada.longitud] : undefined}
-        />
+      <MapaReporteEditable 
+              reporte={{
+                id: ubicacionSeleccionada?.id || crypto.randomUUID(),
+                titulo: 'Ubicación seleccionada',
+                descripcion: ubicacionSeleccionada?.referencia || '',
+                ubicacion: {
+                  id: crypto.randomUUID(),
+                  latitud: ubicacionSeleccionada?.latitud || 0,
+                  longitud: ubicacionSeleccionada?.longitud || 0,
+                  direccion: ubicacionSeleccionada?.direccion || '',
+                  referencia: ubicacionSeleccionada?.referencia || '',
+                  fechaCreacion: new Date(),
+                  activo: true
+                },
+                categoria: {
+                  id: 'default',
+                  nombre: 'Ubicación',
+                  descripcion: 'Ubicación seleccionada en el mapa',
+                  color: '#FFA500',
+                  icono: '📍',
+                  fechaCreacion: new Date(),
+                  activo: true
+                },
+                estado: {
+                  id: 'default',
+                  nombre: 'Activo',
+                  descripcion: 'Ubicación activa',
+                  icono: '✅',
+                  color: '#00FF00',
+                  fechaCreacion: new Date(),
+                  activo: true
+                },
+                usuarioCreador: {
+                  id: 'system',
+                  nombre: 'Sistema',
+                  apellido: '',
+                  email: 'system@example.com',
+                  password: '',
+                  roles: [],
+                  intentosFallidos: 0,
+                  fechaCreacion: new Date(),
+                  estado: 'activo',
+                  tipo: 'admin'
+                },
+                fechaCreacion: ubicacionSeleccionada?.fechaCreacion || new Date(),
+                fechaInicio: new Date(),
+                activo: ubicacionSeleccionada?.activo ?? true
+              }} 
+              height="h-[600px]"
+              onPosicionActualizada={handlePosicionActualizada}
+            />
       </div>
       {ubicacionSeleccionada && (
         <div className="p-3 bg-muted/50 rounded-md">

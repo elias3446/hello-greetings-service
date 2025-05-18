@@ -89,10 +89,10 @@ const DetalleReporteMainInfo: React.FC<DetalleReporteMainInfoProps> = ({ reporte
           </div>
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-3">Ubicación</h4>
-            <div className="h-[300px] rounded-md overflow-hidden border">
+            <div className="bg-white p-6 rounded-lg shadow-md">
             <MapaReporteEspecifico 
               reporte={reporte} 
-              height="h-[600px]" 
+              height="h-[300px]" 
             />
             </div>
           </div>

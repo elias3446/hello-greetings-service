@@ -25,11 +25,11 @@ const Mapa = () => {
     <Layout>
       <div className="grid md:grid-cols-3 gap-4 relative">
         <div className="md:col-span-2">
-          <MapaReportesMultiples 
-            reportes={reportes} 
-            height="h-[600px]"
-            onReporteClick={handleReporteSelect}
-          />
+        <MapaReportesMultiples 
+              reportes={reportes} 
+              height="h-[600px]"
+              onReporteClick={handleReporteSelect}
+            />
         </div>
 
         <div className="md:col-span-1">
