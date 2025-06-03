@@ -1,4 +1,4 @@
-titulo,descripcion,direccion,latitud,longitud,categoriaId,estadoId,usuarioId
+titulo,descripcion,direccion,latitude,longitude,categoriaId,estadoId,usuarioId
 Reporte Mensual,Análisis de ventas del mes,Calle Principal 123,40.4168,-3.7038,1,1,1
 Informe Trimestral,Resumen de actividades Q1,Avenida Central 456,40.4168,-3.7038,2,2,2
 Evaluación Anual,Revisión de objetivos 2024,Plaza Mayor 789,40.4168,-3.7038,3,3,3

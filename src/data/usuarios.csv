@@ -1,6 +1,6 @@
 nombre,apellido,email,password,estado,tipo,rolId
-Juan,Pérez,juan.perez@example.com,password123,activo,admin,1
-María,García,maria.garcia@example.com,password123,activo,usuario,2
-Carlos,López,carlos.lopez@example.com,password123,activo,usuario,3
-Ana,Martínez,ana.martinez@example.com,password123,activo,usuario,2
+Juan,Pérez,juan.perez@example1.com,password123,activo,admin,1
+María,García,maria.garcia@1example.com,password123,activo,usuario,2
+Carlos,López,carlos.lopez@e1xample.com,password123,activo,usuario,3
+Ana,Martínez,ana.martinez@exa1mple.com,password123,activo,usuario,2
 Roberto,Sánchez,roberto.sanchez@example.com,password123,activo,usuario,3 
